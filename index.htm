@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>PROMPT STREAM // INLINE_MASTER</title>
+  <title>PROMPT STREAM // MASTER</title>
   <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600&family=Share+Tech+Mono&family=Zen+Kaku+Gothic+New:wght@400;700&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
   <style>
@@ -17,7 +17,7 @@
       --accent: #ff0055;
       --code-color: #00ff99;
       --char-color: #ff00cc;
-      --part-color: #bd00ff; /* パーツ用カラー */
+      --part-color: #bd00ff;
       --text-main: #cceeee;
       --text-dim: #668888;
       --border-color: #334444;
@@ -54,15 +54,19 @@
       white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 30%;
     }
     
-    .actions { display: flex; gap: 6px; }
+    .actions { display: flex; gap: 6px; align-items: center; }
     .actions button {
       background: transparent; border: 1px solid var(--border-color); color: var(--primary);
       padding: 6px 8px; font-family: 'Share Tech Mono'; cursor: pointer; font-size: 11px;
       border-radius: 4px; min-width: 40px;
     }
     .actions button:active { background: var(--primary); color: #000; }
-    .actions button.btn-char-mgr { border-color: var(--char-color); color: var(--char-color); }
-    .actions button.btn-char-mgr:active { background: var(--char-color); color: #fff; }
+    
+    /* リンクボタン */
+    .btn-link { text-decoration: none; display: inline-flex; }
+    .btn-link button { border-color: var(--char-color); color: var(--char-color); }
+    .btn-link button:active { background: var(--char-color); color: #fff; }
+
     .actions button.accent { border-color: var(--secondary); color: var(--secondary); }
     .actions button.accent:active { background: var(--secondary); color: #000; }
     .actions button.danger { border-color: var(--accent); color: var(--accent); }
@@ -180,7 +184,7 @@
 
     .btn-save-new { width: 100%; padding: 12px; margin-bottom: 20px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; }
 
-    /* Part Chip (インラインパーツ用) */
+    /* Part Chip */
     .part-chip {
       display: inline-block; padding: 8px 12px; margin: 4px;
       background: rgba(189, 0, 255, 0.1); border: 1px solid var(--part-color);
@@ -198,8 +202,12 @@
   <header>
     <h1>PROMPT<span>v5</span></h1>
     <div class="actions">
+      <a href="./persona.html" class="btn-link">
+        <button title="Go to Persona Archive">PERSONA→</button>
+      </a>
+      
       <button onclick="clearBoard()" class="danger">CLR</button>
-      <button onclick="openCharModal()" class="btn-char-mgr">CHARS</button>
+      <button onclick="openCharModal()" style="border-color:var(--char-color); color:var(--char-color);">CHARS</button>
       <button onclick="openProjectModal()" class="accent">DATA</button>
       <button onclick="exportText()" id="exportBtn">COPY</button>
     </div>
@@ -232,12 +240,7 @@
         <span onclick="document.getElementById('charModal').style.display='none'" style="cursor:pointer; font-size:20px;">×</span>
       </div>
       <div class="modal-body">
-        <div style="border-bottom:1px solid #333; margin-bottom:15px; padding-bottom:15px;">
-           <input type="text" id="newCharName" placeholder="Name" style="width:100%; padding:8px; margin-bottom:5px; background:#000; border:1px solid #333; color:#fff;">
-           <input type="text" id="newCharTag" placeholder="Tag (Project)" style="width:100%; padding:8px; margin-bottom:5px; background:#000; border:1px solid #333; color:#fff;">
-           <textarea id="newCharText" rows="3" placeholder="[AI personality...]" style="width:100%; padding:8px; margin-bottom:5px; background:#000; border:1px solid #333; color:#fff; font-family:monospace;"></textarea>
-           <button class="btn-save-new" style="background:var(--char-color); color:#fff; margin:0;" onclick="saveCharacter()">SAVE</button>
-        </div>
+        <p style="font-size:11px; color:#666;">※ Manage details in <a href="./persona.html" style="color:var(--char-color);">PERSONA ARCHIVE</a></p>
         <select id="charTagFilter" class="tag-filter" onchange="renderCharList()"><option value="ALL">ALL TAGS</option></select>
         <div id="charList"></div>
       </div>
@@ -253,9 +256,8 @@
       <div class="modal-body">
         <p style="font-size:11px; color:#777; margin-top:0;">Tap to insert at cursor.</p>
         <div id="partList" class="part-container"></div>
-        
         <div style="border-top:1px solid #333; margin-top:20px; padding-top:15px;">
-           <input type="text" id="newPartText" placeholder="New Part (e.g. location: )" style="width:70%; padding:10px; background:#000; border:1px solid var(--part-color); color:var(--part-color); font-family:monospace;">
+           <input type="text" id="newPartText" placeholder="New Part" style="width:70%; padding:10px; background:#000; border:1px solid var(--part-color); color:var(--part-color); font-family:monospace;">
            <button style="width:25%; padding:10px; background:var(--part-color); border:none; color:#fff; font-weight:bold; cursor:pointer;" onclick="savePart()">ADD</button>
         </div>
       </div>
@@ -296,7 +298,6 @@
   <script>
     let lastFocusedTextarea = null;
 
-    // Sortable
     new Sortable(document.getElementById('streamList'), {
       animation: 150, handle: '.drag-handle', ghostClass: 'sortable-ghost', dragClass: 'sortable-drag',
       onEnd: () => saveToLocal()
@@ -344,9 +345,7 @@
       }
     }
 
-    // ─────── インライン挿入機能 ───────
-    
-    // カーソル位置への文字列挿入ヘルパー
+    // Inline insertion
     function insertAtCursor(textToInsert, wrap = false) {
       if (!lastFocusedTextarea) { alert("Select a text area first!"); return; }
       const field = lastFocusedTextarea;
@@ -354,95 +353,47 @@
       const endPos = field.selectionEnd;
       const originalText = field.value;
       const selectedText = originalText.substring(startPos, endPos);
-
-      let newText = "";
-      let newCursorPos = 0;
+      let newText = "", newCursorPos = 0;
 
       if (wrap) {
-        // [ ] のように囲む処理
-        // textToInsertは配列 [prefix, suffix] を想定
         newText = originalText.substring(0, startPos) + textToInsert[0] + selectedText + textToInsert[1] + originalText.substring(endPos);
-        // 選択されていた文字がある場合は囲んだ後ろに、なければ括弧の中にカーソル
         newCursorPos = selectedText.length > 0 ? startPos + textToInsert[0].length + selectedText.length + textToInsert[1].length : startPos + textToInsert[0].length;
       } else {
-        // 通常挿入
         newText = originalText.substring(0, startPos) + textToInsert + originalText.substring(endPos);
         newCursorPos = startPos + textToInsert.length;
       }
-
       field.value = newText;
       field.selectionStart = field.selectionEnd = newCursorPos;
       field.dispatchEvent(new Event('input'));
       field.focus();
     }
-
     function insertWildcard(e) { e.preventDefault(); insertAtCursor("****"); }
+    function insertBracket(e) { e.preventDefault(); insertAtCursor(["[", "]"], true); }
 
-    function insertBracket(e) {
-      e.preventDefault();
-      // [] で囲む
-      insertAtCursor(["[", "]"], true); 
-    }
-
-    // ─────── カスタムパーツ (WORDS) 管理 ───────
-    
-    function openPartModal(e) {
-      e.preventDefault(); // フォーカス維持
-      renderPartList();
-      document.getElementById('partModal').style.display = 'flex';
-    }
-
+    // Parts
+    function openPartModal(e) { e.preventDefault(); renderPartList(); document.getElementById('partModal').style.display = 'flex'; }
     function savePart() {
-      const text = document.getElementById('newPartText').value;
-      if(!text) return;
+      const text = document.getElementById('newPartText').value; if(!text) return;
       const parts = JSON.parse(localStorage.getItem('promptInlineParts') || '[]');
-      parts.push(text);
-      localStorage.setItem('promptInlineParts', JSON.stringify(parts));
-      document.getElementById('newPartText').value = '';
-      renderPartList();
+      parts.push(text); localStorage.setItem('promptInlineParts', JSON.stringify(parts));
+      document.getElementById('newPartText').value = ''; renderPartList();
     }
-
     function renderPartList() {
       const list = document.getElementById('partList');
       const parts = JSON.parse(localStorage.getItem('promptInlineParts') || '[]');
       list.innerHTML = '';
-      if(parts.length === 0) list.innerHTML = '<p style="color:#555; width:100%; text-align:center;">No parts registered.</p>';
-
       parts.forEach((text, index) => {
-        const chip = document.createElement('div');
-        chip.className = 'part-chip';
+        const chip = document.createElement('div'); chip.className = 'part-chip';
         chip.innerHTML = `${text} <span class="del" onclick="deletePart(${index}, event)">×</span>`;
-        // チップ本体クリックで挿入
-        chip.onclick = (e) => {
-           if(e.target.classList.contains('del')) return;
-           insertAtCursor(text);
-           document.getElementById('partModal').style.display = 'none';
-        };
+        chip.onclick = (e) => { if(!e.target.classList.contains('del')){ insertAtCursor(text); document.getElementById('partModal').style.display='none'; }};
         list.appendChild(chip);
       });
     }
+    function deletePart(index, e) { e.stopPropagation(); const parts = JSON.parse(localStorage.getItem('promptInlineParts')||'[]'); parts.splice(index,1); localStorage.setItem('promptInlineParts', JSON.stringify(parts)); renderPartList(); }
 
-    function deletePart(index, e) {
-      e.stopPropagation();
-      const parts = JSON.parse(localStorage.getItem('promptInlineParts') || '[]');
-      parts.splice(index, 1);
-      localStorage.setItem('promptInlineParts', JSON.stringify(parts));
-      renderPartList();
-    }
-
-
-    // ─────── キャラクター管理 ───────
+    // Character Logic (Updated for Persona Integration)
     function openCharModal() { renderCharList(); document.getElementById('charModal').style.display = 'flex'; }
-    function saveCharacter() {
-      const name = document.getElementById('newCharName').value;
-      const tag = document.getElementById('newCharTag').value || "Uncategorized";
-      const text = document.getElementById('newCharText').value;
-      if(!name || !text) return;
-      const db = JSON.parse(localStorage.getItem('promptChars') || '{}');
-      db[name] = { text: text, tag: tag };
-      localStorage.setItem('promptChars', JSON.stringify(db));
-      document.getElementById('newCharName').value = ''; document.getElementById('newCharText').value = ''; renderCharList();
-    }
+    
     function renderCharList() {
       const list = document.getElementById('charList'); const filter = document.getElementById('charTagFilter');
       const db = JSON.parse(localStorage.getItem('promptChars') || '{}');
@@ -450,6 +401,7 @@
       const currentVal = filter.value; filter.innerHTML = '';
       tags.forEach(t => { const opt = document.createElement('option'); opt.value = t; opt.innerText = t; filter.appendChild(opt); });
       if(tags.has(currentVal)) filter.value = currentVal;
+      
       list.innerHTML = ''; const selectedTag = filter.value;
       Object.keys(db).forEach(name => {
         const entry = db[name]; if(selectedTag !== 'ALL' && entry.tag !== selectedTag) return;
@@ -458,13 +410,34 @@
         list.appendChild(item);
       });
     }
+
+    // ★★★ 重要：姉妹アプリのパラメータを解釈する部分 ★★★
     window.loadCharacter = (name) => {
       const db = JSON.parse(localStorage.getItem('promptChars') || '{}');
-      if(db[name]) { addNewCard('char_def', db[name].text); document.getElementById('charModal').style.display = 'none'; }
+      if(db[name]) {
+        const entry = db[name];
+        let content = entry.text;
+        
+        // パラメータがある場合、テキスト化して挿入
+        if(entry.params) {
+          const p = entry.params;
+          const paramBlock = `[Character Settings]\n` +
+            ` - Rationality: ${p.p1}/100\n` +
+            ` - Emotion: ${p.p2}/100\n` +
+            ` - Aggression: ${p.p3}/100\n` +
+            ` - Affection: ${p.p4}/100\n` +
+            `-------------------\n`;
+          content = paramBlock + content;
+        }
+
+        addNewCard('char_def', content);
+        document.getElementById('charModal').style.display = 'none';
+      }
     };
+
     window.deleteCharacter = (name) => { if(confirm(`Delete?`)){ const db = JSON.parse(localStorage.getItem('promptChars')||'{}'); delete db[name]; localStorage.setItem('promptChars', JSON.stringify(db)); renderCharList(); }};
 
-    // ─────── プロジェクト管理 ───────
+    // Project Logic
     function openProjectModal() { renderProjectList(); document.getElementById('projectModal').style.display = 'flex'; }
     function saveCurrentBoard() {
       const name = prompt("Project Name:", ""); if(!name) return;
@@ -495,7 +468,7 @@
     };
     window.deleteProject = (name) => { if(confirm("Delete?")){ const db = JSON.parse(localStorage.getItem('promptProjects')||'{}'); delete db[name]; localStorage.setItem('promptProjects', JSON.stringify(db)); renderProjectList(); }};
 
-    // ─────── スニペット管理 ───────
+    // Snippets
     function openSnippetModal() { renderSnippetList(); document.getElementById('snippetModal').style.display = 'flex'; }
     function saveSnippet() {
       const name = document.getElementById('newSnipName').value; const content = document.getElementById('newSnipContent').value;
@@ -516,7 +489,7 @@
     window.insertSnippet = (name) => { const db = JSON.parse(localStorage.getItem('promptSnippets')||'{}'); addNewCard('code', db[name]); document.getElementById('snippetModal').style.display = 'none'; };
     window.deleteSnippet = (name) => { if(confirm("Delete?")){ const db = JSON.parse(localStorage.getItem('promptSnippets')||'{}'); delete db[name]; localStorage.setItem('promptSnippets', JSON.stringify(db)); renderSnippetList(); }};
 
-    // 共通
+    // Common
     function exportText() {
       const cards = document.querySelectorAll('#streamList .card textarea'); let text = "";
       cards.forEach(ta => { const val = ta.value.trim(); if(val) text += val + "\n\n"; });
