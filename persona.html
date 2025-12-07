@@ -7,13 +7,17 @@
   <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Zen+Kaku+Gothic+New:wght@400;700&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg-color: #0a0005; /* メインより少し赤みを持たせたダーク */
+      --bg-color: #0a0005;
       --card-bg: #1a0510;
-      --char-primary: #ff00cc; /* マゼンタを主役に */
+      --char-primary: #ff00cc;
       --char-dim: #884466;
       --text-main: #ffccEE;
       --border-color: #441133;
       --header-height: 50px;
+      
+      --info-explicit: #00f3ff;
+      --info-implicit: #ffaa00;
+      --info-secret: #ff0055;
     }
 
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -27,26 +31,23 @@
     header {
       height: var(--header-height); border-bottom: 1px solid var(--border-color);
       display: flex; align-items: center; justify-content: space-between; padding: 0 10px;
-      background: rgba(20, 0, 10, 0.95);
+      background: rgba(20, 0, 10, 0.95); flex-shrink: 0;
     }
     h1 { font-size: 16px; color: var(--char-primary); letter-spacing: 2px; margin: 0; }
     
     .actions { display: flex; gap: 8px; }
-    .btn-save {
-      background: var(--char-primary); color: #000; border: none;
-      padding: 6px 12px; font-weight: bold; border-radius: 4px; cursor: pointer;
-      font-family: 'Share Tech Mono';
+    .btn-header {
+      background: transparent; color: var(--char-primary); border: 1px solid var(--char-primary);
+      padding: 6px 10px; font-weight: bold; border-radius: 4px; cursor: pointer;
+      font-family: 'Share Tech Mono'; font-size: 11px;
     }
-    .btn-back {
-      background: transparent; color: #fff; border: 1px solid #555;
-      padding: 6px 12px; border-radius: 4px; cursor: pointer; text-decoration: none;
-      font-size: 12px; display: inline-flex; align-items: center;
-    }
+    .btn-header.filled { background: var(--char-primary); color: #000; }
+    .btn-header.back { color: #ccc; border-color: #555; text-decoration: none; display: flex; align-items: center; }
 
-    /* メインレイアウト */
+    /* レイアウト */
     .container { display: flex; flex: 1; overflow: hidden; }
     
-    /* 左側：リスト */
+    /* サイドバー */
     .sidebar {
       width: 35%; border-right: 1px solid var(--border-color);
       overflow-y: auto; background: rgba(0,0,0,0.2);
@@ -59,29 +60,46 @@
     .char-tag { font-size: 10px; color: var(--char-dim); border: 1px solid var(--char-dim); padding: 1px 4px; border-radius: 4px; margin-bottom: 4px; display: inline-block; }
     .char-name { font-weight: bold; font-size: 14px; display: block; }
 
-    /* 右側：エディタ */
+    /* エディタエリア */
     .editor { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; }
     
-    label { font-size: 11px; color: var(--char-dim); margin-bottom: 4px; display: block; }
-    input[type="text"], textarea, select {
+    label { font-size: 11px; color: var(--char-dim); margin-bottom: 4px; display: flex; justify-content: space-between; }
+    .label-badge { padding: 2px 6px; border-radius: 4px; color: #000; font-weight: bold; font-size: 10px; }
+    
+    input[type="text"], textarea {
       background: #000; border: 1px solid var(--border-color); color: var(--text-main);
-      padding: 10px; width: 100%; font-family: inherit; font-size: 14px; border-radius: 4px;
+      padding: 10px; width: 100%; font-family: inherit; font-size: 13px; border-radius: 4px;
     }
-    textarea { resize: vertical; min-height: 150px; line-height: 1.6; }
+    textarea { resize: vertical; line-height: 1.6; }
     input:focus, textarea:focus { outline: none; border-color: var(--char-primary); }
 
-    /* パラメータスライダー */
-    .param-group { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; background: #000; padding: 10px; border: 1px solid var(--border-color); border-radius: 6px; }
-    .slider-box { margin-bottom: 8px; }
-    .slider-header { display: flex; justify-content: space-between; font-size: 10px; color: var(--char-dim); margin-bottom: 2px; }
-    input[type="range"] { width: 100%; accent-color: var(--char-primary); cursor: pointer; }
+    /* 3層情報エリア */
+    .info-grid { display: grid; gap: 15px; margin-top: 10px; }
+    .area-explicit textarea { border-color: rgba(0, 243, 255, 0.3); }
+    .area-explicit textarea:focus { border-color: var(--info-explicit); }
+    .area-implicit textarea { border-color: rgba(255, 170, 0, 0.3); }
+    .area-implicit textarea:focus { border-color: var(--info-implicit); }
+    .area-secret textarea { border-color: rgba(255, 0, 85, 0.3); background: #0f0005; }
+    .area-secret textarea:focus { border-color: var(--info-secret); }
 
-    /* モバイル対応 */
+    /* モーダル */
+    .modal-overlay {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.9); backdrop-filter: blur(5px);
+      z-index: 999; display: none; align-items: center; justify-content: center;
+    }
+    .modal-content {
+      background: #111518; border: 1px solid var(--char-primary);
+      width: 90%; max-width: 500px; max-height: 85vh; border-radius: 12px;
+      display: flex; flex-direction: column; padding: 20px;
+    }
+    .modal-h { color: var(--char-primary); margin: 0 0 15px 0; font-size: 16px; font-weight: bold; display: flex; justify-content: space-between; }
+    .btn-modal { width: 100%; padding: 12px; margin-top: 10px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; }
+
     @media (max-width: 600px) {
       .container { flex-direction: column; }
-      .sidebar { width: 100%; height: 150px; flex-shrink: 0; }
+      .sidebar { width: 100%; height: 120px; flex-shrink: 0; }
       .editor { flex: 1; }
-      .param-group { grid-template-columns: 1fr; }
     }
   </style>
 </head>
@@ -90,15 +108,15 @@
 <header>
   <h1>PERSONA<span>//ARCHIVE</span></h1>
   <div class="actions">
-    <a href="./index.html" class="btn-back">← STREAM</a>
-    <button class="btn-save" style="background:transparent; color:var(--char-primary); border:1px solid var(--char-primary);" onclick="createNew()">NEW</button>
-    <button class="btn-save" onclick="saveCurrent()">SAVE</button>
+    <a href="./index.html" class="btn-header back">← STREAM</a>
+    <button class="btn-header" onclick="openDataModal()">DATA</button>
+    <button class="btn-header" onclick="createNew()">NEW</button>
+    <button class="btn-header filled" onclick="saveCurrent()">SAVE</button>
   </div>
 </header>
 
 <div class="container">
-  <div class="sidebar" id="sidebar">
-    </div>
+  <div class="sidebar" id="sidebar"></div>
 
   <div class="editor" id="editorArea">
     <div style="display:flex; gap:10px;">
@@ -107,79 +125,86 @@
         <input type="text" id="inpName" placeholder="Character Name">
       </div>
       <div style="flex:1;">
-        <label>TAG (妖譚/艶治...)</label>
-        <input type="text" id="inpTag" placeholder="Genre Tag" list="tagList">
+        <label>TAG</label>
+        <input type="text" id="inpTag" placeholder="Tag" list="tagList">
         <datalist id="tagList">
           <option value="妖譚"></option>
           <option value="艶治"></option>
           <option value="薔薇"></option>
           <option value="怪異"></option>
-          <option value="現代"></option>
         </datalist>
       </div>
     </div>
+    
+    <div>
+      <label>CAST / IMAGE</label>
+      <input type="text" id="inpCast" placeholder="Actor name, Voice image, or URL">
+    </div>
 
     <div>
-      <label>ACTING PARAMETERS (0-100)</label>
-      <div class="param-group">
-        <div class="slider-box">
-          <div class="slider-header"><span>RATIONALITY (理性)</span><span id="val_p1">50</span></div>
-          <input type="range" id="p1" min="0" max="100" value="50" oninput="updateVal('p1')">
-        </div>
-        <div class="slider-box">
-          <div class="slider-header"><span>EMOTION (感情)</span><span id="val_p2">50</span></div>
-          <input type="range" id="p2" min="0" max="100" value="50" oninput="updateVal('p2')">
-        </div>
-        <div class="slider-box">
-          <div class="slider-header"><span>AGGRESSION (好戦)</span><span id="val_p3">50</span></div>
-          <input type="range" id="p3" min="0" max="100" value="50" oninput="updateVal('p3')">
-        </div>
-        <div class="slider-box">
-          <div class="slider-header"><span>AFFECTION (友好)</span><span id="val_p4">50</span></div>
-          <input type="range" id="p4" min="0" max="100" value="50" oninput="updateVal('p4')">
-        </div>
+      <label>CORE PERSONALITY</label>
+      <textarea id="inpText" rows="5" placeholder="[AI personality: Name, role: ..., age/gender: ..., memot: ...]"></textarea>
+    </div>
+
+    <div>
+      <label>DIALOGUE SAMPLES (セリフサンプル)</label>
+      <textarea id="inpDialogue" rows="4" placeholder="「……」"></textarea>
+    </div>
+
+    <div class="info-grid">
+      <div class="area-explicit">
+        <label>EXPLICIT (明示) <span class="label-badge" style="background:var(--info-explicit)">PUBLIC</span></label>
+        <textarea id="inpExplicit" rows="2" placeholder="本文/台詞に出してよい情報"></textarea>
+      </div>
+      <div class="area-implicit">
+        <label>IMPLICIT (暗示) <span class="label-badge" style="background:var(--info-implicit)">HINT</span></label>
+        <textarea id="inpImplicit" rows="2" placeholder="比喩などで匂わせる情報"></textarea>
+      </div>
+      <div class="area-secret">
+        <label>SECRET (秘匿) <span class="label-badge" style="background:var(--info-secret); color:#fff;">CLASSIFIED</span></label>
+        <textarea id="inpSecret" rows="2" placeholder="AIのみが参照する裏設定"></textarea>
       </div>
     </div>
 
-    <div style="flex:1; display:flex; flex-direction:column;">
-      <label>PERSONALITY PROMPT</label>
-      <textarea id="inpText" placeholder="[System: You are... ]"></textarea>
+    <div style="margin-top:10px;">
+      <label>MEMO (Personal Notes)</label>
+      <textarea id="inpMemo" rows="2" style="color:#777; border-style:dashed;" placeholder="自分用メモ..."></textarea>
     </div>
     
-    <button onclick="deleteCurrent()" style="background:transparent; border:1px solid #ff4444; color:#ff4444; padding:8px; border-radius:4px; margin-top:10px;">DELETE CHARACTER</button>
+    <button onclick="deleteCurrent()" style="background:transparent; border:1px solid #ff4444; color:#ff4444; padding:8px; border-radius:4px; margin-top:20px;">DELETE CHARACTER</button>
+  </div>
+</div>
+
+<div id="dataModal" class="modal-overlay">
+  <div class="modal-content">
+    <div class="modal-h">DATA MANAGER <span onclick="document.getElementById('dataModal').style.display='none'" style="cursor:pointer;">×</span></div>
+    <p style="font-size:12px; color:#aaa; margin-top:0;">Import/Export all characters as JSON.</p>
+    <textarea id="jsonArea" rows="10" style="font-family:monospace; color:var(--char-primary); font-size:11px;" placeholder="Paste JSON here to load..."></textarea>
+    <div style="display:flex; gap:10px;">
+      <button class="btn-modal" style="background:#333; color:#fff;" onclick="copyJson()">COPY JSON (Export)</button>
+      <button class="btn-modal" style="background:var(--char-primary); color:#000;" onclick="loadJson()">LOAD JSON (Import)</button>
+    </div>
   </div>
 </div>
 
 <script>
-  // メインアプリと同じキーを使用（データ共有の要）
   const STORAGE_KEY = 'promptChars';
   let currentKey = null;
 
-  function loadDB() {
-    return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
-  }
-
-  function saveDB(db) {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(db));
-    renderList();
-  }
+  function loadDB() { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); }
+  function saveDB(db) { localStorage.setItem(STORAGE_KEY, JSON.stringify(db)); renderList(); }
 
   function renderList() {
     const db = loadDB();
     const sidebar = document.getElementById('sidebar');
     sidebar.innerHTML = '';
-    
     const keys = Object.keys(db).sort();
-    if(keys.length === 0) {
-        sidebar.innerHTML = '<div style="padding:20px; color:#555; font-size:12px;">No Characters</div>';
-        return;
-    }
-
+    if(keys.length === 0) { sidebar.innerHTML = '<div style="padding:20px; color:#555; font-size:12px;">No Characters</div>'; return; }
     keys.forEach(name => {
       const entry = db[name];
       const div = document.createElement('div');
       div.className = `char-item ${currentKey === name ? 'active' : ''}`;
-      div.innerHTML = `<span class="char-tag">${entry.tag || 'Uncategorized'}</span><span class="char-name">${name}</span>`;
+      div.innerHTML = `<span class="char-tag">${entry.tag || '-'}</span><span class="char-name">${name}</span>`;
       div.onclick = () => loadChar(name);
       sidebar.appendChild(div);
     });
@@ -189,78 +214,78 @@
     const db = loadDB();
     const entry = db[name];
     if (!entry) return;
-
     currentKey = name;
     document.getElementById('inpName').value = name;
     document.getElementById('inpTag').value = entry.tag || '';
+    document.getElementById('inpCast').value = entry.cast || '';
     document.getElementById('inpText').value = entry.text || '';
-    
-    // パラメータ読み込み（なければ50）
-    const params = entry.params || {};
-    ['p1','p2','p3','p4'].forEach(id => {
-      const val = params[id] !== undefined ? params[id] : 50;
-      document.getElementById(id).value = val;
-      document.getElementById('val_'+id).innerText = val;
-    });
-
-    renderList(); // activeハイライト切り替え
-  }
-
-  function updateVal(id) {
-    document.getElementById('val_' + id).innerText = document.getElementById(id).value;
+    document.getElementById('inpDialogue').value = entry.dialogue || '';
+    document.getElementById('inpExplicit').value = entry.explicit || '';
+    document.getElementById('inpImplicit').value = entry.implicit || '';
+    document.getElementById('inpSecret').value   = entry.secret || '';
+    document.getElementById('inpMemo').value     = entry.memo || '';
+    renderList();
   }
 
   function saveCurrent() {
     const name = document.getElementById('inpName').value.trim();
     if (!name) { alert('Name required'); return; }
-
     const db = loadDB();
+    if (currentKey && currentKey !== name) delete db[currentKey];
     
-    // 名前変更時の処理（古いキーを削除）
-    if (currentKey && currentKey !== name) {
-      delete db[currentKey];
-    }
-
-    const params = {};
-    ['p1','p2','p3','p4'].forEach(id => {
-      params[id] = document.getElementById(id).value;
-    });
-
     db[name] = {
       tag: document.getElementById('inpTag').value,
+      cast: document.getElementById('inpCast').value,
       text: document.getElementById('inpText').value,
-      params: params
+      dialogue: document.getElementById('inpDialogue').value,
+      explicit: document.getElementById('inpExplicit').value,
+      implicit: document.getElementById('inpImplicit').value,
+      secret:   document.getElementById('inpSecret').value,
+      memo:     document.getElementById('inpMemo').value
     };
-
     saveDB(db);
     currentKey = name;
-    alert('SAVED to LocalStorage!');
+    const btn = document.querySelector('.btn-header.filled');
+    const originalText = btn.innerText;
+    btn.innerText = "OK!"; setTimeout(() => btn.innerText = originalText, 1000);
   }
 
   function createNew() {
     currentKey = null;
-    document.getElementById('inpName').value = '';
-    document.getElementById('inpTag').value = '';
-    document.getElementById('inpText').value = '';
-    ['p1','p2','p3','p4'].forEach(id => {
-      document.getElementById(id).value = 50;
-      updateVal(id);
-    });
+    ['inpName','inpTag','inpCast','inpText','inpDialogue','inpExplicit','inpImplicit','inpSecret','inpMemo'].forEach(id => document.getElementById(id).value = '');
     renderList();
     document.getElementById('inpName').focus();
   }
 
   function deleteCurrent() {
     if(!currentKey) return;
-    if(confirm('Delete this character?')) {
-      const db = loadDB();
-      delete db[currentKey];
-      saveDB(db);
-      createNew();
-    }
+    if(confirm('Delete character?')) { const db = loadDB(); delete db[currentKey]; saveDB(db); createNew(); }
   }
 
-  // 初期化
+  // DATA MANAGER
+  function openDataModal() {
+    document.getElementById('dataModal').style.display = 'flex';
+    document.getElementById('jsonArea').value = '';
+  }
+  function copyJson() {
+    const db = loadDB();
+    const json = JSON.stringify(db, null, 2);
+    navigator.clipboard.writeText(json);
+    alert('JSON copied to clipboard!');
+  }
+  function loadJson() {
+    const json = document.getElementById('jsonArea').value;
+    if(!json) return;
+    try {
+      const db = JSON.parse(json);
+      if(confirm('Overwrite all characters with this data?')) {
+        saveDB(db);
+        document.getElementById('dataModal').style.display = 'none';
+        alert('Loaded successfully!');
+      }
+    } catch(e) { alert('Invalid JSON format'); }
+  }
+
   renderList();
 </script>
 </body>
