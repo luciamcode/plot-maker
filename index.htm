@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>PROMPT STREAM // MOBILE</title>
+  <title>PROMPT STREAM // MOBILE v2</title>
   <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Zen+Kaku+Gothic+New:wght@400;700&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
   <style>
@@ -20,42 +20,193 @@
       --border-color: #334444;
       --header-height: 50px;
     }
-    /* 以下、前のスタイル全部そのまま（省略しないで全部残してね！） */
-    /* ... さっきの超カッコいいスタイル全部ここにコピペ ... */
-    /* モーダル用追加スタイル */
-    .modal {
-      position: fixed; top: 0; left: 0; width: 100%; height: 100dvh;
-      background: rgba(0,0,0,0.92); backdrop-filter: blur(10px);
-      display: none; align-items: center; justify-content: center; z-index: 999;
+
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+    body {
+      font-family: 'Share Tech Mono', 'Zen Kaku Gothic New', monospace;
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      margin: 0;
+      height: 100dvh; /* スマホのアドレスバー対策 */
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ヘッダー */
+    header {
+      height: var(--header-height);
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 10px;
+      background: rgba(11, 15, 18, 0.95);
+      z-index: 10;
+      flex-shrink: 0;
+    }
+    h1 {
+      font-size: 16px; color: var(--primary); margin: 0; letter-spacing: 1px;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    h1 span { font-size: 10px; color: var(--text-dim); margin-left: 5px; }
+
+    /* アクションボタン群 */
+    .actions { display: flex; gap: 8px; }
+    .actions button {
+      background: transparent;
+      border: 1px solid var(--border-color);
+      color: var(--primary);
+      padding: 6px 10px;
+      font-family: 'Share Tech Mono';
+      cursor: pointer; font-size: 12px; transition: 0.2s;
+      border-radius: 4px;
+      min-width: 50px;
+    }
+    .actions button:active { background: var(--primary); color: #000; }
+    .actions button.accent { border-color: var(--secondary); color: var(--secondary); }
+    .actions button.accent:active { background: var(--secondary); color: #000; }
+    .actions button.danger { border-color: var(--accent); color: var(--accent); }
+    .actions button.danger:active { background: var(--accent); color: #000; }
+
+    /* パレットエリア */
+    .palette {
+      background: var(--palette-bg);
+      padding: 10px;
+      border-bottom: 1px solid var(--border-color);
+      display: flex; gap: 8px;
+      overflow-x: auto; flex-shrink: 0;
+      -webkit-overflow-scrolling: touch;
+    }
+    .palette::-webkit-scrollbar { height: 4px; }
+    .palette::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 2px; }
+
+    .add-btn {
+      flex: 0 0 auto;
+      background: #000;
+      border: 1px solid var(--border-color);
+      border-left: 3px solid #555;
+      color: var(--text-main);
+      padding: 8px 12px;
+      font-size: 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      display: flex; flex-direction: column; align-items: flex-start;
+    }
+    .add-btn:active { transform: scale(0.95); background: rgba(0,243,255,0.1); }
+    .add-btn span { font-size: 9px; color: var(--text-dim); margin-top: 2px; }
+    
+    .btn-speech { border-left-color: var(--primary); }
+    .btn-system { border-left-color: var(--secondary); }
+    .btn-char { border-left-color: var(--accent); }
+    .btn-sep { border-left-color: #fff; background: #222; }
+
+    /* メインエリア */
+    .stream-container {
+      flex: 1;
+      background: var(--stream-bg);
+      padding: 15px 10px;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    /* カードデザイン */
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-left: 3px solid var(--text-dim);
+      margin-bottom: 12px; padding: 12px;
+      position: relative; border-radius: 4px;
+    }
+    .drag-handle {
+      position: absolute; top: 0; right: 30px; bottom: 0; width: 30px;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--border-color); font-size: 20px; touch-action: none;
+    }
+    .drag-handle::after { content: '≡'; }
+    .card-label { font-size: 10px; color: var(--secondary); margin-bottom: 4px; text-transform: uppercase; display: block; opacity: 0.7; }
+    .card textarea {
+      width: 100%; padding-right: 30px;
+      background: transparent; border: none;
+      color: var(--text-main); resize: none;
+      font-family: 'Zen Kaku Gothic New', monospace;
+      font-size: 15px; line-height: 1.5; outline: none;
+      min-height: 40px; max-height: 300px;
+    }
+    .remove-btn {
+      position: absolute; top: 2px; right: 2px;
+      color: var(--text-dim); cursor: pointer;
+      font-size: 24px; width: 30px; height: 30px;
+      display: flex; align-items: center; justify-content: center; z-index: 2;
+    }
+    
+    .sortable-ghost { opacity: 0.4; background: var(--primary); }
+    .sortable-drag { opacity: 0.9; background: var(--card-bg); box-shadow: 0 5px 15px rgba(0,0,0,0.5); transform: scale(1.02); }
+
+    .type-speech { border-left-color: var(--primary); }
+    .type-system { border-left-color: var(--secondary); }
+    .type-char { border-left-color: var(--accent); }
+    .type-separator { border:none; background: #000; padding: 5px; text-align: center; }
+    .type-separator .card-label { color: #555; margin: 0; }
+    .type-separator .drag-handle { color: #333; }
+
+    /* --- 新しいモーダルデザイン --- */
+    .modal-overlay {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.9); backdrop-filter: blur(5px);
+      z-index: 999; display: none;
+      align-items: center; justify-content: center;
     }
     .modal-content {
-      background: var(--palette-bg); border: 1px solid var(--primary);
-      border-radius: 12px; padding: 20px; width: 90%; max-width: 420px; max-height: 80vh;
-      overflow-y: auto; box-shadow: 0 0 30px rgba(0,243,255,0.3);
+      background: #111518;
+      border: 1px solid var(--secondary);
+      width: 90%; max-width: 400px; max-height: 80vh;
+      border-radius: 12px;
+      display: flex; flex-direction: column;
+      box-shadow: 0 0 30px rgba(255, 170, 0, 0.2);
+    }
+    .modal-header {
+      padding: 15px; border-bottom: 1px solid var(--border-color);
+      display: flex; justify-content: space-between; align-items: center;
+      background: rgba(255, 170, 0, 0.1);
+      color: var(--secondary); font-weight: bold;
+    }
+    .modal-body {
+      padding: 15px; overflow-y: auto;
     }
     .template-item {
-      background: var(--card-bg); padding: 14px; margin: 10px 0;
-      border-radius: 8px; border-left: 4px solid var(--secondary);
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      padding: 12px; margin-bottom: 10px;
+      border-radius: 6px;
       display: flex; justify-content: space-between; align-items: center;
-      cursor: pointer; transition: 0.2s;
     }
-    .template-item:hover { border-left-color: var(--primary); transform: translateX(4px); }
-    .delete-tmpl { color: var(--accent); font-size: 20px; }
+    .template-item span { font-size: 14px; }
+    .template-actions { display: flex; gap: 10px; }
+    
+    /* モーダル内のボタン */
+    .btn-load { background: var(--primary); color: #000; border: none; padding: 5px 12px; border-radius: 4px; font-weight: bold; font-size: 12px; }
+    .btn-del { background: transparent; color: var(--accent); border: 1px solid var(--accent); padding: 5px 10px; border-radius: 4px; font-size: 12px; }
+    .btn-save-new {
+      width: 100%; background: var(--secondary); color: #000;
+      border: none; padding: 12px; font-weight: bold; margin-bottom: 20px;
+      border-radius: 6px; cursor: pointer;
+    }
+
   </style>
 </head>
 <body>
-  <!-- ヘッダーに2ボタン追加 -->
+
   <header>
-    <h1>PROMPT STREAM<span>// TEMPLETED</span></h1>
+    <h1>PROMPT STREAM<span>MOBILE</span></h1>
     <div class="actions">
-      <button onclick="openTemplateModal()" class="accent">TEMPLATES</button>
-      <button onclick="saveCurrentAsTemplate()" class="accent">SAVE AS</button>
       <button onclick="clearBoard()" class="danger">CLR</button>
+      <button onclick="openTemplateModal()" class="accent">DATA</button>
       <button onclick="exportText()" id="exportBtn">COPY</button>
     </div>
   </header>
 
-  <!-- パレットはそのまま -->
   <div class="palette">
     <div class="add-btn" onclick="addNewCard('free')">Free Text<span>地の文・メモ</span></div>
     <div class="add-btn btn-speech" onclick="addNewCard('speech')">Dialogue<span>会話「…」</span></div>
@@ -66,39 +217,128 @@
 
   <div class="stream-container">
     <div id="streamList">
-      <p style="text-align:center;color:var(--border-color);margin-top:50px;">TAP BUTTONS OR TEMPLATES</p>
+      <p style="text-align:center; color:var(--border-color); font-size:12px; margin-top:50px;">TAP BUTTONS TO ADD BLOCKS</p>
     </div>
+    <div style="height: 50px;"></div>
   </div>
 
-  <!-- テンプレートモーダル -->
-  <div id="templateModal" class="modal">
+  <div id="templateModal" class="modal-overlay">
     <div class="modal-content">
-      <h2 style="text-align:center;color:var(--primary);margin:0 0 20px;">SAVED TEMPLATES</h2>
-      <div id="templateList"></div>
-      <button onclick="document.getElementById('templateModal').style.display='none'" 
-              style="width:100%;padding:12px;margin-top:20px;background:#ff0055;border:none;border-radius:8px;color:white;">
-        CLOSE
-      </button>
+      <div class="modal-header">
+        DATA MANAGEMENT
+        <span onclick="document.getElementById('templateModal').style.display='none'" style="cursor:pointer; font-size:20px;">×</span>
+      </div>
+      <div class="modal-body">
+        
+        <button class="btn-save-new" onclick="saveCurrentAsTemplate()">
+          + SAVE CURRENT AS NEW
+        </button>
+
+        <h3 style="font-size:12px; color:var(--text-dim); margin-bottom:10px; border-bottom:1px solid #333; padding-bottom:5px;">SAVED TEMPLATES</h3>
+        
+        <div id="templateList"></div>
+
+      </div>
     </div>
   </div>
 
   <script>
+    // Sortableの初期化
     const streamSortable = new Sortable(document.getElementById('streamList'), {
-      animation: 180,
+      animation: 150,
       handle: '.drag-handle',
       ghostClass: 'sortable-ghost',
-      dragClass: 'sortable-drag'
+      dragClass: 'sortable-drag',
+      onEnd: function() { saveToLocal(); } // 並び替え時も自動保存
     });
 
-    const templates = { /* 省略 */ }; // 前のと同じ
+    const templates = {
+      free: { label: 'Narration', placeholder: '地の文を入力...', rows: 3 },
+      speech: { label: 'Dialogue', placeholder: '「……」', rows: 2 },
+      char_def: { label: 'Character Definition', placeholder: '[AI personality: 名前, role: 役割...]', rows: 6 },
+      system: { label: 'System Instruction', placeholder: '※指示・注釈', rows: 2 },
+      separator: { label: '--- SCENE BREAK ---', value: '***' }
+    };
 
-    function addNewCard(type, initialValue = null) { /* 前のと同じ */ }
+    function addNewCard(type, initialValue = null) {
+      const list = document.getElementById('streamList');
+      if(list.querySelector('p')) list.innerHTML = '';
 
-    function setupCardEvents(card) { /* 前のと同じ */ }
+      const tmpl = templates[type];
+      const div = document.createElement('div');
+      div.className = `card type-${type}`;
+      div.dataset.type = type;
+        
+      if(type === 'separator') {
+        div.innerHTML = `
+          <span class="card-label">${tmpl.label}</span>
+          <textarea style="display:none;">${tmpl.value}</textarea>
+          <div class="drag-handle"></div>
+          <span class="remove-btn">×</span>
+        `;
+      } else {
+        div.innerHTML = `
+          <span class="card-label">${tmpl.label}</span>
+          <textarea rows="${tmpl.rows}" placeholder="${tmpl.placeholder}">${initialValue || ''}</textarea>
+          <div class="drag-handle"></div>
+          <span class="remove-btn">×</span>
+        `;
+      }
+      
+      list.appendChild(div);
+      setupCardEvents(div);
+      div.scrollIntoView({ behavior: "smooth", block: "end" });
+      saveToLocal();
+    }
 
-    // ─────── 新機能：テンプレート保存 ───────
+    function setupCardEvents(card) {
+      card.querySelector('.remove-btn').onclick = function() {
+        if(confirm("Delete this block?")) {
+            card.remove();
+            saveToLocal();
+        }
+      };
+      const ta = card.querySelector('textarea');
+      if(ta && ta.style.display !== 'none') {
+        ta.addEventListener('input', function() {
+          this.style.height = 'auto';
+          this.style.height = (this.scrollHeight) + 'px';
+          saveToLocal(); // 文字入力ごとに保存
+        });
+        setTimeout(() => ta.dispatchEvent(new Event('input')), 0);
+      }
+    }
+
+    // --- テンプレート機能 ---
+
+    function openTemplateModal() {
+      const modal = document.getElementById('templateModal');
+      const list = document.getElementById('templateList');
+      list.innerHTML = '';
+
+      const saved = JSON.parse(localStorage.getItem('promptTemplates_v2') || '{}');
+      
+      if(Object.keys(saved).length === 0) {
+        list.innerHTML = '<p style="text-align:center;color:#555;font-size:12px;">NO DATA ARCHIVED</p>';
+      } else {
+        Object.keys(saved).forEach(name => {
+          const item = document.createElement('div');
+          item.className = 'template-item';
+          item.innerHTML = `
+            <span>${name}</span>
+            <div class="template-actions">
+              <button class="btn-load" onclick="loadTemplate('${name}')">LOAD</button>
+              <button class="btn-del" onclick="deleteTemplate('${name}')">DEL</button>
+            </div>
+          `;
+          list.appendChild(item);
+        });
+      }
+      modal.style.display = 'flex';
+    }
+
     function saveCurrentAsTemplate() {
-      const name = prompt("テンプレート名を付けてね♡\n（例：晶太・媚薬花魁モード）", "");
+      const name = prompt("TEMPLATE NAME:", "");
       if (!name) return;
 
       const data = [];
@@ -110,69 +350,83 @@
         });
       });
 
+      if(data.length === 0) {
+        alert("Board is empty!");
+        return;
+      }
+
       const saved = JSON.parse(localStorage.getItem('promptTemplates_v2') || '{}');
       saved[name] = data;
       localStorage.setItem('promptTemplates_v2', JSON.stringify(saved));
-      alert(`「${name}」を保存したよ！`);
-    }
-
-    // ─────── テンプレート読み込みモーダル ───────
-    function openTemplateModal() {
-      const modal = document.getElementById('templateModal');
-      const list = document.getElementById('templateList');
-      list.innerHTML = '';
-
-      const saved = JSON.parse(localStorage.getItem('promptTemplates_v2') || '{}');
-      if (Object.keys(saved).length === 0) {
-        list.innerHTML = '<p style="text-align:center;color:#555;">まだテンプレートがないよ～</p>';
-      }
-
-      Object.keys(saved).forEach(name => {
-        const item = document.createElement('div');
-        item.className = 'template-item';
-        item.innerHTML = `
-          <span>${name}</span>
-          <span>
-            <button onclick="loadTemplate('${name}')" style="background:var(--primary);color:#000;padding:4px 12px;border:none;border-radius:4px;">LOAD</button>
-            <span class="delete-tmpl" onclick="deleteTemplate('${name}', event)">×</span>
-          </span>
-        `;
-        list.appendChild(item);
-      });
-
-      modal.style.display = 'flex';
+      
+      alert(`ARCHIVED: [${name}]`);
+      openTemplateModal(); // リスト更新
     }
 
     window.loadTemplate = function(name) {
-      if (!confirm(`「${name}」を読み込みますか？\n現在の内容は消えます`)) return;
+      if (!confirm(`Overwrite board with [${name}]?`)) return;
 
       const saved = JSON.parse(localStorage.getItem('promptTemplates_v2') || '{}');
       const data = saved[name];
       document.getElementById('streamList').innerHTML = '';
       data.forEach(block => addNewCard(block.type, block.text));
       document.getElementById('templateModal').style.display = 'none';
+      saveToLocal();
     };
 
-    window.deleteTemplate = function(name, e) {
-      e.stopPropagation();
-      if (confirm(`「${name}」を削除する？`)) {
+    window.deleteTemplate = function(name) {
+      if (confirm(`Delete [${name}] permanently?`)) {
         const saved = JSON.parse(localStorage.getItem('promptTemplates_v2') || '{}');
         delete saved[name];
         localStorage.setItem('promptTemplates_v2', JSON.stringify(saved));
-        openTemplateModal(); // 再描画
+        openTemplateModal(); // リスト更新
       }
     };
 
-    // 既存の exportText, saveToLocal, clearBoard, onload などは全部そのまま残してOK！
-    // （saveToLocalは今のボードの自動保存、テンプレートは別枠で永遠保存）
+    // --- 基本機能 ---
 
-    // ページ読み込み時に自動保存ボードも復元
+    function exportText() {
+      const cards = document.querySelectorAll('#streamList .card textarea');
+      let text = "";
+      cards.forEach(ta => {
+        const val = ta.value.trim();
+        if (val) text += val + "\n\n";
+      });
+      if (!text) return;
+      navigator.clipboard.writeText(text);
+      const btn = document.getElementById('exportBtn');
+      const originalText = btn.innerText;
+      btn.innerText = "OK!";
+      setTimeout(() => btn.innerText = originalText, 1500);
+    }
+
+    function saveToLocal() {
+      const data = [];
+      document.querySelectorAll('#streamList .card').forEach(card => {
+        const textarea = card.querySelector('textarea');
+        data.push({
+          type: card.dataset.type,
+          text: textarea ? textarea.value : '***'
+        });
+      });
+      localStorage.setItem('promptStreamMobile', JSON.stringify(data));
+    }
+
+    function clearBoard() {
+      if(confirm("CLEAR ALL?")) {
+        document.getElementById('streamList').innerHTML = '<p style="text-align:center; color:var(--border-color); font-size:12px; margin-top:50px;">TAP BUTTONS TO ADD BLOCKS</p>';
+        saveToLocal();
+      }
+    }
+
     window.onload = function() {
-      const auto = localStorage.getItem('promptStreamMobile');
-      if (auto) {
-        const data = JSON.parse(auto);
-        document.getElementById('streamList').innerHTML = '';
-        data.forEach(item => addNewCard(item.type, item.text));
+      const saved = localStorage.getItem('promptStreamMobile');
+      if (saved) {
+        const data = JSON.parse(saved);
+        if(data.length > 0) {
+            document.getElementById('streamList').innerHTML = '';
+            data.forEach(item => addNewCard(item.type, item.text));
+        }
       }
     };
   </script>
