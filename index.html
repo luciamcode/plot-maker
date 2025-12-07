@@ -411,29 +411,40 @@
       });
     }
 
-    // ★★★ 重要：姉妹アプリのパラメータを解釈する部分 ★★★
+        // ★★★ ここからコピーして、既存の window.loadCharacter を上書き ★★★
     window.loadCharacter = (name) => {
       const db = JSON.parse(localStorage.getItem('promptChars') || '{}');
       if(db[name]) {
         const entry = db[name];
-        let content = entry.text;
-        
-        // パラメータがある場合、テキスト化して挿入
-        if(entry.params) {
-          const p = entry.params;
-          const paramBlock = `[Character Settings]\n` +
-            ` - Rationality: ${p.p1}/100\n` +
-            ` - Emotion: ${p.p2}/100\n` +
-            ` - Aggression: ${p.p3}/100\n` +
-            ` - Affection: ${p.p4}/100\n` +
-            `-------------------\n`;
-          content = paramBlock + content;
+        let content = entry.text || ""; // Core Personality
+
+        // Cast & Memo (キャストとメモ)
+        // メモはプロンプトに含めない場合はこのブロックを削除してください
+        if(entry.cast && entry.cast.trim()) {
+           content = `(Cast Image: ${entry.cast})\n` + content;
         }
+        if(entry.memo && entry.memo.trim()) {
+           content = `(Memo: ${entry.memo})\n` + content;
+        }
+
+        // Dialogue Samples (セリフサンプル)
+        if(entry.dialogue && entry.dialogue.trim()) {
+           content += `\n\n[Dialogue Samples]\n${entry.dialogue}`;
+        }
+
+        // 3 Layer Info (明示・暗示・秘匿)
+        if(entry.explicit && entry.explicit.trim()) content += `\n\nexplicit info（明示）: ${entry.explicit}`;
+        if(entry.implicit && entry.implicit.trim()) content += `\n\nimplicit info（暗示）: ${entry.implicit}`;
+        if(entry.secret && entry.secret.trim())     content += `\n\nsecret info（秘匿）: ${entry.secret}`;
 
         addNewCard('char_def', content);
         document.getElementById('charModal').style.display = 'none';
       }
     };
+    // ★★★ ここまで ★★★
+
+    // すぐ下に window.deleteCharacter = ... が続きます
+
 
     window.deleteCharacter = (name) => { if(confirm(`Delete?`)){ const db = JSON.parse(localStorage.getItem('promptChars')||'{}'); delete db[name]; localStorage.setItem('promptChars', JSON.stringify(db)); renderCharList(); }};
 
