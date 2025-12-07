@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>PROMPT STREAM // MOBILE</title>
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Zen+Kaku+Gothic+New:wght@400;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+  <style>
+    :root {
+      --bg-color: #050505;
+      --palette-bg: #111518;
+      --stream-bg: #0e1215;
+      --card-bg: #161a1e;
+      --primary: #00f3ff;
+      --secondary: #ffaa00;
+      --accent: #ff0055;
+      --text-main: #cceeee;
+      --text-dim: #668888;
+      --border-color: #334444;
+      --header-height: 50px;
+    }
+    /* 以下、前のスタイル全部そのまま（省略しないで全部残してね！） */
+    /* ... さっきの超カッコいいスタイル全部ここにコピペ ... */
+    /* モーダル用追加スタイル */
+    .modal {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100dvh;
+      background: rgba(0,0,0,0.92); backdrop-filter: blur(10px);
+      display: none; align-items: center; justify-content: center; z-index: 999;
+    }
+    .modal-content {
+      background: var(--palette-bg); border: 1px solid var(--primary);
+      border-radius: 12px; padding: 20px; width: 90%; max-width: 420px; max-height: 80vh;
+      overflow-y: auto; box-shadow: 0 0 30px rgba(0,243,255,0.3);
+    }
+    .template-item {
+      background: var(--card-bg); padding: 14px; margin: 10px 0;
+      border-radius: 8px; border-left: 4px solid var(--secondary);
+      display: flex; justify-content: space-between; align-items: center;
+      cursor: pointer; transition: 0.2s;
+    }
+    .template-item:hover { border-left-color: var(--primary); transform: translateX(4px); }
+    .delete-tmpl { color: var(--accent); font-size: 20px; }
+  </style>
+</head>
+<body>
+  <!-- ヘッダーに2ボタン追加 -->
+  <header>
+    <h1>PROMPT STREAM<span>// TEMPLETED</span></h1>
+    <div class="actions">
+      <button onclick="openTemplateModal()" class="accent">TEMPLATES</button>
+      <button onclick="saveCurrentAsTemplate()" class="accent">SAVE AS</button>
+      <button onclick="clearBoard()" class="danger">CLR</button>
+      <button onclick="exportText()" id="exportBtn">COPY</button>
+    </div>
+  </header>
+
+  <!-- パレットはそのまま -->
+  <div class="palette">
+    <div class="add-btn" onclick="addNewCard('free')">Free Text<span>地の文・メモ</span></div>
+    <div class="add-btn btn-speech" onclick="addNewCard('speech')">Dialogue<span>会話「…」</span></div>
+    <div class="add-btn btn-char" onclick="addNewCard('char_def')">Char Def<span>[AI personality...]</span></div>
+    <div class="add-btn btn-system" onclick="addNewCard('system')">System<span>※注釈・指示</span></div>
+    <div class="add-btn btn-sep" onclick="addNewCard('separator')">--- SEP ---<span>区切り線</span></div>
+  </div>
+
+  <div class="stream-container">
+    <div id="streamList">
+      <p style="text-align:center;color:var(--border-color);margin-top:50px;">TAP BUTTONS OR TEMPLATES</p>
+    </div>
+  </div>
+
+  <!-- テンプレートモーダル -->
+  <div id="templateModal" class="modal">
+    <div class="modal-content">
+      <h2 style="text-align:center;color:var(--primary);margin:0 0 20px;">SAVED TEMPLATES</h2>
+      <div id="templateList"></div>
+      <button onclick="document.getElementById('templateModal').style.display='none'" 
+              style="width:100%;padding:12px;margin-top:20px;background:#ff0055;border:none;border-radius:8px;color:white;">
+        CLOSE
+      </button>
+    </div>
+  </div>
+
+  <script>
+    const streamSortable = new Sortable(document.getElementById('streamList'), {
+      animation: 180,
+      handle: '.drag-handle',
+      ghostClass: 'sortable-ghost',
+      dragClass: 'sortable-drag'
+    });
+
+    const templates = { /* 省略 */ }; // 前のと同じ
+
+    function addNewCard(type, initialValue = null) { /* 前のと同じ */ }
+
+    function setupCardEvents(card) { /* 前のと同じ */ }
+
+    // ─────── 新機能：テンプレート保存 ───────
+    function saveCurrentAsTemplate() {
+      const name = prompt("テンプレート名を付けてね♡\n（例：晶太・媚薬花魁モード）", "");
+      if (!name) return;
+
+      const data = [];
+      document.querySelectorAll('#streamList .card').forEach(card => {
+        const textarea = card.querySelector('textarea');
+        data.push({
+          type: card.dataset.type,
+          text: textarea ? textarea.value : '***'
+        });
+      });
+
+      const saved = JSON.parse(localStorage.getItem('promptTemplates_v2') || '{}');
+      saved[name] = data;
+      localStorage.setItem('promptTemplates_v2', JSON.stringify(saved));
+      alert(`「${name}」を保存したよ！`);
+    }
+
+    // ─────── テンプレート読み込みモーダル ───────
+    function openTemplateModal() {
+      const modal = document.getElementById('templateModal');
+      const list = document.getElementById('templateList');
+      list.innerHTML = '';
+
+      const saved = JSON.parse(localStorage.getItem('promptTemplates_v2') || '{}');
+      if (Object.keys(saved).length === 0) {
+        list.innerHTML = '<p style="text-align:center;color:#555;">まだテンプレートがないよ～</p>';
+      }
+
+      Object.keys(saved).forEach(name => {
+        const item = document.createElement('div');
+        item.className = 'template-item';
+        item.innerHTML = `
+          <span>${name}</span>
+          <span>
+            <button onclick="loadTemplate('${name}')" style="background:var(--primary);color:#000;padding:4px 12px;border:none;border-radius:4px;">LOAD</button>
+            <span class="delete-tmpl" onclick="deleteTemplate('${name}', event)">×</span>
+          </span>
+        `;
+        list.appendChild(item);
+      });
+
+      modal.style.display = 'flex';
+    }
+
+    window.loadTemplate = function(name) {
+      if (!confirm(`「${name}」を読み込みますか？\n現在の内容は消えます`)) return;
+
+      const saved = JSON.parse(localStorage.getItem('promptTemplates_v2') || '{}');
+      const data = saved[name];
+      document.getElementById('streamList').innerHTML = '';
+      data.forEach(block => addNewCard(block.type, block.text));
+      document.getElementById('templateModal').style.display = 'none';
+    };
+
+    window.deleteTemplate = function(name, e) {
+      e.stopPropagation();
+      if (confirm(`「${name}」を削除する？`)) {
+        const saved = JSON.parse(localStorage.getItem('promptTemplates_v2') || '{}');
+        delete saved[name];
+        localStorage.setItem('promptTemplates_v2', JSON.stringify(saved));
+        openTemplateModal(); // 再描画
+      }
+    };
+
+    // 既存の exportText, saveToLocal, clearBoard, onload などは全部そのまま残してOK！
+    // （saveToLocalは今のボードの自動保存、テンプレートは別枠で永遠保存）
+
+    // ページ読み込み時に自動保存ボードも復元
+    window.onload = function() {
+      const auto = localStorage.getItem('promptStreamMobile');
+      if (auto) {
+        const data = JSON.parse(auto);
+        document.getElementById('streamList').innerHTML = '';
+        data.forEach(item => addNewCard(item.type, item.text));
+      }
+    };
+  </script>
+</body>
+</html>
