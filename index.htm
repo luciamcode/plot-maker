@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>PROMPT STREAM // CHAR_MGR</title>
+  <title>PROMPT STREAM // INLINE_MASTER</title>
   <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600&family=Share+Tech+Mono&family=Zen+Kaku+Gothic+New:wght@400;700&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
   <style>
@@ -16,7 +16,8 @@
       --secondary: #ffaa00;
       --accent: #ff0055;
       --code-color: #00ff99;
-      --char-color: #ff00cc; /* キャラクター用カラー */
+      --char-color: #ff00cc;
+      --part-color: #bd00ff; /* パーツ用カラー */
       --text-main: #cceeee;
       --text-dim: #668888;
       --border-color: #334444;
@@ -52,28 +53,18 @@
       font-size: 16px; color: var(--text-main); margin: 0; letter-spacing: 1px;
       white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 30%;
     }
-    h1 span { font-size: 10px; color: var(--text-dim); }
-
-    /* アクションボタン群 */
+    
     .actions { display: flex; gap: 6px; }
     .actions button {
-      background: transparent;
-      border: 1px solid var(--border-color);
-      color: var(--primary);
-      padding: 6px 8px;
-      font-family: 'Share Tech Mono';
-      cursor: pointer; font-size: 11px; transition: 0.2s;
-      border-radius: 4px;
-      min-width: 40px;
+      background: transparent; border: 1px solid var(--border-color); color: var(--primary);
+      padding: 6px 8px; font-family: 'Share Tech Mono'; cursor: pointer; font-size: 11px;
+      border-radius: 4px; min-width: 40px;
     }
     .actions button:active { background: var(--primary); color: #000; }
-    
     .actions button.btn-char-mgr { border-color: var(--char-color); color: var(--char-color); }
     .actions button.btn-char-mgr:active { background: var(--char-color); color: #fff; }
-    
     .actions button.accent { border-color: var(--secondary); color: var(--secondary); }
     .actions button.accent:active { background: var(--secondary); color: #000; }
-    
     .actions button.danger { border-color: var(--accent); color: var(--accent); }
     .actions button.danger:active { background: var(--accent); color: #000; }
 
@@ -91,25 +82,21 @@
 
     .add-btn {
       flex: 0 0 auto;
-      background: #000;
-      border: 1px solid var(--border-color);
-      border-left: 3px solid #555;
-      color: var(--text-main);
-      padding: 8px 10px;
-      font-size: 12px;
-      border-radius: 4px;
-      cursor: pointer;
-      display: flex; flex-direction: column; align-items: flex-start;
+      background: #000; border: 1px solid var(--border-color); border-left: 3px solid #555;
+      color: var(--text-main); padding: 8px 10px; font-size: 12px; border-radius: 4px;
+      cursor: pointer; display: flex; flex-direction: column; align-items: flex-start;
       min-width: 80px;
     }
     .add-btn:active { transform: scale(0.95); background: rgba(255,255,255,0.1); }
     .add-btn span { font-size: 9px; color: var(--text-dim); margin-top: 2px; }
     
-    /* ボタン色分け */
-    .btn-wild { 
-      border-color: #fff; border-style: dashed; background: #222; 
-      align-items: center; justify-content: center; min-width: 60px;
+    /* インラインボタン */
+    .btn-inline {
+      border-color: #fff; border-style: dashed; background: #222;
+      align-items: center; justify-content: center; min-width: 50px;
     }
+    .btn-part { border-color: var(--part-color); color: var(--part-color); border-style: dotted; }
+
     .btn-speech { border-left-color: var(--primary); }
     .btn-char { border-left-color: var(--char-color); }
     .btn-code { border-left-color: var(--code-color); }
@@ -117,20 +104,13 @@
 
     /* メインエリア */
     .stream-container {
-      flex: 1;
-      background: var(--stream-bg);
-      padding: 15px 10px;
-      overflow-y: auto;
-      -webkit-overflow-scrolling: touch;
+      flex: 1; background: var(--stream-bg); padding: 15px 10px;
+      overflow-y: auto; -webkit-overflow-scrolling: touch;
     }
 
-    /* カードデザイン */
     .card {
-      background: var(--card-bg);
-      border: 1px solid var(--border-color);
-      border-left: 3px solid var(--text-dim);
-      margin-bottom: 12px; padding: 12px;
-      position: relative; border-radius: 4px;
+      background: var(--card-bg); border: 1px solid var(--border-color); border-left: 3px solid var(--text-dim);
+      margin-bottom: 12px; padding: 12px; position: relative; border-radius: 4px;
     }
     .drag-handle {
       position: absolute; top: 0; right: 30px; bottom: 0; width: 30px;
@@ -138,58 +118,43 @@
       color: var(--border-color); font-size: 20px; touch-action: none;
     }
     .drag-handle::after { content: '≡'; }
-    
     .card-label { font-size: 10px; color: var(--secondary); margin-bottom: 4px; text-transform: uppercase; display: block; opacity: 0.7; }
-    
     .card textarea {
-      width: 100%; padding-right: 30px;
-      background: transparent; border: none;
-      color: var(--text-main); resize: none;
-      font-family: 'Zen Kaku Gothic New', monospace;
-      font-size: 15px; line-height: 1.5; outline: none;
-      min-height: 40px; max-height: 300px;
+      width: 100%; padding-right: 30px; background: transparent; border: none;
+      color: var(--text-main); resize: none; font-family: 'Zen Kaku Gothic New', monospace;
+      font-size: 15px; line-height: 1.5; outline: none; min-height: 40px; max-height: 300px;
     }
     
-    /* カードタイプ別スタイル */
     .type-speech { border-left-color: var(--primary); }
     .type-char { border-left-color: var(--char-color); background: #1a0f15; }
     .type-code { border-left-color: var(--code-color); background: #080a0c; }
     .type-code textarea { font-family: 'Fira Code', monospace; color: var(--code-color); font-size: 13px; }
-    
     .remove-btn {
-      position: absolute; top: 2px; right: 2px;
-      color: var(--text-dim); cursor: pointer;
+      position: absolute; top: 2px; right: 2px; color: var(--text-dim); cursor: pointer;
       font-size: 24px; width: 30px; height: 30px;
       display: flex; align-items: center; justify-content: center; z-index: 2;
     }
 
-    /* モーダル共通 */
+    /* モーダル */
     .modal-overlay {
       position: fixed; top: 0; left: 0; width: 100%; height: 100%;
       background: rgba(0,0,0,0.9); backdrop-filter: blur(5px);
-      z-index: 999; display: none;
-      align-items: center; justify-content: center;
+      z-index: 999; display: none; align-items: center; justify-content: center;
     }
     .modal-content {
       background: #111518; border: 1px solid var(--secondary);
-      width: 90%; max-width: 450px; max-height: 85vh;
-      border-radius: 12px; display: flex; flex-direction: column;
-      box-shadow: 0 0 30px rgba(0,0,0,0.5);
+      width: 90%; max-width: 450px; max-height: 85vh; border-radius: 12px;
+      display: flex; flex-direction: column; box-shadow: 0 0 30px rgba(0,0,0,0.5);
     }
     .modal-header {
       padding: 15px; border-bottom: 1px solid var(--border-color);
       display: flex; justify-content: space-between; align-items: center;
-      background: rgba(255, 255, 255, 0.05);
-      color: var(--text-main); font-weight: bold; font-size: 14px;
+      background: rgba(255, 255, 255, 0.05); color: var(--text-main); font-weight: bold; font-size: 14px;
     }
     .modal-body { padding: 15px; overflow-y: auto; }
 
-    /* フィルターとリスト */
-    .tag-filter {
-      width: 100%; padding: 10px; background: #000; color: #fff;
-      border: 1px solid var(--border-color); margin-bottom: 15px;
-      font-family: 'Share Tech Mono';
-    }
+    /* リストアイテム */
+    .tag-filter { width: 100%; padding: 10px; background: #000; color: #fff; border: 1px solid var(--border-color); margin-bottom: 15px; }
     .list-item {
       background: var(--card-bg); border: 1px solid var(--border-color);
       padding: 12px; margin-bottom: 10px; border-radius: 6px;
@@ -205,22 +170,33 @@
     .btn-load { background: var(--primary); color: #000; }
     .btn-del { background: transparent; border: 1px solid var(--accent); color: var(--accent); }
 
-    /* モーダルごとのアクセントカラー上書き */
+    /* 各モーダル用色設定 */
     #charModal .modal-content { border-color: var(--char-color); }
     #charModal .btn-load { background: var(--char-color); color: #fff; }
-    #charModal .list-tag { color: var(--char-color); background: rgba(255,0,204,0.1); }
     
-    .btn-save-new {
-      width: 100%; padding: 12px; margin-bottom: 20px;
-      border: none; border-radius: 6px; font-weight: bold; cursor: pointer;
+    #partModal .modal-content { border-color: var(--part-color); }
+    #partModal .list-name { color: var(--part-color); font-family: monospace; }
+    #partModal .btn-load { background: var(--part-color); color: #fff; }
+
+    .btn-save-new { width: 100%; padding: 12px; margin-bottom: 20px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; }
+
+    /* Part Chip (インラインパーツ用) */
+    .part-chip {
+      display: inline-block; padding: 8px 12px; margin: 4px;
+      background: rgba(189, 0, 255, 0.1); border: 1px solid var(--part-color);
+      color: var(--part-color); border-radius: 20px; font-family: monospace; font-size: 13px;
+      cursor: pointer; transition: 0.2s;
     }
+    .part-chip:active { background: var(--part-color); color: #fff; }
+    .part-chip .del { font-weight: bold; margin-left: 8px; color: var(--accent); opacity: 0.7; }
+    .part-container { display: flex; flex-wrap: wrap; gap: 5px; }
 
   </style>
 </head>
 <body>
 
   <header>
-    <h1>PROMPT<span>v4</span></h1>
+    <h1>PROMPT<span>v5</span></h1>
     <div class="actions">
       <button onclick="clearBoard()" class="danger">CLR</button>
       <button onclick="openCharModal()" class="btn-char-mgr">CHARS</button>
@@ -230,16 +206,15 @@
   </header>
 
   <div class="palette">
-    <div class="add-btn btn-wild" onmousedown="insertWildcard(event)">
-      [ **** ]<span>INLINE</span>
-    </div>
+    <div class="add-btn btn-inline" onmousedown="insertWildcard(event)">****<span>WILD</span></div>
+    <div class="add-btn btn-inline" onmousedown="insertBracket(event)">[ ]<span>BRA</span></div>
+    <div class="add-btn btn-inline btn-part" onmousedown="openPartModal(event)">WORDS<span>PARTS</span></div>
 
-    <div class="add-btn btn-speech" onclick="addNewCard('speech')">Dialogue<span>会話「…」</span></div>
-    <div class="add-btn btn-char" onclick="addNewCard('char_def')">Character<span>人格定義</span></div>
-    <div class="add-btn btn-code" onclick="addNewCard('code')">Code/Logic<span>if/dim</span></div>
-    <div class="add-btn" onclick="addNewCard('free')">Free Text<span>メモ・地文</span></div>
-    
-    <div class="add-btn btn-snip" onclick="openSnippetModal()">Snippet<span>VBA保存</span></div>
+    <div class="add-btn btn-speech" onclick="addNewCard('speech')">Dialogue<span>会話</span></div>
+    <div class="add-btn btn-char" onclick="addNewCard('char_def')">Character<span>人格</span></div>
+    <div class="add-btn btn-code" onclick="addNewCard('code')">Code<span>ロジック</span></div>
+    <div class="add-btn" onclick="addNewCard('free')">Text<span>地文</span></div>
+    <div class="add-btn btn-snip" onclick="openSnippetModal()">Snippet<span>VBA</span></div>
   </div>
 
   <div class="stream-container">
@@ -257,24 +232,35 @@
         <span onclick="document.getElementById('charModal').style.display='none'" style="cursor:pointer; font-size:20px;">×</span>
       </div>
       <div class="modal-body">
-        
         <div style="border-bottom:1px solid #333; margin-bottom:15px; padding-bottom:15px;">
-           <input type="text" id="newCharName" placeholder="Name (e.g. 艶冶)" style="width:100%; padding:8px; margin-bottom:5px; background:#000; border:1px solid #333; color:#fff;">
-           <input type="text" id="newCharTag" placeholder="Project Tag (e.g. 妖譚)" style="width:100%; padding:8px; margin-bottom:5px; background:#000; border:1px solid #333; color:#fff;">
+           <input type="text" id="newCharName" placeholder="Name" style="width:100%; padding:8px; margin-bottom:5px; background:#000; border:1px solid #333; color:#fff;">
+           <input type="text" id="newCharTag" placeholder="Tag (Project)" style="width:100%; padding:8px; margin-bottom:5px; background:#000; border:1px solid #333; color:#fff;">
            <textarea id="newCharText" rows="3" placeholder="[AI personality...]" style="width:100%; padding:8px; margin-bottom:5px; background:#000; border:1px solid #333; color:#fff; font-family:monospace;"></textarea>
-           <button class="btn-save-new" style="background:var(--char-color); color:#fff; margin-bottom:0;" onclick="saveCharacter()">SAVE TO LIBRARY</button>
+           <button class="btn-save-new" style="background:var(--char-color); color:#fff; margin:0;" onclick="saveCharacter()">SAVE</button>
         </div>
-
-        <h3 style="font-size:12px; color:var(--text-dim); margin:5px 0;">FILTER CHARACTERS</h3>
-        <select id="charTagFilter" class="tag-filter" onchange="renderCharList()">
-          <option value="ALL">ALL TAGS</option>
-        </select>
-        
+        <select id="charTagFilter" class="tag-filter" onchange="renderCharList()"><option value="ALL">ALL TAGS</option></select>
         <div id="charList"></div>
       </div>
     </div>
   </div>
 
+  <div id="partModal" class="modal-overlay">
+    <div class="modal-content">
+      <div class="modal-header" style="color:var(--part-color);">
+        INLINE PARTS LIBRARY
+        <span onclick="document.getElementById('partModal').style.display='none'" style="cursor:pointer; font-size:20px;">×</span>
+      </div>
+      <div class="modal-body">
+        <p style="font-size:11px; color:#777; margin-top:0;">Tap to insert at cursor.</p>
+        <div id="partList" class="part-container"></div>
+        
+        <div style="border-top:1px solid #333; margin-top:20px; padding-top:15px;">
+           <input type="text" id="newPartText" placeholder="New Part (e.g. location: )" style="width:70%; padding:10px; background:#000; border:1px solid var(--part-color); color:var(--part-color); font-family:monospace;">
+           <button style="width:25%; padding:10px; background:var(--part-color); border:none; color:#fff; font-weight:bold; cursor:pointer;" onclick="savePart()">ADD</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <div id="projectModal" class="modal-overlay">
     <div class="modal-content">
@@ -283,15 +269,8 @@
         <span onclick="document.getElementById('projectModal').style.display='none'" style="cursor:pointer; font-size:20px;">×</span>
       </div>
       <div class="modal-body">
-        <button class="btn-save-new" style="background:var(--secondary); color:#000;" onclick="saveCurrentBoard()">
-          + SAVE CURRENT BOARD
-        </button>
-
-        <h3 style="font-size:12px; color:var(--text-dim); margin:5px 0;">FILTER PROJECTS</h3>
-        <select id="projTagFilter" class="tag-filter" onchange="renderProjectList()">
-          <option value="ALL">ALL TAGS</option>
-        </select>
-        
+        <button class="btn-save-new" style="background:var(--secondary); color:#000;" onclick="saveCurrentBoard()">+ SAVE BOARD</button>
+        <select id="projTagFilter" class="tag-filter" onchange="renderProjectList()"><option value="ALL">ALL TAGS</option></select>
         <div id="projectList"></div>
       </div>
     </div>
@@ -305,28 +284,24 @@
       </div>
       <div class="modal-body">
         <div id="snippetList"></div>
-        
         <div style="border-top:1px solid #333; margin-top:15px; padding-top:15px;">
-           <input type="text" id="newSnipName" placeholder="Snippet Name" style="width:100%; padding:8px; margin-bottom:5px; background:#000; border:1px solid #333; color:var(--code-color);">
-           <textarea id="newSnipContent" rows="3" placeholder="Code content..." style="width:100%; padding:8px; margin-bottom:5px; background:#000; border:1px solid #333; color:var(--code-color); font-family:'Fira Code';"></textarea>
-           <button class="btn-save-new" style="background:var(--code-color); color:#000; margin:0;" onclick="saveSnippet()">ADD SNIPPET</button>
+           <input type="text" id="newSnipName" placeholder="Name" style="width:100%; padding:8px; margin-bottom:5px; background:#000; border:1px solid #333; color:var(--code-color);">
+           <textarea id="newSnipContent" rows="3" placeholder="Code..." style="width:100%; padding:8px; margin-bottom:5px; background:#000; border:1px solid #333; color:var(--code-color); font-family:'Fira Code';"></textarea>
+           <button class="btn-save-new" style="background:var(--code-color); color:#000; margin:0;" onclick="saveSnippet()">ADD</button>
         </div>
       </div>
     </div>
   </div>
 
-
   <script>
-    // 最後にフォーカスがあったテキストエリアを記憶
     let lastFocusedTextarea = null;
 
-    // Sortable設定
-    const streamSortable = new Sortable(document.getElementById('streamList'), {
+    // Sortable
+    new Sortable(document.getElementById('streamList'), {
       animation: 150, handle: '.drag-handle', ghostClass: 'sortable-ghost', dragClass: 'sortable-drag',
-      onEnd: function() { saveToLocal(); }
+      onEnd: () => saveToLocal()
     });
 
-    // カード追加機能
     const templates = {
       speech: { label: 'Dialogue', placeholder: '「……」', rows: 2 },
       char_def: { label: 'Character', placeholder: '[AI personality: Name...]', rows: 6 },
@@ -337,345 +312,226 @@
     function addNewCard(type, initialValue = null) {
       const list = document.getElementById('streamList');
       if(list.querySelector('p')) list.innerHTML = '';
-
       const tmpl = templates[type];
       const div = document.createElement('div');
       div.className = `card type-${type}`;
       div.dataset.type = type;
-      
-      const val = initialValue !== null ? initialValue : '';
-      
       div.innerHTML = `
         <span class="card-label">${tmpl.label}</span>
-        <textarea rows="${tmpl.rows}" placeholder="${tmpl.placeholder}">${val}</textarea>
-        <div class="drag-handle"></div>
-        <span class="remove-btn">×</span>
+        <textarea rows="${tmpl.rows}" placeholder="${tmpl.placeholder}">${initialValue !== null ? initialValue : ''}</textarea>
+        <div class="drag-handle"></div><span class="remove-btn">×</span>
       `;
-      
       list.appendChild(div);
       setupCardEvents(div);
-      
-      // 自動スクロール
       div.scrollIntoView({ behavior: "smooth", block: "end" });
       saveToLocal();
-
-      // 追加されたテキストエリアにフォーカスし、記憶する
       const ta = div.querySelector('textarea');
       ta.focus(); 
       lastFocusedTextarea = ta;
     }
 
     function setupCardEvents(card) {
-      // 削除
       card.querySelector('.remove-btn').onclick = function() {
         if(confirm("Delete block?")) { card.remove(); saveToLocal(); }
       };
-      
       const ta = card.querySelector('textarea');
       if(ta) {
-        // 高さ自動調整
         ta.addEventListener('input', function() {
-          this.style.height = 'auto';
-          this.style.height = (this.scrollHeight) + 'px';
-          saveToLocal();
+          this.style.height = 'auto'; this.style.height = (this.scrollHeight) + 'px'; saveToLocal();
         });
-        
-        // フォーカス追跡（ワイルドカード挿入用）
-        ta.addEventListener('focus', function(e) {
-          lastFocusedTextarea = e.target;
-        });
-
-        // 初期高さ
+        ta.addEventListener('focus', function(e) { lastFocusedTextarea = e.target; });
         setTimeout(() => ta.dispatchEvent(new Event('input')), 0);
       }
     }
 
-    // ─────── ワイルドカード挿入機能 (Inline) ───────
-    function insertWildcard(e) {
-      // ボタンクリックでフォーカスが外れるのを防ぐ
-      e.preventDefault(); 
+    // ─────── インライン挿入機能 ───────
+    
+    // カーソル位置への文字列挿入ヘルパー
+    function insertAtCursor(textToInsert, wrap = false) {
+      if (!lastFocusedTextarea) { alert("Select a text area first!"); return; }
+      const field = lastFocusedTextarea;
+      const startPos = field.selectionStart;
+      const endPos = field.selectionEnd;
+      const originalText = field.value;
+      const selectedText = originalText.substring(startPos, endPos);
 
-      if (lastFocusedTextarea) {
-        const field = lastFocusedTextarea;
-        const startPos = field.selectionStart;
-        const endPos = field.selectionEnd;
-        const text = field.value;
-        const insertStr = "****";
+      let newText = "";
+      let newCursorPos = 0;
 
-        // カーソル位置に挿入
-        field.value = text.substring(0, startPos) + insertStr + text.substring(endPos);
-        
-        // カーソル位置を進める
-        field.selectionStart = field.selectionEnd = startPos + insertStr.length;
-        
-        // inputイベント発火（高さ調整・保存のため）
-        field.dispatchEvent(new Event('input'));
+      if (wrap) {
+        // [ ] のように囲む処理
+        // textToInsertは配列 [prefix, suffix] を想定
+        newText = originalText.substring(0, startPos) + textToInsert[0] + selectedText + textToInsert[1] + originalText.substring(endPos);
+        // 選択されていた文字がある場合は囲んだ後ろに、なければ括弧の中にカーソル
+        newCursorPos = selectedText.length > 0 ? startPos + textToInsert[0].length + selectedText.length + textToInsert[1].length : startPos + textToInsert[0].length;
       } else {
-        // フォーカスがない場合は新規カードを作って挿入してもいいが、今回はアラート
-        alert("Select a text area first!");
+        // 通常挿入
+        newText = originalText.substring(0, startPos) + textToInsert + originalText.substring(endPos);
+        newCursorPos = startPos + textToInsert.length;
       }
+
+      field.value = newText;
+      field.selectionStart = field.selectionEnd = newCursorPos;
+      field.dispatchEvent(new Event('input'));
+      field.focus();
     }
 
-    // ─────── 1. キャラクター管理 (Preset) ───────
-    function openCharModal() {
-      renderCharList();
-      document.getElementById('charModal').style.display = 'flex';
+    function insertWildcard(e) { e.preventDefault(); insertAtCursor("****"); }
+
+    function insertBracket(e) {
+      e.preventDefault();
+      // [] で囲む
+      insertAtCursor(["[", "]"], true); 
     }
 
+    // ─────── カスタムパーツ (WORDS) 管理 ───────
+    
+    function openPartModal(e) {
+      e.preventDefault(); // フォーカス維持
+      renderPartList();
+      document.getElementById('partModal').style.display = 'flex';
+    }
+
+    function savePart() {
+      const text = document.getElementById('newPartText').value;
+      if(!text) return;
+      const parts = JSON.parse(localStorage.getItem('promptInlineParts') || '[]');
+      parts.push(text);
+      localStorage.setItem('promptInlineParts', JSON.stringify(parts));
+      document.getElementById('newPartText').value = '';
+      renderPartList();
+    }
+
+    function renderPartList() {
+      const list = document.getElementById('partList');
+      const parts = JSON.parse(localStorage.getItem('promptInlineParts') || '[]');
+      list.innerHTML = '';
+      if(parts.length === 0) list.innerHTML = '<p style="color:#555; width:100%; text-align:center;">No parts registered.</p>';
+
+      parts.forEach((text, index) => {
+        const chip = document.createElement('div');
+        chip.className = 'part-chip';
+        chip.innerHTML = `${text} <span class="del" onclick="deletePart(${index}, event)">×</span>`;
+        // チップ本体クリックで挿入
+        chip.onclick = (e) => {
+           if(e.target.classList.contains('del')) return;
+           insertAtCursor(text);
+           document.getElementById('partModal').style.display = 'none';
+        };
+        list.appendChild(chip);
+      });
+    }
+
+    function deletePart(index, e) {
+      e.stopPropagation();
+      const parts = JSON.parse(localStorage.getItem('promptInlineParts') || '[]');
+      parts.splice(index, 1);
+      localStorage.setItem('promptInlineParts', JSON.stringify(parts));
+      renderPartList();
+    }
+
+
+    // ─────── キャラクター管理 ───────
+    function openCharModal() { renderCharList(); document.getElementById('charModal').style.display = 'flex'; }
     function saveCharacter() {
       const name = document.getElementById('newCharName').value;
       const tag = document.getElementById('newCharTag').value || "Uncategorized";
       const text = document.getElementById('newCharText').value;
-      
       if(!name || !text) return;
-
       const db = JSON.parse(localStorage.getItem('promptChars') || '{}');
       db[name] = { text: text, tag: tag };
       localStorage.setItem('promptChars', JSON.stringify(db));
-      
-      // フォームクリア
-      document.getElementById('newCharName').value = '';
-      document.getElementById('newCharText').value = '';
-      renderCharList();
+      document.getElementById('newCharName').value = ''; document.getElementById('newCharText').value = ''; renderCharList();
     }
-
     function renderCharList() {
-      const list = document.getElementById('charList');
-      const filter = document.getElementById('charTagFilter');
+      const list = document.getElementById('charList'); const filter = document.getElementById('charTagFilter');
       const db = JSON.parse(localStorage.getItem('promptChars') || '{}');
-      
-      // タグ収集
-      const tags = new Set(['ALL']);
-      Object.values(db).forEach(obj => tags.add(obj.tag));
-      
-      // プルダウン更新
-      const currentVal = filter.value;
-      filter.innerHTML = '';
-      tags.forEach(t => {
-        const opt = document.createElement('option');
-        opt.value = t; opt.innerText = t;
-        filter.appendChild(opt);
-      });
+      const tags = new Set(['ALL']); Object.values(db).forEach(obj => tags.add(obj.tag));
+      const currentVal = filter.value; filter.innerHTML = '';
+      tags.forEach(t => { const opt = document.createElement('option'); opt.value = t; opt.innerText = t; filter.appendChild(opt); });
       if(tags.has(currentVal)) filter.value = currentVal;
-
-      // リスト描画
-      list.innerHTML = '';
-      const selectedTag = filter.value;
-
+      list.innerHTML = ''; const selectedTag = filter.value;
       Object.keys(db).forEach(name => {
-        const entry = db[name];
-        if(selectedTag !== 'ALL' && entry.tag !== selectedTag) return;
-
-        const item = document.createElement('div');
-        item.className = 'list-item';
-        item.innerHTML = `
-          <div class="list-info">
-            <span class="list-tag">${entry.tag}</span>
-            <span class="list-name">${name}</span>
-          </div>
-          <div class="btn-group">
-            <button class="btn-sm btn-load" onclick="loadCharacter('${name}')">ADD</button>
-            <button class="btn-sm btn-del" onclick="deleteCharacter('${name}')">×</button>
-          </div>
-        `;
+        const entry = db[name]; if(selectedTag !== 'ALL' && entry.tag !== selectedTag) return;
+        const item = document.createElement('div'); item.className = 'list-item';
+        item.innerHTML = `<div class="list-info"><span class="list-tag">${entry.tag}</span><span class="list-name">${name}</span></div><div class="btn-group"><button class="btn-sm btn-load" onclick="loadCharacter('${name}')">ADD</button><button class="btn-sm btn-del" onclick="deleteCharacter('${name}')">×</button></div>`;
         list.appendChild(item);
       });
     }
-
-    window.loadCharacter = function(name) {
+    window.loadCharacter = (name) => {
       const db = JSON.parse(localStorage.getItem('promptChars') || '{}');
-      if(db[name]) {
-        addNewCard('char_def', db[name].text);
-        document.getElementById('charModal').style.display = 'none';
-      }
+      if(db[name]) { addNewCard('char_def', db[name].text); document.getElementById('charModal').style.display = 'none'; }
     };
-    
-    window.deleteCharacter = function(name) {
-      if(confirm(`Delete character [${name}]?`)) {
-        const db = JSON.parse(localStorage.getItem('promptChars') || '{}');
-        delete db[name];
-        localStorage.setItem('promptChars', JSON.stringify(db));
-        renderCharList();
-      }
-    };
+    window.deleteCharacter = (name) => { if(confirm(`Delete?`)){ const db = JSON.parse(localStorage.getItem('promptChars')||'{}'); delete db[name]; localStorage.setItem('promptChars', JSON.stringify(db)); renderCharList(); }};
 
-    // ─────── 2. プロジェクト管理 (Board Save) ───────
-    function openProjectModal() {
-      renderProjectList();
-      document.getElementById('projectModal').style.display = 'flex';
-    }
-
+    // ─────── プロジェクト管理 ───────
+    function openProjectModal() { renderProjectList(); document.getElementById('projectModal').style.display = 'flex'; }
     function saveCurrentBoard() {
-      const name = prompt("Project Name:", "");
-      if(!name) return;
-      const tag = prompt("Project Tag:", "Work");
-      const finalTag = tag || "Work";
-
-      const data = [];
-      document.querySelectorAll('#streamList .card').forEach(card => {
-        data.push({ type: card.dataset.type, text: card.querySelector('textarea').value });
-      });
-
+      const name = prompt("Project Name:", ""); if(!name) return;
+      const tag = prompt("Tag:", "Work") || "Work";
+      const data = []; document.querySelectorAll('#streamList .card').forEach(card => data.push({ type: card.dataset.type, text: card.querySelector('textarea').value }));
       const db = JSON.parse(localStorage.getItem('promptProjects') || '{}');
-      db[name] = { items: data, tag: finalTag };
-      localStorage.setItem('promptProjects', JSON.stringify(db));
-      renderProjectList();
+      db[name] = { items: data, tag: tag }; localStorage.setItem('promptProjects', JSON.stringify(db)); renderProjectList();
     }
-
     function renderProjectList() {
-      const list = document.getElementById('projectList');
-      const filter = document.getElementById('projTagFilter');
+      const list = document.getElementById('projectList'); const filter = document.getElementById('projTagFilter');
       const db = JSON.parse(localStorage.getItem('promptProjects') || '{}');
-      
-      const tags = new Set(['ALL']);
-      Object.values(db).forEach(obj => tags.add(obj.tag));
-      
-      const currentVal = filter.value;
-      filter.innerHTML = '';
-      tags.forEach(t => {
-        const opt = document.createElement('option');
-        opt.value = t; opt.innerText = t;
-        filter.appendChild(opt);
-      });
+      const tags = new Set(['ALL']); Object.values(db).forEach(obj => tags.add(obj.tag));
+      const currentVal = filter.value; filter.innerHTML = '';
+      tags.forEach(t => { const opt = document.createElement('option'); opt.value = t; opt.innerText = t; filter.appendChild(opt); });
       if(tags.has(currentVal)) filter.value = currentVal;
-
-      list.innerHTML = '';
-      const selectedTag = filter.value;
-
+      list.innerHTML = ''; const selectedTag = filter.value;
       Object.keys(db).forEach(name => {
-        const entry = db[name];
-        if(selectedTag !== 'ALL' && entry.tag !== selectedTag) return;
-
-        const item = document.createElement('div');
-        item.className = 'list-item';
-        item.innerHTML = `
-          <div class="list-info">
-            <span class="list-tag">${entry.tag}</span>
-            <span class="list-name">${name}</span>
-          </div>
-          <div class="btn-group">
-            <button class="btn-sm btn-load" onclick="loadProject('${name}')">LOAD</button>
-            <button class="btn-sm btn-del" onclick="deleteProject('${name}')">DEL</button>
-          </div>
-        `;
+        const entry = db[name]; if(selectedTag !== 'ALL' && entry.tag !== selectedTag) return;
+        const item = document.createElement('div'); item.className = 'list-item';
+        item.innerHTML = `<div class="list-info"><span class="list-tag">${entry.tag}</span><span class="list-name">${name}</span></div><div class="btn-group"><button class="btn-sm btn-load" onclick="loadProject('${name}')">LOAD</button><button class="btn-sm btn-del" onclick="deleteProject('${name}')">DEL</button></div>`;
         list.appendChild(item);
       });
     }
-
-    window.loadProject = function(name) {
-      if(!confirm(`Load [${name}]? (Unsaved changes will be lost)`)) return;
-      const db = JSON.parse(localStorage.getItem('promptProjects') || '{}');
-      document.getElementById('streamList').innerHTML = '';
-      db[name].items.forEach(item => addNewCard(item.type, item.text));
-      document.getElementById('projectModal').style.display = 'none';
-      saveToLocal();
+    window.loadProject = (name) => {
+      if(!confirm("Load project?")) return; const db = JSON.parse(localStorage.getItem('promptProjects')||'{}');
+      document.getElementById('streamList').innerHTML = ''; db[name].items.forEach(item => addNewCard(item.type, item.text));
+      document.getElementById('projectModal').style.display = 'none'; saveToLocal();
     };
+    window.deleteProject = (name) => { if(confirm("Delete?")){ const db = JSON.parse(localStorage.getItem('promptProjects')||'{}'); delete db[name]; localStorage.setItem('promptProjects', JSON.stringify(db)); renderProjectList(); }};
 
-    window.deleteProject = function(name) {
-      if(confirm(`Delete project [${name}]?`)) {
-        const db = JSON.parse(localStorage.getItem('promptProjects') || '{}');
-        delete db[name];
-        localStorage.setItem('promptProjects', JSON.stringify(db));
-        renderProjectList();
-      }
-    };
-
-
-    // ─────── 3. スニペット管理 (Code) ───────
-    function openSnippetModal() {
-      renderSnippetList();
-      document.getElementById('snippetModal').style.display = 'flex';
-    }
-    
+    // ─────── スニペット管理 ───────
+    function openSnippetModal() { renderSnippetList(); document.getElementById('snippetModal').style.display = 'flex'; }
     function saveSnippet() {
-      const name = document.getElementById('newSnipName').value;
-      const content = document.getElementById('newSnipContent').value;
+      const name = document.getElementById('newSnipName').value; const content = document.getElementById('newSnipContent').value;
       if(!name || !content) return;
-      
       const db = JSON.parse(localStorage.getItem('promptSnippets') || '{}');
-      db[name] = content;
-      localStorage.setItem('promptSnippets', JSON.stringify(db));
-      
-      document.getElementById('newSnipName').value = '';
-      document.getElementById('newSnipContent').value = '';
-      renderSnippetList();
+      db[name] = content; localStorage.setItem('promptSnippets', JSON.stringify(db));
+      document.getElementById('newSnipName').value=''; document.getElementById('newSnipContent').value=''; renderSnippetList();
     }
-
     function renderSnippetList() {
-      const list = document.getElementById('snippetList');
-      const db = JSON.parse(localStorage.getItem('promptSnippets') || '{}');
+      const list = document.getElementById('snippetList'); const db = JSON.parse(localStorage.getItem('promptSnippets') || '{}');
       list.innerHTML = '';
       Object.keys(db).forEach(name => {
-        const item = document.createElement('div');
-        item.className = 'list-item';
-        item.innerHTML = `
-          <div class="list-info">
-            <span class="list-name" style="color:var(--code-color);">${name}</span>
-            <span class="list-preview">${db[name]}</span>
-          </div>
-          <div class="btn-group">
-            <button class="btn-sm btn-load" style="background:var(--code-color);" onclick="insertSnippet('${name}')">ADD</button>
-            <button class="btn-sm btn-del" onclick="deleteSnippet('${name}')">×</button>
-          </div>
-        `;
+        const item = document.createElement('div'); item.className = 'list-item';
+        item.innerHTML = `<div class="list-info"><span class="list-name" style="color:var(--code-color);">${name}</span><span class="list-preview">${db[name]}</span></div><div class="btn-group"><button class="btn-sm btn-load" style="background:var(--code-color);" onclick="insertSnippet('${name}')">ADD</button><button class="btn-sm btn-del" onclick="deleteSnippet('${name}')">×</button></div>`;
         list.appendChild(item);
       });
     }
+    window.insertSnippet = (name) => { const db = JSON.parse(localStorage.getItem('promptSnippets')||'{}'); addNewCard('code', db[name]); document.getElementById('snippetModal').style.display = 'none'; };
+    window.deleteSnippet = (name) => { if(confirm("Delete?")){ const db = JSON.parse(localStorage.getItem('promptSnippets')||'{}'); delete db[name]; localStorage.setItem('promptSnippets', JSON.stringify(db)); renderSnippetList(); }};
 
-    window.insertSnippet = function(name) {
-      const db = JSON.parse(localStorage.getItem('promptSnippets') || '{}');
-      addNewCard('code', db[name]);
-      document.getElementById('snippetModal').style.display = 'none';
-    };
-
-    window.deleteSnippet = function(name) {
-      if(confirm(`Delete snippet [${name}]?`)) {
-        const db = JSON.parse(localStorage.getItem('promptSnippets') || '{}');
-        delete db[name];
-        localStorage.setItem('promptSnippets', JSON.stringify(db));
-        renderSnippetList();
-      }
-    };
-
-
-    // ─────── 共通 ───────
+    // 共通
     function exportText() {
-      const cards = document.querySelectorAll('#streamList .card textarea');
-      let text = "";
-      cards.forEach(ta => {
-        const val = ta.value.trim();
-        if(val) text += val + "\n\n";
-      });
-      navigator.clipboard.writeText(text);
-      const btn = document.getElementById('exportBtn');
-      btn.innerText = "OK!";
-      setTimeout(() => btn.innerText = "COPY", 1500);
+      const cards = document.querySelectorAll('#streamList .card textarea'); let text = "";
+      cards.forEach(ta => { const val = ta.value.trim(); if(val) text += val + "\n\n"; });
+      navigator.clipboard.writeText(text); const btn = document.getElementById('exportBtn'); btn.innerText = "OK!"; setTimeout(() => btn.innerText = "COPY", 1500);
     }
-
     function saveToLocal() {
-      const data = [];
-      document.querySelectorAll('#streamList .card').forEach(card => {
-        data.push({ type: card.dataset.type, text: card.querySelector('textarea').value });
-      });
+      const data = []; document.querySelectorAll('#streamList .card').forEach(card => data.push({ type: card.dataset.type, text: card.querySelector('textarea').value }));
       localStorage.setItem('promptStreamMobile', JSON.stringify(data));
     }
-
     function clearBoard() {
-      if(confirm("Clear all blocks?")) {
-        document.getElementById('streamList').innerHTML = '<p style="text-align:center; color:var(--border-color); font-size:12px; margin-top:50px;">TAP PALETTE TO START</p>';
-        saveToLocal();
-      }
+      if(confirm("Clear board?")) { document.getElementById('streamList').innerHTML = '<p style="text-align:center; color:var(--border-color); font-size:12px; margin-top:50px;">TAP PALETTE TO START</p>'; saveToLocal(); }
     }
-
     window.onload = function() {
       const saved = localStorage.getItem('promptStreamMobile');
-      if (saved) {
-        const data = JSON.parse(saved);
-        if(data.length > 0) {
-            document.getElementById('streamList').innerHTML = '';
-            data.forEach(item => addNewCard(item.type, item.text));
-        }
-      }
+      if (saved) { const data = JSON.parse(saved); if(data.length > 0) { document.getElementById('streamList').innerHTML = ''; data.forEach(item => addNewCard(item.type, item.text)); } }
     };
   </script>
 </body>
