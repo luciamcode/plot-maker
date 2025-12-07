@@ -411,15 +411,32 @@
       });
     }
 
-        // ★★★ ここからコピーして、既存の window.loadCharacter を上書き ★★★
+            // ★★★ 修正箇所：個別フィールドを組み立ててロードする ★★★
     window.loadCharacter = (name) => {
       const db = JSON.parse(localStorage.getItem('promptChars') || '{}');
       if(db[name]) {
         const entry = db[name];
-        let content = entry.text || ""; // Core Personality
+        
+        // --- Core Personality Assembly ---
+        // ここで指定フォーマットに組み上げます
+        // [AI personality: {Name}, role: {Role}, age/gender: {Age}, pronoun: {Pronoun}, addressing: {Addr}, memot: {Memot}, language: {Lang}, refinement: {Refine}]
+        
+        let coreText = `[AI personality: ${name}`;
+        if(entry.role) coreText += `, role: ${entry.role}`;
+        if(entry.age)  coreText += `, age/gender: ${entry.age}`;
+        if(entry.pronoun) coreText += `, pronoun: ${entry.pronoun}`;
+        if(entry.addressing) coreText += `, addressing: ${entry.addressing}`;
+        if(entry.memot) coreText += `, memot: ${entry.memot}`;
+        if(entry.language) coreText += `, language: ${entry.language}`;
+        if(entry.refinement) coreText += `, refinement: ${entry.refinement}`;
+        coreText += `]`;
+        
+        // もし古いデータなどで上記フィールドがなく、旧textがある場合はそれを使う
+        if(!entry.role && entry.text) coreText = entry.text;
 
-        // Cast & Memo (キャストとメモ)
-        // メモはプロンプトに含めない場合はこのブロックを削除してください
+        let content = coreText;
+
+        // --- Additional Info ---
         if(entry.cast && entry.cast.trim()) {
            content = `(Cast Image: ${entry.cast})\n` + content;
         }
@@ -427,12 +444,10 @@
            content = `(Memo: ${entry.memo})\n` + content;
         }
 
-        // Dialogue Samples (セリフサンプル)
         if(entry.dialogue && entry.dialogue.trim()) {
            content += `\n\n[Dialogue Samples]\n${entry.dialogue}`;
         }
 
-        // 3 Layer Info (明示・暗示・秘匿)
         if(entry.explicit && entry.explicit.trim()) content += `\n\nexplicit info（明示）: ${entry.explicit}`;
         if(entry.implicit && entry.implicit.trim()) content += `\n\nimplicit info（暗示）: ${entry.implicit}`;
         if(entry.secret && entry.secret.trim())     content += `\n\nsecret info（秘匿）: ${entry.secret}`;
@@ -441,7 +456,6 @@
         document.getElementById('charModal').style.display = 'none';
       }
     };
-    // ★★★ ここまで ★★★
 
     // すぐ下に window.deleteCharacter = ... が続きます
 
