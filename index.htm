@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>PROMPT STREAM // CODER</title>
+  <title>PROMPT STREAM // CHAR_MGR</title>
   <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600&family=Share+Tech+Mono&family=Zen+Kaku+Gothic+New:wght@400;700&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
   <style>
@@ -15,7 +15,8 @@
       --primary: #00f3ff;
       --secondary: #ffaa00;
       --accent: #ff0055;
-      --code-color: #00ff99; /* Matrix Green */
+      --code-color: #00ff99;
+      --char-color: #ff00cc; /* キャラクター用カラー */
       --text-main: #cceeee;
       --text-dim: #668888;
       --border-color: #334444;
@@ -42,19 +43,19 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 0 10px;
+      padding: 0 8px;
       background: rgba(11, 15, 18, 0.95);
       z-index: 10;
       flex-shrink: 0;
     }
     h1 {
-      font-size: 16px; color: var(--code-color); margin: 0; letter-spacing: 1px;
-      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      font-size: 16px; color: var(--text-main); margin: 0; letter-spacing: 1px;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 30%;
     }
-    h1 span { font-size: 10px; color: var(--text-dim); margin-left: 5px; }
+    h1 span { font-size: 10px; color: var(--text-dim); }
 
     /* アクションボタン群 */
-    .actions { display: flex; gap: 8px; }
+    .actions { display: flex; gap: 6px; }
     .actions button {
       background: transparent;
       border: 1px solid var(--border-color);
@@ -63,13 +64,16 @@
       font-family: 'Share Tech Mono';
       cursor: pointer; font-size: 11px; transition: 0.2s;
       border-radius: 4px;
-      min-width: 44px;
+      min-width: 40px;
     }
     .actions button:active { background: var(--primary); color: #000; }
-    .actions button.snip { border-color: var(--code-color); color: var(--code-color); }
-    .actions button.snip:active { background: var(--code-color); color: #000; }
+    
+    .actions button.btn-char-mgr { border-color: var(--char-color); color: var(--char-color); }
+    .actions button.btn-char-mgr:active { background: var(--char-color); color: #fff; }
+    
     .actions button.accent { border-color: var(--secondary); color: var(--secondary); }
     .actions button.accent:active { background: var(--secondary); color: #000; }
+    
     .actions button.danger { border-color: var(--accent); color: var(--accent); }
     .actions button.danger:active { background: var(--accent); color: #000; }
 
@@ -81,9 +85,9 @@
       display: flex; gap: 8px;
       overflow-x: auto; flex-shrink: 0;
       -webkit-overflow-scrolling: touch;
+      align-items: center;
     }
     .palette::-webkit-scrollbar { height: 2px; }
-    .palette::-webkit-scrollbar-thumb { background: var(--border-color); }
 
     .add-btn {
       flex: 0 0 auto;
@@ -98,13 +102,18 @@
       display: flex; flex-direction: column; align-items: flex-start;
       min-width: 80px;
     }
-    .add-btn:active { transform: scale(0.95); background: rgba(0,255,153,0.1); }
+    .add-btn:active { transform: scale(0.95); background: rgba(255,255,255,0.1); }
     .add-btn span { font-size: 9px; color: var(--text-dim); margin-top: 2px; }
     
+    /* ボタン色分け */
+    .btn-wild { 
+      border-color: #fff; border-style: dashed; background: #222; 
+      align-items: center; justify-content: center; min-width: 60px;
+    }
     .btn-speech { border-left-color: var(--primary); }
+    .btn-char { border-left-color: var(--char-color); }
     .btn-code { border-left-color: var(--code-color); }
-    .btn-wild { border-left-color: #fff; border-style: dashed; }
-    .btn-sep { border-left-color: #333; background: #222; }
+    .btn-snip { border-left-color: var(--secondary); border-style: dotted; }
 
     /* メインエリア */
     .stream-container {
@@ -129,7 +138,9 @@
       color: var(--border-color); font-size: 20px; touch-action: none;
     }
     .drag-handle::after { content: '≡'; }
+    
     .card-label { font-size: 10px; color: var(--secondary); margin-bottom: 4px; text-transform: uppercase; display: block; opacity: 0.7; }
+    
     .card textarea {
       width: 100%; padding-right: 30px;
       background: transparent; border: none;
@@ -138,13 +149,12 @@
       font-size: 15px; line-height: 1.5; outline: none;
       min-height: 40px; max-height: 300px;
     }
-    /* コード用スタイル */
-    .type-code textarea {
-      font-family: 'Fira Code', monospace;
-      color: var(--code-color);
-      font-size: 13px;
-      line-height: 1.4;
-    }
+    
+    /* カードタイプ別スタイル */
+    .type-speech { border-left-color: var(--primary); }
+    .type-char { border-left-color: var(--char-color); background: #1a0f15; }
+    .type-code { border-left-color: var(--code-color); background: #080a0c; }
+    .type-code textarea { font-family: 'Fira Code', monospace; color: var(--code-color); font-size: 13px; }
     
     .remove-btn {
       position: absolute; top: 2px; right: 2px;
@@ -152,16 +162,8 @@
       font-size: 24px; width: 30px; height: 30px;
       display: flex; align-items: center; justify-content: center; z-index: 2;
     }
-    
-    .sortable-ghost { opacity: 0.4; background: var(--code-color); }
-    .sortable-drag { opacity: 0.9; background: var(--card-bg); box-shadow: 0 5px 15px rgba(0,0,0,0.5); transform: scale(1.02); }
 
-    .type-speech { border-left-color: var(--primary); }
-    .type-code { border-left-color: var(--code-color); background: #080a0c; }
-    .type-wild { border-left-color: #fff; border-style: dashed; }
-    .type-separator { border:none; background: #000; padding: 5px; text-align: center; }
-
-    /* モーダル */
+    /* モーダル共通 */
     .modal-overlay {
       position: fixed; top: 0; left: 0; width: 100%; height: 100%;
       background: rgba(0,0,0,0.9); backdrop-filter: blur(5px);
@@ -170,7 +172,7 @@
     }
     .modal-content {
       background: #111518; border: 1px solid var(--secondary);
-      width: 90%; max-width: 400px; max-height: 85vh;
+      width: 90%; max-width: 450px; max-height: 85vh;
       border-radius: 12px; display: flex; flex-direction: column;
       box-shadow: 0 0 30px rgba(0,0,0,0.5);
     }
@@ -181,80 +183,116 @@
       color: var(--text-main); font-weight: bold; font-size: 14px;
     }
     .modal-body { padding: 15px; overflow-y: auto; }
-    
-    /* タグフィルター */
+
+    /* フィルターとリスト */
     .tag-filter {
-      width: 100%; padding: 8px; background: #000; color: var(--text-main);
+      width: 100%; padding: 10px; background: #000; color: #fff;
       border: 1px solid var(--border-color); margin-bottom: 15px;
       font-family: 'Share Tech Mono';
     }
-
-    /* リストアイテム */
     .list-item {
       background: var(--card-bg); border: 1px solid var(--border-color);
       padding: 12px; margin-bottom: 10px; border-radius: 6px;
       display: flex; justify-content: space-between; align-items: center;
     }
-    .list-info { display: flex; flex-direction: column; }
-    .list-tag { font-size: 10px; color: var(--secondary); background: rgba(255,170,0,0.1); padding: 2px 4px; border-radius: 3px; width: fit-content; margin-bottom: 4px; }
-    .list-name { font-size: 14px; font-weight: bold; }
-    .list-preview { font-size: 10px; color: #555; margin-top: 3px; white-space: nowrap; overflow: hidden; max-width: 150px; text-overflow: ellipsis; }
+    .list-info { display: flex; flex-direction: column; width: 65%; }
+    .list-tag { font-size: 10px; background: #333; padding: 2px 5px; border-radius: 3px; width: fit-content; margin-bottom: 4px; color: #aaa; }
+    .list-name { font-size: 14px; font-weight: bold; color: var(--text-main); }
+    .list-preview { font-size: 10px; color: #555; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    
+    .btn-group { display: flex; gap: 6px; }
+    .btn-sm { padding: 6px 10px; font-size: 11px; border-radius: 4px; cursor: pointer; border: none; font-weight: bold; }
+    .btn-load { background: var(--primary); color: #000; }
+    .btn-del { background: transparent; border: 1px solid var(--accent); color: var(--accent); }
 
-    .btn-group { display: flex; gap: 8px; }
-    .btn-sm { padding: 4px 8px; font-size: 11px; border-radius: 4px; cursor: pointer; border: 1px solid transparent; }
-    .btn-load { background: var(--code-color); color: #000; }
-    .btn-del { border-color: var(--accent); color: var(--accent); background: transparent; }
+    /* モーダルごとのアクセントカラー上書き */
+    #charModal .modal-content { border-color: var(--char-color); }
+    #charModal .btn-load { background: var(--char-color); color: #fff; }
+    #charModal .list-tag { color: var(--char-color); background: rgba(255,0,204,0.1); }
+    
+    .btn-save-new {
+      width: 100%; padding: 12px; margin-bottom: 20px;
+      border: none; border-radius: 6px; font-weight: bold; cursor: pointer;
+    }
 
-    /* スニペット追加フォーム */
-    .snip-form { border-top: 1px solid var(--border-color); padding-top: 15px; margin-top: 15px; }
-    .snip-input { width: 100%; background: #000; color: #fff; border: 1px solid #333; padding: 8px; margin-bottom: 5px; font-family: monospace; }
   </style>
 </head>
 <body>
 
   <header>
-    <h1>PROMPT CODER</h1>
+    <h1>PROMPT<span>v4</span></h1>
     <div class="actions">
       <button onclick="clearBoard()" class="danger">CLR</button>
-      <button onclick="openSnippetModal()" class="snip">SNIP</button>
-      <button onclick="openDataModal()" class="accent">DATA</button>
+      <button onclick="openCharModal()" class="btn-char-mgr">CHARS</button>
+      <button onclick="openProjectModal()" class="accent">DATA</button>
       <button onclick="exportText()" id="exportBtn">COPY</button>
     </div>
   </header>
 
   <div class="palette">
-    <div class="add-btn btn-code" onclick="addNewCard('code')">Logic / Code<span>if/dim/set</span></div>
-    <div class="add-btn btn-wild" onclick="addNewCard('wild')">Wildcard<span>[ **** ]</span></div>
+    <div class="add-btn btn-wild" onmousedown="insertWildcard(event)">
+      [ **** ]<span>INLINE</span>
+    </div>
+
     <div class="add-btn btn-speech" onclick="addNewCard('speech')">Dialogue<span>会話「…」</span></div>
+    <div class="add-btn btn-char" onclick="addNewCard('char_def')">Character<span>人格定義</span></div>
+    <div class="add-btn btn-code" onclick="addNewCard('code')">Code/Logic<span>if/dim</span></div>
     <div class="add-btn" onclick="addNewCard('free')">Free Text<span>メモ・地文</span></div>
-    <div class="add-btn btn-sep" onclick="addNewCard('separator')">--- SEP ---<span>区切り線</span></div>
+    
+    <div class="add-btn btn-snip" onclick="openSnippetModal()">Snippet<span>VBA保存</span></div>
   </div>
 
   <div class="stream-container">
     <div id="streamList">
-      <p style="text-align:center; color:var(--border-color); font-size:12px; margin-top:50px;">TAP BUTTONS TO CODE</p>
+      <p style="text-align:center; color:var(--border-color); font-size:12px; margin-top:50px;">TAP PALETTE TO START</p>
     </div>
     <div style="height: 50px;"></div>
   </div>
 
-  <div id="dataModal" class="modal-overlay">
+
+  <div id="charModal" class="modal-overlay">
     <div class="modal-content">
-      <div class="modal-header">
-        PROJECT MANAGER
-        <span onclick="document.getElementById('dataModal').style.display='none'" style="cursor:pointer; font-size:20px;">×</span>
+      <div class="modal-header" style="color:var(--char-color);">
+        CHARACTER LIBRARY
+        <span onclick="document.getElementById('charModal').style.display='none'" style="cursor:pointer; font-size:20px;">×</span>
       </div>
       <div class="modal-body">
         
-        <button class="snip-input" style="background:var(--secondary); color:#000; font-weight:bold; cursor:pointer;" onclick="saveCurrentAsTemplate()">
-          + SAVE BOARD AS TEMPLATE
-        </button>
+        <div style="border-bottom:1px solid #333; margin-bottom:15px; padding-bottom:15px;">
+           <input type="text" id="newCharName" placeholder="Name (e.g. 艶冶)" style="width:100%; padding:8px; margin-bottom:5px; background:#000; border:1px solid #333; color:#fff;">
+           <input type="text" id="newCharTag" placeholder="Project Tag (e.g. 妖譚)" style="width:100%; padding:8px; margin-bottom:5px; background:#000; border:1px solid #333; color:#fff;">
+           <textarea id="newCharText" rows="3" placeholder="[AI personality...]" style="width:100%; padding:8px; margin-bottom:5px; background:#000; border:1px solid #333; color:#fff; font-family:monospace;"></textarea>
+           <button class="btn-save-new" style="background:var(--char-color); color:#fff; margin-bottom:0;" onclick="saveCharacter()">SAVE TO LIBRARY</button>
+        </div>
 
-        <h3 style="font-size:12px; color:var(--text-dim); margin: 15px 0 5px;">FILTER BY PROJECT TAG</h3>
-        <select id="tagFilter" class="tag-filter" onchange="renderTemplateList()">
-          <option value="ALL">ALL PROJECTS</option>
+        <h3 style="font-size:12px; color:var(--text-dim); margin:5px 0;">FILTER CHARACTERS</h3>
+        <select id="charTagFilter" class="tag-filter" onchange="renderCharList()">
+          <option value="ALL">ALL TAGS</option>
         </select>
         
-        <div id="templateList"></div>
+        <div id="charList"></div>
+      </div>
+    </div>
+  </div>
+
+
+  <div id="projectModal" class="modal-overlay">
+    <div class="modal-content">
+      <div class="modal-header" style="color:var(--secondary);">
+        PROJECT MANAGER
+        <span onclick="document.getElementById('projectModal').style.display='none'" style="cursor:pointer; font-size:20px;">×</span>
+      </div>
+      <div class="modal-body">
+        <button class="btn-save-new" style="background:var(--secondary); color:#000;" onclick="saveCurrentBoard()">
+          + SAVE CURRENT BOARD
+        </button>
+
+        <h3 style="font-size:12px; color:var(--text-dim); margin:5px 0;">FILTER PROJECTS</h3>
+        <select id="projTagFilter" class="tag-filter" onchange="renderProjectList()">
+          <option value="ALL">ALL TAGS</option>
+        </select>
+        
+        <div id="projectList"></div>
       </div>
     </div>
   </div>
@@ -267,31 +305,33 @@
       </div>
       <div class="modal-body">
         <div id="snippetList"></div>
-
-        <div class="snip-form">
-          <h4 style="margin:0 0 5px; font-size:12px; color:var(--text-dim);">ADD NEW SNIPPET</h4>
-          <input type="text" id="newSnipName" class="snip-input" placeholder="Snippet Name (e.g. Loop)">
-          <textarea id="newSnipContent" class="snip-input" rows="3" placeholder="Code content..."></textarea>
-          <button class="snip-input" style="background:var(--code-color); color:#000; font-weight:bold; cursor:pointer;" onclick="saveSnippet()">ADD TO LIBRARY</button>
+        
+        <div style="border-top:1px solid #333; margin-top:15px; padding-top:15px;">
+           <input type="text" id="newSnipName" placeholder="Snippet Name" style="width:100%; padding:8px; margin-bottom:5px; background:#000; border:1px solid #333; color:var(--code-color);">
+           <textarea id="newSnipContent" rows="3" placeholder="Code content..." style="width:100%; padding:8px; margin-bottom:5px; background:#000; border:1px solid #333; color:var(--code-color); font-family:'Fira Code';"></textarea>
+           <button class="btn-save-new" style="background:var(--code-color); color:#000; margin:0;" onclick="saveSnippet()">ADD SNIPPET</button>
         </div>
       </div>
     </div>
   </div>
 
+
   <script>
-    // Sortable
+    // 最後にフォーカスがあったテキストエリアを記憶
+    let lastFocusedTextarea = null;
+
+    // Sortable設定
     const streamSortable = new Sortable(document.getElementById('streamList'), {
       animation: 150, handle: '.drag-handle', ghostClass: 'sortable-ghost', dragClass: 'sortable-drag',
       onEnd: function() { saveToLocal(); }
     });
 
-    // テンプレート定義
+    // カード追加機能
     const templates = {
-      code: { label: 'Logic / Code', placeholder: 'if (condition) {\n  // your logic\n}', rows: 3 },
-      wild: { label: 'Wildcard', value: '[ **** ]', rows: 1 },
-      free: { label: 'Narration', placeholder: '...', rows: 3 },
       speech: { label: 'Dialogue', placeholder: '「……」', rows: 2 },
-      separator: { label: '--- BREAK ---', value: '***' }
+      char_def: { label: 'Character', placeholder: '[AI personality: Name...]', rows: 6 },
+      code: { label: 'Logic / Code', placeholder: 'if (flag) {\n  \n}', rows: 3 },
+      free: { label: 'Narration', placeholder: '...', rows: 3 }
     };
 
     function addNewCard(type, initialValue = null) {
@@ -303,159 +343,255 @@
       div.className = `card type-${type}`;
       div.dataset.type = type;
       
-      let contentVal = initialValue;
-      if (initialValue === null) {
-          contentVal = tmpl.value !== undefined ? tmpl.value : '';
-      }
-      
-      const placeholder = tmpl.placeholder || '';
+      const val = initialValue !== null ? initialValue : '';
       
       div.innerHTML = `
         <span class="card-label">${tmpl.label}</span>
-        <textarea rows="${tmpl.rows}" placeholder="${placeholder}">${contentVal}</textarea>
+        <textarea rows="${tmpl.rows}" placeholder="${tmpl.placeholder}">${val}</textarea>
         <div class="drag-handle"></div>
         <span class="remove-btn">×</span>
       `;
       
       list.appendChild(div);
       setupCardEvents(div);
+      
+      // 自動スクロール
       div.scrollIntoView({ behavior: "smooth", block: "end" });
       saveToLocal();
+
+      // 追加されたテキストエリアにフォーカスし、記憶する
+      const ta = div.querySelector('textarea');
+      ta.focus(); 
+      lastFocusedTextarea = ta;
     }
 
     function setupCardEvents(card) {
+      // 削除
       card.querySelector('.remove-btn').onclick = function() {
-        if(confirm("Delete?")) { card.remove(); saveToLocal(); }
+        if(confirm("Delete block?")) { card.remove(); saveToLocal(); }
       };
+      
       const ta = card.querySelector('textarea');
       if(ta) {
+        // 高さ自動調整
         ta.addEventListener('input', function() {
           this.style.height = 'auto';
           this.style.height = (this.scrollHeight) + 'px';
           saveToLocal();
         });
+        
+        // フォーカス追跡（ワイルドカード挿入用）
+        ta.addEventListener('focus', function(e) {
+          lastFocusedTextarea = e.target;
+        });
+
+        // 初期高さ
         setTimeout(() => ta.dispatchEvent(new Event('input')), 0);
       }
     }
 
-    // ─────── 1. データ（テンプレート）管理 with TAGS ───────
-    
-    function openDataModal() {
-      renderTemplateList();
-      document.getElementById('dataModal').style.display = 'flex';
+    // ─────── ワイルドカード挿入機能 (Inline) ───────
+    function insertWildcard(e) {
+      // ボタンクリックでフォーカスが外れるのを防ぐ
+      e.preventDefault(); 
+
+      if (lastFocusedTextarea) {
+        const field = lastFocusedTextarea;
+        const startPos = field.selectionStart;
+        const endPos = field.selectionEnd;
+        const text = field.value;
+        const insertStr = "****";
+
+        // カーソル位置に挿入
+        field.value = text.substring(0, startPos) + insertStr + text.substring(endPos);
+        
+        // カーソル位置を進める
+        field.selectionStart = field.selectionEnd = startPos + insertStr.length;
+        
+        // inputイベント発火（高さ調整・保存のため）
+        field.dispatchEvent(new Event('input'));
+      } else {
+        // フォーカスがない場合は新規カードを作って挿入してもいいが、今回はアラート
+        alert("Select a text area first!");
+      }
     }
 
-    function saveCurrentAsTemplate() {
-      const name = prompt("Name this Template:", "");
-      if (!name) return;
-      
-      const tag = prompt("Project Tag (e.g. WorkA):", "Uncategorized");
-      const finalTag = tag ? tag : "Uncategorized";
-
-      const data = [];
-      document.querySelectorAll('#streamList .card').forEach(card => {
-        data.push({
-          type: card.dataset.type,
-          text: card.querySelector('textarea').value
-        });
-      });
-
-      const db = JSON.parse(localStorage.getItem('promptTemplates_v3') || '{}');
-      // Ver3形式: { items: [], tag: "" }
-      db[name] = { items: data, tag: finalTag };
-      localStorage.setItem('promptTemplates_v3', JSON.stringify(db));
-      
-      renderTemplateList();
+    // ─────── 1. キャラクター管理 (Preset) ───────
+    function openCharModal() {
+      renderCharList();
+      document.getElementById('charModal').style.display = 'flex';
     }
 
-    function renderTemplateList() {
-      const list = document.getElementById('templateList');
-      const filter = document.getElementById('tagFilter');
-      const db = JSON.parse(localStorage.getItem('promptTemplates_v3') || '{}');
+    function saveCharacter() {
+      const name = document.getElementById('newCharName').value;
+      const tag = document.getElementById('newCharTag').value || "Uncategorized";
+      const text = document.getElementById('newCharText').value;
       
-      // タグの収集
+      if(!name || !text) return;
+
+      const db = JSON.parse(localStorage.getItem('promptChars') || '{}');
+      db[name] = { text: text, tag: tag };
+      localStorage.setItem('promptChars', JSON.stringify(db));
+      
+      // フォームクリア
+      document.getElementById('newCharName').value = '';
+      document.getElementById('newCharText').value = '';
+      renderCharList();
+    }
+
+    function renderCharList() {
+      const list = document.getElementById('charList');
+      const filter = document.getElementById('charTagFilter');
+      const db = JSON.parse(localStorage.getItem('promptChars') || '{}');
+      
+      // タグ収集
       const tags = new Set(['ALL']);
-      Object.values(db).forEach(obj => {
-        if(obj.tag) tags.add(obj.tag);
-      });
+      Object.values(db).forEach(obj => tags.add(obj.tag));
       
-      // プルダウン更新 (選択維持)
-      const currentFilter = filter.value;
+      // プルダウン更新
+      const currentVal = filter.value;
       filter.innerHTML = '';
       tags.forEach(t => {
         const opt = document.createElement('option');
-        opt.value = t;
-        opt.innerText = t;
+        opt.value = t; opt.innerText = t;
         filter.appendChild(opt);
       });
-      if(tags.has(currentFilter)) filter.value = currentFilter;
+      if(tags.has(currentVal)) filter.value = currentVal;
 
       // リスト描画
       list.innerHTML = '';
       const selectedTag = filter.value;
 
-      if(Object.keys(db).length === 0) {
-        list.innerHTML = '<p style="text-align:center;color:#555;">NO DATA</p>';
-        return;
-      }
-
       Object.keys(db).forEach(name => {
         const entry = db[name];
-        // データ形式の互換性チェック（古いデータはtagがないかも）
-        const tag = entry.tag || 'Uncategorized';
-        
-        if (selectedTag !== 'ALL' && tag !== selectedTag) return;
+        if(selectedTag !== 'ALL' && entry.tag !== selectedTag) return;
 
         const item = document.createElement('div');
         item.className = 'list-item';
         item.innerHTML = `
           <div class="list-info">
-            <span class="list-tag">${tag}</span>
+            <span class="list-tag">${entry.tag}</span>
             <span class="list-name">${name}</span>
           </div>
           <div class="btn-group">
-            <button class="btn-sm btn-load" onclick="loadTemplate('${name}')">LOAD</button>
-            <button class="btn-sm btn-del" onclick="deleteTemplate('${name}')">DEL</button>
+            <button class="btn-sm btn-load" onclick="loadCharacter('${name}')">ADD</button>
+            <button class="btn-sm btn-del" onclick="deleteCharacter('${name}')">×</button>
           </div>
         `;
         list.appendChild(item);
       });
     }
 
-    window.loadTemplate = function(name) {
-      if (!confirm(`Overwrite board with [${name}]?`)) return;
-      const db = JSON.parse(localStorage.getItem('promptTemplates_v3') || '{}');
-      const entry = db[name];
-      // arrayかobject(v3)か判定
-      const items = Array.isArray(entry) ? entry : entry.items;
-
-      document.getElementById('streamList').innerHTML = '';
-      items.forEach(block => addNewCard(block.type, block.text));
-      document.getElementById('dataModal').style.display = 'none';
-      saveToLocal();
+    window.loadCharacter = function(name) {
+      const db = JSON.parse(localStorage.getItem('promptChars') || '{}');
+      if(db[name]) {
+        addNewCard('char_def', db[name].text);
+        document.getElementById('charModal').style.display = 'none';
+      }
     };
     
-    window.deleteTemplate = function(name) {
-      if(confirm(`Delete [${name}]?`)) {
-        const db = JSON.parse(localStorage.getItem('promptTemplates_v3') || '{}');
+    window.deleteCharacter = function(name) {
+      if(confirm(`Delete character [${name}]?`)) {
+        const db = JSON.parse(localStorage.getItem('promptChars') || '{}');
         delete db[name];
-        localStorage.setItem('promptTemplates_v3', JSON.stringify(db));
-        renderTemplateList();
+        localStorage.setItem('promptChars', JSON.stringify(db));
+        renderCharList();
       }
     };
 
-    // ─────── 2. スニペット機能 ───────
+    // ─────── 2. プロジェクト管理 (Board Save) ───────
+    function openProjectModal() {
+      renderProjectList();
+      document.getElementById('projectModal').style.display = 'flex';
+    }
 
+    function saveCurrentBoard() {
+      const name = prompt("Project Name:", "");
+      if(!name) return;
+      const tag = prompt("Project Tag:", "Work");
+      const finalTag = tag || "Work";
+
+      const data = [];
+      document.querySelectorAll('#streamList .card').forEach(card => {
+        data.push({ type: card.dataset.type, text: card.querySelector('textarea').value });
+      });
+
+      const db = JSON.parse(localStorage.getItem('promptProjects') || '{}');
+      db[name] = { items: data, tag: finalTag };
+      localStorage.setItem('promptProjects', JSON.stringify(db));
+      renderProjectList();
+    }
+
+    function renderProjectList() {
+      const list = document.getElementById('projectList');
+      const filter = document.getElementById('projTagFilter');
+      const db = JSON.parse(localStorage.getItem('promptProjects') || '{}');
+      
+      const tags = new Set(['ALL']);
+      Object.values(db).forEach(obj => tags.add(obj.tag));
+      
+      const currentVal = filter.value;
+      filter.innerHTML = '';
+      tags.forEach(t => {
+        const opt = document.createElement('option');
+        opt.value = t; opt.innerText = t;
+        filter.appendChild(opt);
+      });
+      if(tags.has(currentVal)) filter.value = currentVal;
+
+      list.innerHTML = '';
+      const selectedTag = filter.value;
+
+      Object.keys(db).forEach(name => {
+        const entry = db[name];
+        if(selectedTag !== 'ALL' && entry.tag !== selectedTag) return;
+
+        const item = document.createElement('div');
+        item.className = 'list-item';
+        item.innerHTML = `
+          <div class="list-info">
+            <span class="list-tag">${entry.tag}</span>
+            <span class="list-name">${name}</span>
+          </div>
+          <div class="btn-group">
+            <button class="btn-sm btn-load" onclick="loadProject('${name}')">LOAD</button>
+            <button class="btn-sm btn-del" onclick="deleteProject('${name}')">DEL</button>
+          </div>
+        `;
+        list.appendChild(item);
+      });
+    }
+
+    window.loadProject = function(name) {
+      if(!confirm(`Load [${name}]? (Unsaved changes will be lost)`)) return;
+      const db = JSON.parse(localStorage.getItem('promptProjects') || '{}');
+      document.getElementById('streamList').innerHTML = '';
+      db[name].items.forEach(item => addNewCard(item.type, item.text));
+      document.getElementById('projectModal').style.display = 'none';
+      saveToLocal();
+    };
+
+    window.deleteProject = function(name) {
+      if(confirm(`Delete project [${name}]?`)) {
+        const db = JSON.parse(localStorage.getItem('promptProjects') || '{}');
+        delete db[name];
+        localStorage.setItem('promptProjects', JSON.stringify(db));
+        renderProjectList();
+      }
+    };
+
+
+    // ─────── 3. スニペット管理 (Code) ───────
     function openSnippetModal() {
       renderSnippetList();
       document.getElementById('snippetModal').style.display = 'flex';
     }
-
+    
     function saveSnippet() {
       const name = document.getElementById('newSnipName').value;
       const content = document.getElementById('newSnipContent').value;
       if(!name || !content) return;
-
+      
       const db = JSON.parse(localStorage.getItem('promptSnippets') || '{}');
       db[name] = content;
       localStorage.setItem('promptSnippets', JSON.stringify(db));
@@ -469,12 +605,6 @@
       const list = document.getElementById('snippetList');
       const db = JSON.parse(localStorage.getItem('promptSnippets') || '{}');
       list.innerHTML = '';
-      
-      if(Object.keys(db).length === 0) {
-        list.innerHTML = '<p style="text-align:center;color:#555;">NO SNIPPETS</p>';
-        return;
-      }
-
       Object.keys(db).forEach(name => {
         const item = document.createElement('div');
         item.className = 'list-item';
@@ -484,7 +614,7 @@
             <span class="list-preview">${db[name]}</span>
           </div>
           <div class="btn-group">
-            <button class="btn-sm btn-load" onclick="insertSnippet('${name}')">ADD</button>
+            <button class="btn-sm btn-load" style="background:var(--code-color);" onclick="insertSnippet('${name}')">ADD</button>
             <button class="btn-sm btn-del" onclick="deleteSnippet('${name}')">×</button>
           </div>
         `;
@@ -507,14 +637,14 @@
       }
     };
 
-    // ─────── 共通機能 ───────
 
+    // ─────── 共通 ───────
     function exportText() {
       const cards = document.querySelectorAll('#streamList .card textarea');
       let text = "";
       cards.forEach(ta => {
         const val = ta.value.trim();
-        if (val) text += val + "\n\n";
+        if(val) text += val + "\n\n";
       });
       navigator.clipboard.writeText(text);
       const btn = document.getElementById('exportBtn');
@@ -531,8 +661,8 @@
     }
 
     function clearBoard() {
-      if(confirm("CLEAR ALL?")) {
-        document.getElementById('streamList').innerHTML = '<p style="text-align:center; color:var(--border-color); font-size:12px; margin-top:50px;">TAP BUTTONS TO CODE</p>';
+      if(confirm("Clear all blocks?")) {
+        document.getElementById('streamList').innerHTML = '<p style="text-align:center; color:var(--border-color); font-size:12px; margin-top:50px;">TAP PALETTE TO START</p>';
         saveToLocal();
       }
     }
