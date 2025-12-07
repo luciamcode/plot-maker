@@ -7,194 +7,54 @@
   <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600&family=Share+Tech+Mono&family=Zen+Kaku+Gothic+New:wght@400;700&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
   <style>
-    :root {
-      --bg-color: #050505;
-      --palette-bg: #111518;
-      --stream-bg: #0e1215;
-      --card-bg: #161a1e;
-      --primary: #00f3ff;
-      --secondary: #ffaa00;
-      --accent: #ff0055;
-      --code-color: #00ff99;
-      --char-color: #ff00cc;
-      --part-color: #bd00ff;
-      --text-main: #cceeee;
-      --text-dim: #668888;
-      --border-color: #334444;
-      --header-height: 50px;
-    }
-
+    /* --- CSSは変更なし（共通） --- */
+    :root { --bg-color: #050505; --palette-bg: #111518; --stream-bg: #0e1215; --card-bg: #161a1e; --primary: #00f3ff; --secondary: #ffaa00; --accent: #ff0055; --code-color: #00ff99; --char-color: #ff00cc; --part-color: #bd00ff; --text-main: #cceeee; --text-dim: #668888; --border-color: #334444; --header-height: 50px; }
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-
-    body {
-      font-family: 'Share Tech Mono', 'Zen Kaku Gothic New', monospace;
-      background-color: var(--bg-color);
-      color: var(--text-main);
-      margin: 0;
-      height: 100dvh;
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-    }
-
-    /* ヘッダー */
-    header {
-      height: var(--header-height);
-      border-bottom: 1px solid var(--border-color);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0 8px;
-      background: rgba(11, 15, 18, 0.95);
-      z-index: 10;
-      flex-shrink: 0;
-    }
-    h1 {
-      font-size: 16px; color: var(--text-main); margin: 0; letter-spacing: 1px;
-      white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 30%;
-    }
-    
+    body { font-family: 'Share Tech Mono', 'Zen Kaku Gothic New', monospace; background-color: var(--bg-color); color: var(--text-main); margin: 0; height: 100dvh; overflow: hidden; display: flex; flex-direction: column; }
+    header { height: var(--header-height); border-bottom: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between; padding: 0 8px; background: rgba(11, 15, 18, 0.95); z-index: 10; flex-shrink: 0; }
+    h1 { font-size: 16px; color: var(--text-main); margin: 0; letter-spacing: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 30%; }
     .actions { display: flex; gap: 6px; align-items: center; }
-    .actions button {
-      background: transparent; border: 1px solid var(--border-color); color: var(--primary);
-      padding: 6px 8px; font-family: 'Share Tech Mono'; cursor: pointer; font-size: 11px;
-      border-radius: 4px; min-width: 40px;
-    }
+    .actions button { background: transparent; border: 1px solid var(--border-color); color: var(--primary); padding: 6px 8px; font-family: 'Share Tech Mono'; cursor: pointer; font-size: 11px; border-radius: 4px; min-width: 40px; }
     .actions button:active { background: var(--primary); color: #000; }
-    
-    /* リンクボタン */
     .btn-link { text-decoration: none; display: inline-flex; }
     .btn-link button { border-color: var(--char-color); color: var(--char-color); }
     .btn-link button:active { background: var(--char-color); color: #fff; }
-
-    .actions button.accent { border-color: var(--secondary); color: var(--secondary); }
-    .actions button.accent:active { background: var(--secondary); color: #000; }
-    .actions button.danger { border-color: var(--accent); color: var(--accent); }
-    .actions button.danger:active { background: var(--accent); color: #000; }
-
-    /* パレットエリア */
-    .palette {
-      background: var(--palette-bg);
-      padding: 10px;
-      border-bottom: 1px solid var(--border-color);
-      display: flex; gap: 8px;
-      overflow-x: auto; flex-shrink: 0;
-      -webkit-overflow-scrolling: touch;
-      align-items: center;
-    }
-    .palette::-webkit-scrollbar { height: 2px; }
-
-    .add-btn {
-      flex: 0 0 auto;
-      background: #000; border: 1px solid var(--border-color); border-left: 3px solid #555;
-      color: var(--text-main); padding: 8px 10px; font-size: 12px; border-radius: 4px;
-      cursor: pointer; display: flex; flex-direction: column; align-items: flex-start;
-      min-width: 80px;
-    }
-    .add-btn:active { transform: scale(0.95); background: rgba(255,255,255,0.1); }
+    .actions button.accent { border-color: var(--secondary); color: var(--secondary); } .actions button.accent:active { background: var(--secondary); color: #000; }
+    .actions button.danger { border-color: var(--accent); color: var(--accent); } .actions button.danger:active { background: var(--accent); color: #000; }
+    .palette { background: var(--palette-bg); padding: 10px; border-bottom: 1px solid var(--border-color); display: flex; gap: 8px; overflow-x: auto; flex-shrink: 0; align-items: center; }
+    .add-btn { flex: 0 0 auto; background: #000; border: 1px solid var(--border-color); border-left: 3px solid #555; color: var(--text-main); padding: 8px 10px; font-size: 12px; border-radius: 4px; cursor: pointer; display: flex; flex-direction: column; align-items: flex-start; min-width: 80px; }
     .add-btn span { font-size: 9px; color: var(--text-dim); margin-top: 2px; }
-    
-    /* インラインボタン */
-    .btn-inline {
-      border-color: #fff; border-style: dashed; background: #222;
-      align-items: center; justify-content: center; min-width: 50px;
-    }
+    .btn-inline { border-color: #fff; border-style: dashed; background: #222; align-items: center; justify-content: center; min-width: 50px; }
     .btn-part { border-color: var(--part-color); color: var(--part-color); border-style: dotted; }
-
-    .btn-speech { border-left-color: var(--primary); }
-    .btn-char { border-left-color: var(--char-color); }
-    .btn-code { border-left-color: var(--code-color); }
-    .btn-snip { border-left-color: var(--secondary); border-style: dotted; }
-
-    /* メインエリア */
-    .stream-container {
-      flex: 1; background: var(--stream-bg); padding: 15px 10px;
-      overflow-y: auto; -webkit-overflow-scrolling: touch;
-    }
-
-    .card {
-      background: var(--card-bg); border: 1px solid var(--border-color); border-left: 3px solid var(--text-dim);
-      margin-bottom: 12px; padding: 12px; position: relative; border-radius: 4px;
-    }
-    .drag-handle {
-      position: absolute; top: 0; right: 30px; bottom: 0; width: 30px;
-      display: flex; align-items: center; justify-content: center;
-      color: var(--border-color); font-size: 20px; touch-action: none;
-    }
-    .drag-handle::after { content: '≡'; }
+    .btn-speech { border-left-color: var(--primary); } .btn-char { border-left-color: var(--char-color); } .btn-code { border-left-color: var(--code-color); } .btn-snip { border-left-color: var(--secondary); border-style: dotted; }
+    .stream-container { flex: 1; background: var(--stream-bg); padding: 15px 10px; overflow-y: auto; }
+    .card { background: var(--card-bg); border: 1px solid var(--border-color); border-left: 3px solid var(--text-dim); margin-bottom: 12px; padding: 12px; position: relative; border-radius: 4px; }
+    .drag-handle { position: absolute; top: 0; right: 30px; bottom: 0; width: 30px; display: flex; align-items: center; justify-content: center; color: var(--border-color); font-size: 20px; touch-action: none; } .drag-handle::after { content: '≡'; }
     .card-label { font-size: 10px; color: var(--secondary); margin-bottom: 4px; text-transform: uppercase; display: block; opacity: 0.7; }
-    .card textarea {
-      width: 100%; padding-right: 30px; background: transparent; border: none;
-      color: var(--text-main); resize: none; font-family: 'Zen Kaku Gothic New', monospace;
-      font-size: 15px; line-height: 1.5; outline: none; min-height: 40px; max-height: 300px;
-    }
-    
-    .type-speech { border-left-color: var(--primary); }
-    .type-char { border-left-color: var(--char-color); background: #1a0f15; }
-    .type-code { border-left-color: var(--code-color); background: #080a0c; }
-    .type-code textarea { font-family: 'Fira Code', monospace; color: var(--code-color); font-size: 13px; }
-    .remove-btn {
-      position: absolute; top: 2px; right: 2px; color: var(--text-dim); cursor: pointer;
-      font-size: 24px; width: 30px; height: 30px;
-      display: flex; align-items: center; justify-content: center; z-index: 2;
-    }
-
-    /* モーダル */
-    .modal-overlay {
-      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(0,0,0,0.9); backdrop-filter: blur(5px);
-      z-index: 999; display: none; align-items: center; justify-content: center;
-    }
-    .modal-content {
-      background: #111518; border: 1px solid var(--secondary);
-      width: 90%; max-width: 450px; max-height: 85vh; border-radius: 12px;
-      display: flex; flex-direction: column; box-shadow: 0 0 30px rgba(0,0,0,0.5);
-    }
-    .modal-header {
-      padding: 15px; border-bottom: 1px solid var(--border-color);
-      display: flex; justify-content: space-between; align-items: center;
-      background: rgba(255, 255, 255, 0.05); color: var(--text-main); font-weight: bold; font-size: 14px;
-    }
+    .card textarea { width: 100%; padding-right: 30px; background: transparent; border: none; color: var(--text-main); resize: none; font-family: 'Zen Kaku Gothic New', monospace; font-size: 15px; line-height: 1.5; outline: none; min-height: 40px; max-height: 300px; }
+    .type-speech { border-left-color: var(--primary); } .type-char { border-left-color: var(--char-color); background: #1a0f15; } .type-code { border-left-color: var(--code-color); background: #080a0c; } .type-code textarea { font-family: 'Fira Code', monospace; color: var(--code-color); font-size: 13px; }
+    .remove-btn { position: absolute; top: 2px; right: 2px; color: var(--text-dim); cursor: pointer; font-size: 24px; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; z-index: 2; }
+    .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); backdrop-filter: blur(5px); z-index: 999; display: none; align-items: center; justify-content: center; }
+    .modal-content { background: #111518; border: 1px solid var(--secondary); width: 90%; max-width: 450px; max-height: 85vh; border-radius: 12px; display: flex; flex-direction: column; box-shadow: 0 0 30px rgba(0,0,0,0.5); }
+    .modal-header { padding: 15px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; background: rgba(255, 255, 255, 0.05); color: var(--text-main); font-weight: bold; font-size: 14px; }
     .modal-body { padding: 15px; overflow-y: auto; }
-
-    /* リストアイテム */
     .tag-filter { width: 100%; padding: 10px; background: #000; color: #fff; border: 1px solid var(--border-color); margin-bottom: 15px; }
-    .list-item {
-      background: var(--card-bg); border: 1px solid var(--border-color);
-      padding: 12px; margin-bottom: 10px; border-radius: 6px;
-      display: flex; justify-content: space-between; align-items: center;
-    }
+    .list-item { background: var(--card-bg); border: 1px solid var(--border-color); padding: 12px; margin-bottom: 10px; border-radius: 6px; display: flex; justify-content: space-between; align-items: center; }
     .list-info { display: flex; flex-direction: column; width: 65%; }
     .list-tag { font-size: 10px; background: #333; padding: 2px 5px; border-radius: 3px; width: fit-content; margin-bottom: 4px; color: #aaa; }
     .list-name { font-size: 14px; font-weight: bold; color: var(--text-main); }
     .list-preview { font-size: 10px; color: #555; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    
     .btn-group { display: flex; gap: 6px; }
     .btn-sm { padding: 6px 10px; font-size: 11px; border-radius: 4px; cursor: pointer; border: none; font-weight: bold; }
-    .btn-load { background: var(--primary); color: #000; }
-    .btn-del { background: transparent; border: 1px solid var(--accent); color: var(--accent); }
-
-    /* 各モーダル用色設定 */
-    #charModal .modal-content { border-color: var(--char-color); }
-    #charModal .btn-load { background: var(--char-color); color: #fff; }
+    .btn-load { background: var(--primary); color: #000; } .btn-del { background: transparent; border: 1px solid var(--accent); color: var(--accent); }
+    #charModal .modal-content { border-color: var(--char-color); } #charModal .btn-load { background: var(--char-color); color: #fff; }
+    #partModal .modal-content { border-color: var(--part-color); } #partModal .list-name { color: var(--part-color); font-family: monospace; } #partModal .btn-load { background: var(--part-color); color: #fff; }
+    .part-chip { display: inline-block; padding: 8px 12px; margin: 4px; background: rgba(189, 0, 255, 0.1); border: 1px solid var(--part-color); color: var(--part-color); border-radius: 20px; font-family: monospace; font-size: 13px; cursor: pointer; transition: 0.2s; } .part-chip:active { background: var(--part-color); color: #fff; } .part-chip .del { font-weight: bold; margin-left: 8px; color: var(--accent); opacity: 0.7; } .part-container { display: flex; flex-wrap: wrap; gap: 5px; }
     
-    #partModal .modal-content { border-color: var(--part-color); }
-    #partModal .list-name { color: var(--part-color); font-family: monospace; }
-    #partModal .btn-load { background: var(--part-color); color: #fff; }
-
-    .btn-save-new { width: 100%; padding: 12px; margin-bottom: 20px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; }
-
-    /* Part Chip */
-    .part-chip {
-      display: inline-block; padding: 8px 12px; margin: 4px;
-      background: rgba(189, 0, 255, 0.1); border: 1px solid var(--part-color);
-      color: var(--part-color); border-radius: 20px; font-family: monospace; font-size: 13px;
-      cursor: pointer; transition: 0.2s;
-    }
-    .part-chip:active { background: var(--part-color); color: #fff; }
-    .part-chip .del { font-weight: bold; margin-left: 8px; color: var(--accent); opacity: 0.7; }
-    .part-container { display: flex; flex-wrap: wrap; gap: 5px; }
-
+    /* Project Save Form */
+    .save-form { background: #222; padding: 10px; border-radius: 6px; margin-bottom: 20px; border: 1px solid var(--border-color); }
+    .save-form input { width: 100%; padding: 8px; margin-bottom: 8px; background: #000; border: 1px solid #444; color: #fff; }
+    .btn-save-new { width: 100%; padding: 10px; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; background: var(--secondary); color:#000; }
   </style>
 </head>
 <body>
@@ -202,10 +62,7 @@
   <header>
     <h1>PROMPT<span>v5</span></h1>
     <div class="actions">
-      <a href="./persona.html" class="btn-link">
-        <button title="Go to Persona Archive">PERSONA→</button>
-      </a>
-      
+      <a href="./persona.html" class="btn-link"><button title="Go to Persona Archive">PERSONA→</button></a>
       <button onclick="clearBoard()" class="danger">CLR</button>
       <button onclick="openCharModal()" style="border-color:var(--char-color); color:var(--char-color);">CHARS</button>
       <button onclick="openProjectModal()" class="accent">DATA</button>
@@ -217,7 +74,6 @@
     <div class="add-btn btn-inline" onmousedown="insertWildcard(event)">****<span>WILD</span></div>
     <div class="add-btn btn-inline" onmousedown="insertBracket(event)">[ ]<span>BRA</span></div>
     <div class="add-btn btn-inline btn-part" onmousedown="openPartModal(event)">WORDS<span>PARTS</span></div>
-
     <div class="add-btn btn-speech" onclick="addNewCard('speech')">Dialogue<span>会話</span></div>
     <div class="add-btn btn-char" onclick="addNewCard('char_def')">Character<span>人格</span></div>
     <div class="add-btn btn-code" onclick="addNewCard('code')">Code<span>ロジック</span></div>
@@ -232,13 +88,9 @@
     <div style="height: 50px;"></div>
   </div>
 
-
   <div id="charModal" class="modal-overlay">
     <div class="modal-content">
-      <div class="modal-header" style="color:var(--char-color);">
-        CHARACTER LIBRARY
-        <span onclick="document.getElementById('charModal').style.display='none'" style="cursor:pointer; font-size:20px;">×</span>
-      </div>
+      <div class="modal-header" style="color:var(--char-color);">CHARACTER LIBRARY <span onclick="document.getElementById('charModal').style.display='none'" style="cursor:pointer; font-size:20px;">×</span></div>
       <div class="modal-body">
         <p style="font-size:11px; color:#666;">※ Manage details in <a href="./persona.html" style="color:var(--char-color);">PERSONA ARCHIVE</a></p>
         <select id="charTagFilter" class="tag-filter" onchange="renderCharList()"><option value="ALL">ALL TAGS</option></select>
@@ -247,237 +99,139 @@
     </div>
   </div>
 
-  <div id="partModal" class="modal-overlay">
-    <div class="modal-content">
-      <div class="modal-header" style="color:var(--part-color);">
-        INLINE PARTS LIBRARY
-        <span onclick="document.getElementById('partModal').style.display='none'" style="cursor:pointer; font-size:20px;">×</span>
-      </div>
-      <div class="modal-body">
-        <p style="font-size:11px; color:#777; margin-top:0;">Tap to insert at cursor.</p>
-        <div id="partList" class="part-container"></div>
-        <div style="border-top:1px solid #333; margin-top:20px; padding-top:15px;">
-           <input type="text" id="newPartText" placeholder="New Part" style="width:70%; padding:10px; background:#000; border:1px solid var(--part-color); color:var(--part-color); font-family:monospace;">
-           <button style="width:25%; padding:10px; background:var(--part-color); border:none; color:#fff; font-weight:bold; cursor:pointer;" onclick="savePart()">ADD</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
   <div id="projectModal" class="modal-overlay">
     <div class="modal-content">
-      <div class="modal-header" style="color:var(--secondary);">
-        PROJECT MANAGER
-        <span onclick="document.getElementById('projectModal').style.display='none'" style="cursor:pointer; font-size:20px;">×</span>
-      </div>
+      <div class="modal-header" style="color:var(--secondary);">PROJECT MANAGER <span onclick="document.getElementById('projectModal').style.display='none'" style="cursor:pointer; font-size:20px;">×</span></div>
       <div class="modal-body">
-        <button class="btn-save-new" style="background:var(--secondary); color:#000;" onclick="saveCurrentBoard()">+ SAVE BOARD</button>
+        <div class="save-form">
+          <input type="text" id="saveProjName" placeholder="Project Name">
+          <input type="text" id="saveProjTag" placeholder="Tag (e.g. Work, Idea)" list="projTagList">
+          <datalist id="projTagList"></datalist>
+          <button class="btn-save-new" onclick="saveCurrentBoard()">+ SAVE CURRENT BOARD</button>
+        </div>
+        
+        <div style="border-bottom:1px solid #333; margin-bottom:15px;"></div>
+        
         <select id="projTagFilter" class="tag-filter" onchange="renderProjectList()"><option value="ALL">ALL TAGS</option></select>
         <div id="projectList"></div>
       </div>
     </div>
   </div>
 
-  <div id="snippetModal" class="modal-overlay">
-    <div class="modal-content" style="border-color: var(--code-color);">
-      <div class="modal-header" style="color:var(--code-color);">
-        CODE SNIPPETS
-        <span onclick="document.getElementById('snippetModal').style.display='none'" style="cursor:pointer; font-size:20px;">×</span>
-      </div>
-      <div class="modal-body">
-        <div id="snippetList"></div>
-        <div style="border-top:1px solid #333; margin-top:15px; padding-top:15px;">
-           <input type="text" id="newSnipName" placeholder="Name" style="width:100%; padding:8px; margin-bottom:5px; background:#000; border:1px solid #333; color:var(--code-color);">
-           <textarea id="newSnipContent" rows="3" placeholder="Code..." style="width:100%; padding:8px; margin-bottom:5px; background:#000; border:1px solid #333; color:var(--code-color); font-family:'Fira Code';"></textarea>
-           <button class="btn-save-new" style="background:var(--code-color); color:#000; margin:0;" onclick="saveSnippet()">ADD</button>
-        </div>
-      </div>
-    </div>
-  </div>
+  <div id="partModal" class="modal-overlay"><div class="modal-content"><div class="modal-header" style="color:var(--part-color);">INLINE PARTS LIBRARY <span onclick="document.getElementById('partModal').style.display='none'" style="cursor:pointer; font-size:20px;">×</span></div><div class="modal-body"><div id="partList" class="part-container"></div><div style="border-top:1px solid #333; margin-top:20px; padding-top:15px;"><input type="text" id="newPartText" placeholder="New Part" style="width:70%; padding:10px; background:#000; border:1px solid var(--part-color); color:var(--part-color); font-family:monospace;"><button style="width:25%; padding:10px; background:var(--part-color); border:none; color:#fff; font-weight:bold; cursor:pointer;" onclick="savePart()">ADD</button></div></div></div></div>
+  <div id="snippetModal" class="modal-overlay"><div class="modal-content" style="border-color: var(--code-color);"><div class="modal-header" style="color:var(--code-color);">CODE SNIPPETS <span onclick="document.getElementById('snippetModal').style.display='none'" style="cursor:pointer; font-size:20px;">×</span></div><div class="modal-body"><div id="snippetList"></div><div style="border-top:1px solid #333; margin-top:15px; padding-top:15px;"><input type="text" id="newSnipName" placeholder="Name" style="width:100%; padding:8px; margin-bottom:5px; background:#000; border:1px solid #333; color:var(--code-color);"><textarea id="newSnipContent" rows="3" placeholder="Code..." style="width:100%; padding:8px; margin-bottom:5px; background:#000; border:1px solid #333; color:var(--code-color); font-family:'Fira Code';"></textarea><button class="btn-save-new" style="background:var(--code-color); color:#000; margin:0;" onclick="saveSnippet()">ADD</button></div></div></div></div>
 
   <script>
     let lastFocusedTextarea = null;
-
-    new Sortable(document.getElementById('streamList'), {
-      animation: 150, handle: '.drag-handle', ghostClass: 'sortable-ghost', dragClass: 'sortable-drag',
-      onEnd: () => saveToLocal()
-    });
-
-    const templates = {
-      speech: { label: 'Dialogue', placeholder: '「……」', rows: 2 },
-      char_def: { label: 'Character', placeholder: '[AI personality: Name...]', rows: 6 },
-      code: { label: 'Logic / Code', placeholder: 'if (flag) {\n  \n}', rows: 3 },
-      free: { label: 'Narration', placeholder: '...', rows: 3 }
-    };
+    new Sortable(document.getElementById('streamList'), { animation: 150, handle: '.drag-handle', ghostClass: 'sortable-ghost', dragClass: 'sortable-drag', onEnd: () => saveToLocal() });
+    const templates = { speech: { label: 'Dialogue', placeholder: '「……」', rows: 2 }, char_def: { label: 'Character', placeholder: '[AI personality...]', rows: 6 }, code: { label: 'Logic / Code', placeholder: 'if (flag) {\n  \n}', rows: 3 }, free: { label: 'Narration', placeholder: '...', rows: 3 } };
 
     function addNewCard(type, initialValue = null) {
-      const list = document.getElementById('streamList');
-      if(list.querySelector('p')) list.innerHTML = '';
-      const tmpl = templates[type];
-      const div = document.createElement('div');
-      div.className = `card type-${type}`;
-      div.dataset.type = type;
-      div.innerHTML = `
-        <span class="card-label">${tmpl.label}</span>
-        <textarea rows="${tmpl.rows}" placeholder="${tmpl.placeholder}">${initialValue !== null ? initialValue : ''}</textarea>
-        <div class="drag-handle"></div><span class="remove-btn">×</span>
-      `;
-      list.appendChild(div);
-      setupCardEvents(div);
-      div.scrollIntoView({ behavior: "smooth", block: "end" });
-      saveToLocal();
-      const ta = div.querySelector('textarea');
-      ta.focus(); 
-      lastFocusedTextarea = ta;
+      const list = document.getElementById('streamList'); if(list.querySelector('p')) list.innerHTML = '';
+      const tmpl = templates[type]; const div = document.createElement('div'); div.className = `card type-${type}`; div.dataset.type = type;
+      div.innerHTML = `<span class="card-label">${tmpl.label}</span><textarea rows="${tmpl.rows}" placeholder="${tmpl.placeholder}">${initialValue !== null ? initialValue : ''}</textarea><div class="drag-handle"></div><span class="remove-btn">×</span>`;
+      list.appendChild(div); setupCardEvents(div); div.scrollIntoView({ behavior: "smooth", block: "end" }); saveToLocal();
+      const ta = div.querySelector('textarea'); ta.focus(); lastFocusedTextarea = ta;
     }
-
     function setupCardEvents(card) {
-      card.querySelector('.remove-btn').onclick = function() {
-        if(confirm("Delete block?")) { card.remove(); saveToLocal(); }
-      };
-      const ta = card.querySelector('textarea');
-      if(ta) {
-        ta.addEventListener('input', function() {
-          this.style.height = 'auto'; this.style.height = (this.scrollHeight) + 'px'; saveToLocal();
-        });
-        ta.addEventListener('focus', function(e) { lastFocusedTextarea = e.target; });
-        setTimeout(() => ta.dispatchEvent(new Event('input')), 0);
-      }
+      card.querySelector('.remove-btn').onclick = function() { if(confirm("Delete block?")) { card.remove(); saveToLocal(); } };
+      const ta = card.querySelector('textarea'); if(ta) { ta.addEventListener('input', function() { this.style.height = 'auto'; this.style.height = (this.scrollHeight) + 'px'; saveToLocal(); }); ta.addEventListener('focus', function(e) { lastFocusedTextarea = e.target; }); setTimeout(() => ta.dispatchEvent(new Event('input')), 0); }
     }
-
-    // Inline insertion
     function insertAtCursor(textToInsert, wrap = false) {
       if (!lastFocusedTextarea) { alert("Select a text area first!"); return; }
-      const field = lastFocusedTextarea;
-      const startPos = field.selectionStart;
-      const endPos = field.selectionEnd;
-      const originalText = field.value;
-      const selectedText = originalText.substring(startPos, endPos);
+      const field = lastFocusedTextarea; const startPos = field.selectionStart; const endPos = field.selectionEnd; const originalText = field.value; const selectedText = originalText.substring(startPos, endPos);
       let newText = "", newCursorPos = 0;
-
-      if (wrap) {
-        newText = originalText.substring(0, startPos) + textToInsert[0] + selectedText + textToInsert[1] + originalText.substring(endPos);
-        newCursorPos = selectedText.length > 0 ? startPos + textToInsert[0].length + selectedText.length + textToInsert[1].length : startPos + textToInsert[0].length;
-      } else {
-        newText = originalText.substring(0, startPos) + textToInsert + originalText.substring(endPos);
-        newCursorPos = startPos + textToInsert.length;
-      }
-      field.value = newText;
-      field.selectionStart = field.selectionEnd = newCursorPos;
-      field.dispatchEvent(new Event('input'));
-      field.focus();
+      if (wrap) { newText = originalText.substring(0, startPos) + textToInsert[0] + selectedText + textToInsert[1] + originalText.substring(endPos); newCursorPos = selectedText.length > 0 ? startPos + textToInsert[0].length + selectedText.length + textToInsert[1].length : startPos + textToInsert[0].length; } else { newText = originalText.substring(0, startPos) + textToInsert + originalText.substring(endPos); newCursorPos = startPos + textToInsert.length; }
+      field.value = newText; field.selectionStart = field.selectionEnd = newCursorPos; field.dispatchEvent(new Event('input')); field.focus();
     }
     function insertWildcard(e) { e.preventDefault(); insertAtCursor("****"); }
     function insertBracket(e) { e.preventDefault(); insertAtCursor(["[", "]"], true); }
 
-    // Parts
     function openPartModal(e) { e.preventDefault(); renderPartList(); document.getElementById('partModal').style.display = 'flex'; }
-    function savePart() {
-      const text = document.getElementById('newPartText').value; if(!text) return;
-      const parts = JSON.parse(localStorage.getItem('promptInlineParts') || '[]');
-      parts.push(text); localStorage.setItem('promptInlineParts', JSON.stringify(parts));
-      document.getElementById('newPartText').value = ''; renderPartList();
-    }
-    function renderPartList() {
-      const list = document.getElementById('partList');
-      const parts = JSON.parse(localStorage.getItem('promptInlineParts') || '[]');
-      list.innerHTML = '';
-      parts.forEach((text, index) => {
-        const chip = document.createElement('div'); chip.className = 'part-chip';
-        chip.innerHTML = `${text} <span class="del" onclick="deletePart(${index}, event)">×</span>`;
-        chip.onclick = (e) => { if(!e.target.classList.contains('del')){ insertAtCursor(text); document.getElementById('partModal').style.display='none'; }};
-        list.appendChild(chip);
-      });
-    }
+    function savePart() { const text = document.getElementById('newPartText').value; if(!text) return; const parts = JSON.parse(localStorage.getItem('promptInlineParts') || '[]'); parts.push(text); localStorage.setItem('promptInlineParts', JSON.stringify(parts)); document.getElementById('newPartText').value = ''; renderPartList(); }
+    function renderPartList() { const list = document.getElementById('partList'); const parts = JSON.parse(localStorage.getItem('promptInlineParts') || '[]'); list.innerHTML = ''; parts.forEach((text, index) => { const chip = document.createElement('div'); chip.className = 'part-chip'; chip.innerHTML = `${text} <span class="del" onclick="deletePart(${index}, event)">×</span>`; chip.onclick = (e) => { if(!e.target.classList.contains('del')){ insertAtCursor(text); document.getElementById('partModal').style.display='none'; }}; list.appendChild(chip); }); }
     function deletePart(index, e) { e.stopPropagation(); const parts = JSON.parse(localStorage.getItem('promptInlineParts')||'[]'); parts.splice(index,1); localStorage.setItem('promptInlineParts', JSON.stringify(parts)); renderPartList(); }
 
-    // Character Logic (Updated for Persona Integration)
+    // --- Char Logic ---
     function openCharModal() { renderCharList(); document.getElementById('charModal').style.display = 'flex'; }
-    
     function renderCharList() {
       const list = document.getElementById('charList'); const filter = document.getElementById('charTagFilter');
       const db = JSON.parse(localStorage.getItem('promptChars') || '{}');
-      const tags = new Set(['ALL']); Object.values(db).forEach(obj => tags.add(obj.tag));
+      const tags = new Set(['ALL']); Object.values(db).forEach(obj => { if(obj.tag) tags.add(obj.tag); }); // Dynamic tags
       const currentVal = filter.value; filter.innerHTML = '';
       tags.forEach(t => { const opt = document.createElement('option'); opt.value = t; opt.innerText = t; filter.appendChild(opt); });
       if(tags.has(currentVal)) filter.value = currentVal;
-      
       list.innerHTML = ''; const selectedTag = filter.value;
       Object.keys(db).forEach(name => {
         const entry = db[name]; if(selectedTag !== 'ALL' && entry.tag !== selectedTag) return;
         const item = document.createElement('div'); item.className = 'list-item';
-        item.innerHTML = `<div class="list-info"><span class="list-tag">${entry.tag}</span><span class="list-name">${name}</span></div><div class="btn-group"><button class="btn-sm btn-load" onclick="loadCharacter('${name}')">ADD</button><button class="btn-sm btn-del" onclick="deleteCharacter('${name}')">×</button></div>`;
+        item.innerHTML = `<div class="list-info"><span class="list-tag">${entry.tag||'-'}</span><span class="list-name">${name}</span></div><div class="btn-group"><button class="btn-sm btn-load" onclick="loadCharacter('${name}')">ADD</button><button class="btn-sm btn-del" onclick="deleteCharacter('${name}')">×</button></div>`;
         list.appendChild(item);
       });
     }
-
-            // ★★★ 修正箇所：個別フィールドを組み立ててロードする ★★★
+    // Updated loadCharacter (From previous request)
     window.loadCharacter = (name) => {
       const db = JSON.parse(localStorage.getItem('promptChars') || '{}');
       if(db[name]) {
         const entry = db[name];
-        
-        // --- Core Personality Assembly ---
-        // ここで指定フォーマットに組み上げます
-        // [AI personality: {Name}, role: {Role}, age/gender: {Age}, pronoun: {Pronoun}, addressing: {Addr}, memot: {Memot}, language: {Lang}, refinement: {Refine}]
-        
         let coreText = `[AI personality: ${name}`;
-        if(entry.role) coreText += `, role: ${entry.role}`;
-        if(entry.age)  coreText += `, age/gender: ${entry.age}`;
-        if(entry.pronoun) coreText += `, pronoun: ${entry.pronoun}`;
-        if(entry.addressing) coreText += `, addressing: ${entry.addressing}`;
-        if(entry.memot) coreText += `, memot: ${entry.memot}`;
-        if(entry.language) coreText += `, language: ${entry.language}`;
-        if(entry.refinement) coreText += `, refinement: ${entry.refinement}`;
-        coreText += `]`;
-        
-        // もし古いデータなどで上記フィールドがなく、旧textがある場合はそれを使う
+        if(entry.role) coreText += `, role: ${entry.role}`; if(entry.age)  coreText += `, age/gender: ${entry.age}`;
+        if(entry.pronoun) coreText += `, pronoun: ${entry.pronoun}`; if(entry.addressing) coreText += `, addressing: ${entry.addressing}`;
+        if(entry.memot) coreText += `, memot: ${entry.memot}`; if(entry.language) coreText += `, language: ${entry.language}`;
+        if(entry.refinement) coreText += `, refinement: ${entry.refinement}`; coreText += `]`;
         if(!entry.role && entry.text) coreText = entry.text;
-
         let content = coreText;
-
-        // --- Additional Info ---
-        if(entry.cast && entry.cast.trim()) {
-           content = `(Cast Image: ${entry.cast})\n` + content;
-        }
-        if(entry.memo && entry.memo.trim()) {
-           content = `(Memo: ${entry.memo})\n` + content;
-        }
-
-        if(entry.dialogue && entry.dialogue.trim()) {
-           content += `\n\n[Dialogue Samples]\n${entry.dialogue}`;
-        }
-
+        if(entry.cast && entry.cast.trim()) content = `(Cast Image: ${entry.cast})\n` + content;
+        if(entry.memo && entry.memo.trim()) content = `(Memo: ${entry.memo})\n` + content;
+        if(entry.dialogue && entry.dialogue.trim()) content += `\n\n[Dialogue Samples]\n${entry.dialogue}`;
         if(entry.explicit && entry.explicit.trim()) content += `\n\nexplicit info（明示）: ${entry.explicit}`;
         if(entry.implicit && entry.implicit.trim()) content += `\n\nimplicit info（暗示）: ${entry.implicit}`;
         if(entry.secret && entry.secret.trim())     content += `\n\nsecret info（秘匿）: ${entry.secret}`;
-
-        addNewCard('char_def', content);
-        document.getElementById('charModal').style.display = 'none';
+        addNewCard('char_def', content); document.getElementById('charModal').style.display = 'none';
       }
     };
-
-    // すぐ下に window.deleteCharacter = ... が続きます
-
-
     window.deleteCharacter = (name) => { if(confirm(`Delete?`)){ const db = JSON.parse(localStorage.getItem('promptChars')||'{}'); delete db[name]; localStorage.setItem('promptChars', JSON.stringify(db)); renderCharList(); }};
 
-    // Project Logic
+    // --- Project Logic (Updated for dynamic tagging) ---
     function openProjectModal() { renderProjectList(); document.getElementById('projectModal').style.display = 'flex'; }
+    
     function saveCurrentBoard() {
-      const name = prompt("Project Name:", ""); if(!name) return;
-      const tag = prompt("Tag:", "Work") || "Work";
+      const name = document.getElementById('saveProjName').value.trim();
+      const tag = document.getElementById('saveProjTag').value.trim() || "Work";
+      if(!name) { alert("Please enter a project name."); return; }
+      
       const data = []; document.querySelectorAll('#streamList .card').forEach(card => data.push({ type: card.dataset.type, text: card.querySelector('textarea').value }));
       const db = JSON.parse(localStorage.getItem('promptProjects') || '{}');
-      db[name] = { items: data, tag: tag }; localStorage.setItem('promptProjects', JSON.stringify(db)); renderProjectList();
+      db[name] = { items: data, tag: tag }; 
+      localStorage.setItem('promptProjects', JSON.stringify(db));
+      
+      document.getElementById('saveProjName').value = ''; // clear
+      renderProjectList();
     }
+
     function renderProjectList() {
-      const list = document.getElementById('projectList'); const filter = document.getElementById('projTagFilter');
+      const list = document.getElementById('projectList'); 
+      const filter = document.getElementById('projTagFilter');
+      const datalist = document.getElementById('projTagList'); // New datalist for input
       const db = JSON.parse(localStorage.getItem('promptProjects') || '{}');
-      const tags = new Set(['ALL']); Object.values(db).forEach(obj => tags.add(obj.tag));
+      
+      // Update Tags
+      const tags = new Set(['ALL']); 
+      const dynamicTags = new Set();
+      Object.values(db).forEach(obj => { 
+        if(obj.tag) { tags.add(obj.tag); dynamicTags.add(obj.tag); } 
+      });
+
+      // Populate Datalist
+      datalist.innerHTML = '';
+      Array.from(dynamicTags).sort().forEach(t => { const opt = document.createElement('option'); opt.value = t; datalist.appendChild(opt); });
+
+      // Populate Filter
       const currentVal = filter.value; filter.innerHTML = '';
       tags.forEach(t => { const opt = document.createElement('option'); opt.value = t; opt.innerText = t; filter.appendChild(opt); });
       if(tags.has(currentVal)) filter.value = currentVal;
+      
+      // Render List
       list.innerHTML = ''; const selectedTag = filter.value;
       Object.keys(db).forEach(name => {
         const entry = db[name]; if(selectedTag !== 'ALL' && entry.tag !== selectedTag) return;
@@ -486,51 +240,20 @@
         list.appendChild(item);
       });
     }
-    window.loadProject = (name) => {
-      if(!confirm("Load project?")) return; const db = JSON.parse(localStorage.getItem('promptProjects')||'{}');
-      document.getElementById('streamList').innerHTML = ''; db[name].items.forEach(item => addNewCard(item.type, item.text));
-      document.getElementById('projectModal').style.display = 'none'; saveToLocal();
-    };
+    
+    window.loadProject = (name) => { if(!confirm("Load project?")) return; const db = JSON.parse(localStorage.getItem('promptProjects')||'{}'); document.getElementById('streamList').innerHTML = ''; db[name].items.forEach(item => addNewCard(item.type, item.text)); document.getElementById('projectModal').style.display = 'none'; saveToLocal(); };
     window.deleteProject = (name) => { if(confirm("Delete?")){ const db = JSON.parse(localStorage.getItem('promptProjects')||'{}'); delete db[name]; localStorage.setItem('promptProjects', JSON.stringify(db)); renderProjectList(); }};
 
-    // Snippets
     function openSnippetModal() { renderSnippetList(); document.getElementById('snippetModal').style.display = 'flex'; }
-    function saveSnippet() {
-      const name = document.getElementById('newSnipName').value; const content = document.getElementById('newSnipContent').value;
-      if(!name || !content) return;
-      const db = JSON.parse(localStorage.getItem('promptSnippets') || '{}');
-      db[name] = content; localStorage.setItem('promptSnippets', JSON.stringify(db));
-      document.getElementById('newSnipName').value=''; document.getElementById('newSnipContent').value=''; renderSnippetList();
-    }
-    function renderSnippetList() {
-      const list = document.getElementById('snippetList'); const db = JSON.parse(localStorage.getItem('promptSnippets') || '{}');
-      list.innerHTML = '';
-      Object.keys(db).forEach(name => {
-        const item = document.createElement('div'); item.className = 'list-item';
-        item.innerHTML = `<div class="list-info"><span class="list-name" style="color:var(--code-color);">${name}</span><span class="list-preview">${db[name]}</span></div><div class="btn-group"><button class="btn-sm btn-load" style="background:var(--code-color);" onclick="insertSnippet('${name}')">ADD</button><button class="btn-sm btn-del" onclick="deleteSnippet('${name}')">×</button></div>`;
-        list.appendChild(item);
-      });
-    }
+    function saveSnippet() { const name = document.getElementById('newSnipName').value; const content = document.getElementById('newSnipContent').value; if(!name || !content) return; const db = JSON.parse(localStorage.getItem('promptSnippets') || '{}'); db[name] = content; localStorage.setItem('promptSnippets', JSON.stringify(db)); document.getElementById('newSnipName').value=''; document.getElementById('newSnipContent').value=''; renderSnippetList(); }
+    function renderSnippetList() { const list = document.getElementById('snippetList'); const db = JSON.parse(localStorage.getItem('promptSnippets') || '{}'); list.innerHTML = ''; Object.keys(db).forEach(name => { const item = document.createElement('div'); item.className = 'list-item'; item.innerHTML = `<div class="list-info"><span class="list-name" style="color:var(--code-color);">${name}</span><span class="list-preview">${db[name]}</span></div><div class="btn-group"><button class="btn-sm btn-load" style="background:var(--code-color);" onclick="insertSnippet('${name}')">ADD</button><button class="btn-sm btn-del" onclick="deleteSnippet('${name}')">×</button></div>`; list.appendChild(item); }); }
     window.insertSnippet = (name) => { const db = JSON.parse(localStorage.getItem('promptSnippets')||'{}'); addNewCard('code', db[name]); document.getElementById('snippetModal').style.display = 'none'; };
     window.deleteSnippet = (name) => { if(confirm("Delete?")){ const db = JSON.parse(localStorage.getItem('promptSnippets')||'{}'); delete db[name]; localStorage.setItem('promptSnippets', JSON.stringify(db)); renderSnippetList(); }};
 
-    // Common
-    function exportText() {
-      const cards = document.querySelectorAll('#streamList .card textarea'); let text = "";
-      cards.forEach(ta => { const val = ta.value.trim(); if(val) text += val + "\n\n"; });
-      navigator.clipboard.writeText(text); const btn = document.getElementById('exportBtn'); btn.innerText = "OK!"; setTimeout(() => btn.innerText = "COPY", 1500);
-    }
-    function saveToLocal() {
-      const data = []; document.querySelectorAll('#streamList .card').forEach(card => data.push({ type: card.dataset.type, text: card.querySelector('textarea').value }));
-      localStorage.setItem('promptStreamMobile', JSON.stringify(data));
-    }
-    function clearBoard() {
-      if(confirm("Clear board?")) { document.getElementById('streamList').innerHTML = '<p style="text-align:center; color:var(--border-color); font-size:12px; margin-top:50px;">TAP PALETTE TO START</p>'; saveToLocal(); }
-    }
-    window.onload = function() {
-      const saved = localStorage.getItem('promptStreamMobile');
-      if (saved) { const data = JSON.parse(saved); if(data.length > 0) { document.getElementById('streamList').innerHTML = ''; data.forEach(item => addNewCard(item.type, item.text)); } }
-    };
+    function exportText() { const cards = document.querySelectorAll('#streamList .card textarea'); let text = ""; cards.forEach(ta => { const val = ta.value.trim(); if(val) text += val + "\n\n"; }); navigator.clipboard.writeText(text); const btn = document.getElementById('exportBtn'); btn.innerText = "OK!"; setTimeout(() => btn.innerText = "COPY", 1500); }
+    function saveToLocal() { const data = []; document.querySelectorAll('#streamList .card').forEach(card => data.push({ type: card.dataset.type, text: card.querySelector('textarea').value })); localStorage.setItem('promptStreamMobile', JSON.stringify(data)); }
+    function clearBoard() { if(confirm("Clear board?")) { document.getElementById('streamList').innerHTML = '<p style="text-align:center; color:var(--border-color); font-size:12px; margin-top:50px;">TAP PALETTE TO START</p>'; saveToLocal(); } }
+    window.onload = function() { const saved = localStorage.getItem('promptStreamMobile'); if (saved) { const data = JSON.parse(saved); if(data.length > 0) { document.getElementById('streamList').innerHTML = ''; data.forEach(item => addNewCard(item.type, item.text)); } } };
   </script>
 </body>
 </html>
