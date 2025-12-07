@@ -14,99 +14,51 @@
       --text-main: #ffccEE;
       --border-color: #441133;
       --header-height: 50px;
-      
       --info-explicit: #00f3ff;
       --info-implicit: #ffaa00;
       --info-secret: #ff0055;
     }
-
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-    body {
-      font-family: 'Share Tech Mono', 'Zen Kaku Gothic New', monospace;
-      background-color: var(--bg-color); color: var(--text-main);
-      margin: 0; height: 100dvh; display: flex; flex-direction: column;
-    }
-
-    header {
-      height: var(--header-height); border-bottom: 1px solid var(--border-color);
-      display: flex; align-items: center; justify-content: space-between; padding: 0 10px;
-      background: rgba(20, 0, 10, 0.95); flex-shrink: 0;
-    }
+    body { font-family: 'Share Tech Mono', 'Zen Kaku Gothic New', monospace; background: var(--bg-color); color: var(--text-main); margin: 0; height: 100dvh; display: flex; flex-direction: column; }
+    
+    header { height: var(--header-height); border-bottom: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between; padding: 0 10px; background: rgba(20, 0, 10, 0.95); flex-shrink: 0; }
     h1 { font-size: 16px; color: var(--char-primary); letter-spacing: 2px; margin: 0; }
     
     .actions { display: flex; gap: 8px; }
-    .btn-header {
-      background: transparent; color: var(--char-primary); border: 1px solid var(--char-primary);
-      padding: 6px 10px; font-weight: bold; border-radius: 4px; cursor: pointer;
-      font-family: 'Share Tech Mono'; font-size: 11px;
-    }
+    .btn-header { background: transparent; color: var(--char-primary); border: 1px solid var(--char-primary); padding: 6px 10px; font-weight: bold; border-radius: 4px; cursor: pointer; font-family: 'Share Tech Mono'; font-size: 11px; }
     .btn-header.filled { background: var(--char-primary); color: #000; }
     .btn-header.back { color: #ccc; border-color: #555; text-decoration: none; display: flex; align-items: center; }
 
     .container { display: flex; flex: 1; overflow: hidden; }
-    
-    .sidebar {
-      width: 35%; border-right: 1px solid var(--border-color);
-      overflow-y: auto; background: rgba(0,0,0,0.2);
-    }
-    .char-item {
-      padding: 12px; border-bottom: 1px solid var(--border-color); cursor: pointer;
-      transition: 0.2s;
-    }
+    .sidebar { width: 35%; border-right: 1px solid var(--border-color); overflow-y: auto; background: rgba(0,0,0,0.2); }
+    .char-item { padding: 12px; border-bottom: 1px solid var(--border-color); cursor: pointer; transition: 0.2s; }
     .char-item:hover, .char-item.active { background: rgba(255, 0, 204, 0.1); border-left: 3px solid var(--char-primary); }
     .char-tag { font-size: 10px; color: var(--char-dim); border: 1px solid var(--char-dim); padding: 1px 4px; border-radius: 4px; margin-bottom: 4px; display: inline-block; }
     .char-name { font-weight: bold; font-size: 14px; display: block; }
 
     .editor { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; }
-    
     label { font-size: 11px; color: var(--char-dim); margin-bottom: 4px; display: flex; justify-content: space-between; }
     .label-badge { padding: 2px 6px; border-radius: 4px; color: #000; font-weight: bold; font-size: 10px; }
     
-    input[type="text"], textarea {
-      background: #000; border: 1px solid var(--border-color); color: var(--text-main);
-      padding: 10px; width: 100%; font-family: inherit; font-size: 13px; border-radius: 4px;
-    }
+    input[type="text"], textarea { background: #000; border: 1px solid var(--border-color); color: var(--text-main); padding: 10px; width: 100%; font-family: inherit; font-size: 13px; border-radius: 4px; }
     textarea { resize: vertical; line-height: 1.6; }
     input:focus, textarea:focus { outline: none; border-color: var(--char-primary); }
 
-    /* Core Fields Grid */
-    .core-grid {
-      display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
-      padding: 10px; border: 1px solid var(--border-color); border-radius: 6px;
-      background: rgba(255, 0, 204, 0.03);
-    }
+    .core-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 10px; border: 1px solid var(--border-color); border-radius: 6px; background: rgba(255, 0, 204, 0.03); }
     .core-field { margin-bottom: 5px; }
     .full-width { grid-column: 1 / -1; }
 
-    /* 3 Layer Info */
     .info-grid { display: grid; gap: 15px; margin-top: 10px; }
-    .area-explicit textarea { border-color: rgba(0, 243, 255, 0.3); }
-    .area-explicit textarea:focus { border-color: var(--info-explicit); }
-    .area-implicit textarea { border-color: rgba(255, 170, 0, 0.3); }
-    .area-implicit textarea:focus { border-color: var(--info-implicit); }
-    .area-secret textarea { border-color: rgba(255, 0, 85, 0.3); background: #0f0005; }
-    .area-secret textarea:focus { border-color: var(--info-secret); }
+    .area-explicit textarea { border-color: rgba(0, 243, 255, 0.3); } .area-explicit textarea:focus { border-color: var(--info-explicit); }
+    .area-implicit textarea { border-color: rgba(255, 170, 0, 0.3); } .area-implicit textarea:focus { border-color: var(--info-implicit); }
+    .area-secret textarea { border-color: rgba(255, 0, 85, 0.3); background: #0f0005; } .area-secret textarea:focus { border-color: var(--info-secret); }
 
-    /* Modal */
-    .modal-overlay {
-      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(0,0,0,0.9); backdrop-filter: blur(5px);
-      z-index: 999; display: none; align-items: center; justify-content: center;
-    }
-    .modal-content {
-      background: #111518; border: 1px solid var(--char-primary);
-      width: 90%; max-width: 500px; max-height: 85vh; border-radius: 12px;
-      display: flex; flex-direction: column; padding: 20px;
-    }
+    .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); backdrop-filter: blur(5px); z-index: 999; display: none; align-items: center; justify-content: center; }
+    .modal-content { background: #111518; border: 1px solid var(--char-primary); width: 90%; max-width: 500px; max-height: 85vh; border-radius: 12px; display: flex; flex-direction: column; padding: 20px; }
     .modal-h { color: var(--char-primary); margin: 0 0 15px 0; font-size: 16px; font-weight: bold; display: flex; justify-content: space-between; }
     .btn-modal { width: 100%; padding: 12px; margin-top: 10px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; }
 
-    @media (max-width: 600px) {
-      .container { flex-direction: column; }
-      .sidebar { width: 100%; height: 120px; flex-shrink: 0; }
-      .editor { flex: 1; }
-      .core-grid { grid-template-columns: 1fr; }
-    }
+    @media (max-width: 600px) { .container { flex-direction: column; } .sidebar { width: 100%; height: 120px; flex-shrink: 0; } .editor { flex: 1; } .core-grid { grid-template-columns: 1fr; } }
   </style>
 </head>
 <body>
@@ -123,7 +75,6 @@
 
 <div class="container">
   <div class="sidebar" id="sidebar"></div>
-
   <div class="editor" id="editorArea">
     <div style="display:flex; gap:10px;">
       <div style="flex:1;">
@@ -131,81 +82,35 @@
         <input type="text" id="inpName" placeholder="Character Name">
       </div>
       <div style="flex:1;">
-        <label>TAG</label>
-        <input type="text" id="inpTag" placeholder="Tag" list="tagList">
-        <datalist id="tagList">
-          <option value="妖譚"></option>
-          <option value="艶治"></option>
-          <option value="薔薇"></option>
-          <option value="怪異"></option>
-        </datalist>
+        <label>TAG (Free Input)</label>
+        <input type="text" id="inpTag" placeholder="Input or Select Tag" list="tagList">
+        <datalist id="tagList"></datalist>
       </div>
     </div>
     
-    <div>
-      <label>CAST / IMAGE</label>
-      <input type="text" id="inpCast" placeholder="Actor name, Voice image, or URL">
-    </div>
+    <div><label>CAST / IMAGE</label><input type="text" id="inpCast" placeholder="Actor, Image URL..."></div>
 
     <div>
       <label>CORE PERSONALITY [AI personality: ... ]</label>
       <div class="core-grid">
-        <div class="core-field full-width">
-          <label>Role (役割・種族)</label>
-          <input type="text" id="inpRole" placeholder="金翹国の武官・ムウムの守護者...">
-        </div>
-        <div class="core-field">
-          <label>Age/Gender (年齢・性別)</label>
-          <input type="text" id="inpAge" placeholder="外見30代・男性">
-        </div>
-        <div class="core-field">
-          <label>Pronoun (一人称)</label>
-          <input type="text" id="inpPronoun" placeholder="オレ">
-        </div>
-        <div class="core-field full-width">
-          <label>Addressing (二人称・呼称)</label>
-          <input type="text" id="inpAddr" placeholder="ユーザーを「ムウム」呼び...">
-        </div>
-        <div class="core-field full-width">
-          <label>Memot (思考・行動原理)</label>
-          <input type="text" id="inpMemot" placeholder="誓(70%)×孤(30)%...">
-        </div>
-        <div class="core-field full-width">
-          <label>Language (口調)</label>
-          <input type="text" id="inpLang" placeholder="武人の簡潔で威圧感ある口調">
-        </div>
-        <div class="core-field full-width">
-          <label>Refinement (雰囲気・特記事項)</label>
-          <input type="text" id="inpRefine" placeholder="戦場の静けさをまとう気高さ">
-        </div>
+        <div class="core-field full-width"><label>Role</label><input type="text" id="inpRole" placeholder="Role..."></div>
+        <div class="core-field"><label>Age/Gender</label><input type="text" id="inpAge" placeholder="Age..."></div>
+        <div class="core-field"><label>Pronoun</label><input type="text" id="inpPronoun" placeholder="Pronoun..."></div>
+        <div class="core-field full-width"><label>Addressing</label><input type="text" id="inpAddr" placeholder="Addressing..."></div>
+        <div class="core-field full-width"><label>Memot</label><input type="text" id="inpMemot" placeholder="Memot..."></div>
+        <div class="core-field full-width"><label>Language</label><input type="text" id="inpLang" placeholder="Language..."></div>
+        <div class="core-field full-width"><label>Refinement</label><input type="text" id="inpRefine" placeholder="Refinement..."></div>
       </div>
     </div>
 
-    <div>
-      <label>DIALOGUE SAMPLES</label>
-      <textarea id="inpDialogue" rows="4" placeholder="「……」"></textarea>
-    </div>
+    <div><label>DIALOGUE SAMPLES</label><textarea id="inpDialogue" rows="4" placeholder="「……」"></textarea></div>
 
     <div class="info-grid">
-      <div class="area-explicit">
-        <label>EXPLICIT (明示) <span class="label-badge" style="background:var(--info-explicit)">PUBLIC</span></label>
-        <textarea id="inpExplicit" rows="2" placeholder="本文/台詞に出してよい情報"></textarea>
-      </div>
-      <div class="area-implicit">
-        <label>IMPLICIT (暗示) <span class="label-badge" style="background:var(--info-implicit)">HINT</span></label>
-        <textarea id="inpImplicit" rows="2" placeholder="比喩などで匂わせる情報"></textarea>
-      </div>
-      <div class="area-secret">
-        <label>SECRET (秘匿) <span class="label-badge" style="background:var(--info-secret); color:#fff;">CLASSIFIED</span></label>
-        <textarea id="inpSecret" rows="2" placeholder="AIのみが参照する裏設定"></textarea>
-      </div>
+      <div class="area-explicit"><label>EXPLICIT (明示)</label><textarea id="inpExplicit" rows="2" placeholder="Public info..."></textarea></div>
+      <div class="area-implicit"><label>IMPLICIT (暗示)</label><textarea id="inpImplicit" rows="2" placeholder="Hint info..."></textarea></div>
+      <div class="area-secret"><label>SECRET (秘匿)</label><textarea id="inpSecret" rows="2" placeholder="Secret info..."></textarea></div>
     </div>
-
-    <div style="margin-top:10px;">
-      <label>MEMO (Personal Notes)</label>
-      <textarea id="inpMemo" rows="2" style="color:#777; border-style:dashed;" placeholder="自分用メモ..."></textarea>
-    </div>
-    
+    <div style="margin-top:10px;"><label>MEMO</label><textarea id="inpMemo" rows="2" style="color:#777; border-style:dashed;" placeholder="Personal notes..."></textarea></div>
     <button onclick="deleteCurrent()" style="background:transparent; border:1px solid #ff4444; color:#ff4444; padding:8px; border-radius:4px; margin-top:20px;">DELETE CHARACTER</button>
   </div>
 </div>
@@ -213,7 +118,6 @@
 <div id="dataModal" class="modal-overlay">
   <div class="modal-content">
     <div class="modal-h">DATA MANAGER <span onclick="document.getElementById('dataModal').style.display='none'" style="cursor:pointer;">×</span></div>
-    <p style="font-size:12px; color:#aaa; margin-top:0;">Import/Export all characters as JSON.</p>
     <textarea id="jsonArea" rows="10" style="font-family:monospace; color:var(--char-primary); font-size:11px;" placeholder="Paste JSON here..."></textarea>
     <div style="display:flex; gap:10px;">
       <button class="btn-modal" style="background:#333; color:#fff;" onclick="copyJson()">COPY JSON</button>
@@ -229,8 +133,23 @@
   function loadDB() { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); }
   function saveDB(db) { localStorage.setItem(STORAGE_KEY, JSON.stringify(db)); renderList(); }
 
+  // タグリストの自動更新機能
+  function updateTagList(db) {
+    const list = document.getElementById('tagList');
+    const tags = new Set();
+    Object.values(db).forEach(entry => { if(entry.tag) tags.add(entry.tag); });
+    list.innerHTML = '';
+    Array.from(tags).sort().forEach(tag => {
+      const opt = document.createElement('option');
+      opt.value = tag;
+      list.appendChild(opt);
+    });
+  }
+
   function renderList() {
     const db = loadDB();
+    updateTagList(db); // ここでタグリストも更新
+    
     const sidebar = document.getElementById('sidebar');
     sidebar.innerHTML = '';
     const keys = Object.keys(db).sort();
@@ -251,21 +170,16 @@
     if (!entry) return;
     currentKey = name;
     
-    // Core info
     document.getElementById('inpName').value = name;
     document.getElementById('inpTag').value = entry.tag || '';
     document.getElementById('inpCast').value = entry.cast || '';
     
-    // Core Personality Fields
-    document.getElementById('inpRole').value = entry.role || '';
-    document.getElementById('inpAge').value = entry.age || '';
-    document.getElementById('inpPronoun').value = entry.pronoun || '';
-    document.getElementById('inpAddr').value = entry.addressing || '';
-    document.getElementById('inpMemot').value = entry.memot || '';
-    document.getElementById('inpLang').value = entry.language || '';
-    document.getElementById('inpRefine').value = entry.refinement || '';
+    ['Role','Age','Pronoun','Addr','Memot','Lang','Refine'].forEach(k => {
+        document.getElementById('inp'+k).value = entry[k.toLowerCase()] || '';
+        // 旧フォーマット対応
+        if(k==='Role' && !entry.role && entry.role===undefined && entry.text) document.getElementById('inpRole').value = "[Legacy Data] " + entry.text.substring(0,20)+"...";
+    });
 
-    // Others
     document.getElementById('inpDialogue').value = entry.dialogue || '';
     document.getElementById('inpExplicit').value = entry.explicit || '';
     document.getElementById('inpImplicit').value = entry.implicit || '';
@@ -281,10 +195,8 @@
     if (currentKey && currentKey !== name) delete db[currentKey];
     
     db[name] = {
-      tag: document.getElementById('inpTag').value,
+      tag: document.getElementById('inpTag').value, // ここに入力された内容がそのまま保存＝新タグ登録
       cast: document.getElementById('inpCast').value,
-      
-      // Core fields
       role: document.getElementById('inpRole').value,
       age: document.getElementById('inpAge').value,
       pronoun: document.getElementById('inpPronoun').value,
@@ -292,7 +204,6 @@
       memot: document.getElementById('inpMemot').value,
       language: document.getElementById('inpLang').value,
       refinement: document.getElementById('inpRefine').value,
-
       dialogue: document.getElementById('inpDialogue').value,
       explicit: document.getElementById('inpExplicit').value,
       implicit: document.getElementById('inpImplicit').value,
@@ -302,14 +213,12 @@
     saveDB(db);
     currentKey = name;
     const btn = document.querySelector('.btn-header.filled');
-    const originalText = btn.innerText;
-    btn.innerText = "OK!"; setTimeout(() => btn.innerText = originalText, 1000);
+    const originalText = btn.innerText; btn.innerText = "OK!"; setTimeout(() => btn.innerText = originalText, 1000);
   }
 
   function createNew() {
     currentKey = null;
-    const ids = ['inpName','inpTag','inpCast','inpRole','inpAge','inpPronoun','inpAddr','inpMemot','inpLang','inpRefine','inpDialogue','inpExplicit','inpImplicit','inpSecret','inpMemo'];
-    ids.forEach(id => document.getElementById(id).value = '');
+    document.querySelectorAll('input, textarea').forEach(el => el.value = '');
     renderList();
     document.getElementById('inpName').focus();
   }
@@ -319,7 +228,6 @@
     if(confirm('Delete character?')) { const db = loadDB(); delete db[currentKey]; saveDB(db); createNew(); }
   }
 
-  // DATA
   function openDataModal() { document.getElementById('dataModal').style.display = 'flex'; document.getElementById('jsonArea').value = ''; }
   function copyJson() { navigator.clipboard.writeText(JSON.stringify(loadDB(), null, 2)); alert('JSON copied!'); }
   function loadJson() {
@@ -328,7 +236,6 @@
       if(confirm('Overwrite all data?')) { saveDB(db); document.getElementById('dataModal').style.display = 'none'; alert('Loaded!'); }
     } catch(e) { alert('Invalid JSON'); }
   }
-
   renderList();
 </script>
 </body>
