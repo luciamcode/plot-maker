@@ -230,12 +230,101 @@
 
   function openDataModal() { document.getElementById('dataModal').style.display = 'flex'; document.getElementById('jsonArea').value = ''; }
   function copyJson() { navigator.clipboard.writeText(JSON.stringify(loadDB(), null, 2)); alert('JSON copied!'); }
+    // ★★★ 強化版 LOAD JSON ★★★
   function loadJson() {
+    const rawText = document.getElementById('jsonArea').value;
+    if(!rawText) return;
+
     try {
-      const db = JSON.parse(document.getElementById('jsonArea').value);
-      if(confirm('Overwrite all data?')) { saveDB(db); document.getElementById('dataModal').style.display = 'none'; alert('Loaded!'); }
-    } catch(e) { alert('Invalid JSON'); }
+      const inputData = JSON.parse(rawText);
+      const currentDB = loadDB();
+      let importCount = 0;
+
+      // -------------------------------------------------------
+      // Helper: 揺らぎのあるキーから値を取り出す関数
+      // -------------------------------------------------------
+      const getVal = (source, candidates) => {
+        for (const key of candidates) {
+          if (source[key] !== undefined && source[key] !== null) {
+            // もし値がオブジェクトなら文字列化して返す（addressing対策）
+            if (typeof source[key] === 'object' && !Array.isArray(source[key])) {
+               return Object.entries(source[key]).map(([k, v]) => `${k}: ${v}`).join(', ');
+            }
+            return String(source[key]); // 文字列として返す
+          }
+        }
+        return ""; // 見つからなければ空文字
+      };
+
+      // -------------------------------------------------------
+      // Helper: 1キャラ分のデータを正規化して保存する関数
+      // -------------------------------------------------------
+      const processCharacter = (charObj, forceName = null) => {
+        // 名前を探す (AI_personality, Name, name, character_name...)
+        const name = forceName || getVal(charObj, ['AI_personality', 'Name', 'name', 'character_name', 'キャラ名']);
+        
+        if (!name) return false; // 名前がないデータはスキップ
+
+        // 既存データがあればマージ、なければ新規作成
+        const existing = currentDB[name] || {};
+
+        currentDB[name] = {
+          tag:        getVal(charObj, ['tag', 'genre', 'category']) || existing.tag || "",
+          cast:       getVal(charObj, ['cast', 'image', 'actor']) || existing.cast || "",
+          
+          // Core Fields (揺らぎ吸収)
+          role:       getVal(charObj, ['role', 'job', 'class']) || existing.role || "",
+          age:        getVal(charObj, ['age', 'age_gender', 'gender']) || existing.age || "",
+          pronoun:    getVal(charObj, ['pronoun', 'first_person']) || existing.pronoun || "",
+          addressing: getVal(charObj, ['addressing', 'second_person']) || existing.addressing || "",
+          memot:      getVal(charObj, ['memot', 'mind', 'trait']) || existing.memot || "",
+          language:   getVal(charObj, ['language', 'tone', 'speech_style']) || existing.language || "",
+          refinement: getVal(charObj, ['refinement', 'atmosphere', 'vibe']) || existing.refinement || "",
+
+          // Text Areas
+          dialogue:   getVal(charObj, ['dialogue', 'sample_voice', 'speech']) || existing.dialogue || "",
+          explicit:   getVal(charObj, ['explicit', 'explicit_info']) || existing.explicit || "",
+          implicit:   getVal(charObj, ['implicit', 'implicit_info']) || existing.implicit || "",
+          secret:     getVal(charObj, ['secret', 'secret_info']) || existing.secret || "",
+          memo:       getVal(charObj, ['memo', 'note']) || existing.memo || ""
+        };
+        return true;
+      };
+
+      // -------------------------------------------------------
+      // Main Logic: 配列か、辞書か、単体か判定
+      // -------------------------------------------------------
+      
+      // パターンA: 配列の場合 ( [ {char1}, {char2} ] )
+      if (Array.isArray(inputData)) {
+        inputData.forEach(item => { if(processCharacter(item)) importCount++; });
+      } 
+      // パターンB: 単体オブジェクトだが、キーがパラメータっぽい (今回提示されたケース)
+      else if (inputData.AI_personality || inputData.name || inputData.role) {
+        if(processCharacter(inputData)) importCount++;
+      }
+      // パターンC: アプリ標準のバックアップ形式 ( { "Name": {data}, "Name2": {data} } )
+      else {
+        Object.keys(inputData).forEach(key => {
+          // キー自体を名前として扱い、中身をデータとする
+          if(processCharacter(inputData[key], key)) importCount++;
+        });
+      }
+
+      if (importCount > 0) {
+        saveDB(currentDB);
+        document.getElementById('dataModal').style.display = 'none';
+        alert(`Imported ${importCount} character(s) successfully!`);
+      } else {
+        alert("No valid character data found in JSON.");
+      }
+
+    } catch(e) {
+      console.error(e);
+      alert('Invalid JSON format or structure.\nCheck console for details.'); 
+    }
   }
+
   renderList();
 </script>
 </body>
