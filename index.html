@@ -2,8 +2,8 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>PROMPT STREAM // HYBRID</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, interactive-widget=resizes-content">
+  <title>PROMPT STREAM // NATIVE_LAYOUT</title>
   <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600&family=Share+Tech+Mono&family=Zen+Kaku+Gothic+New:wght@400;700&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
   <style>
@@ -16,7 +16,20 @@
     }
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
     
-    body { font-family: 'Share Tech Mono', 'Zen Kaku Gothic New', monospace; background-color: var(--bg-color); color: var(--text-main); margin: 0; height: 100dvh; overflow: hidden; display: flex; flex-direction: column; transition: 0.3s; }
+    html { height: 100%; overflow: hidden; } /* HTML自体もスクロール禁止 */
+    
+    body { 
+      font-family: 'Share Tech Mono', 'Zen Kaku Gothic New', monospace; 
+      background-color: var(--bg-color); color: var(--text-main); 
+      margin: 0; 
+      /* heightはJSで制御しますが、初期値として100dvhを設定 */
+      height: 100dvh; 
+      width: 100vw;
+      overflow: hidden; /* Bodyスクロール禁止 */
+      display: flex; flex-direction: column; 
+      position: fixed; /* 画面に固定 */
+      top: 0; left: 0;
+    }
     
     /* Header */
     header { height: var(--header-height); border-bottom: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between; padding: 0 8px; background: rgba(11, 15, 18, 0.98); z-index: 20; flex-shrink: 0; }
@@ -27,7 +40,6 @@
     .btn-link { text-decoration: none; display: inline-flex; } .btn-link button { border-color: var(--char-color); color: var(--char-color); } .btn-link button:active { background: var(--char-color); color: #fff; }
     .actions button.accent { border-color: var(--secondary); color: var(--secondary); } .actions button.accent:active { background: var(--secondary); color: #000; }
     .actions button.danger { border-color: var(--accent); color: var(--accent); } .actions button.danger:active { background: var(--accent); color: #000; }
-    /* Mode Toggle Button */
     .btn-mode { border-color: #fff !important; color: #fff !important; background: #333 !important; }
 
     /* Palette */
@@ -41,7 +53,17 @@
     .btn-speech { border-left-color: var(--primary); } .btn-char { border-left-color: var(--char-color); } .btn-code { border-left-color: var(--code-color); } .btn-snip { border-left-color: var(--secondary); border-style: dotted; }
 
     /* Stream Container */
-    .stream-container { flex: 1; background: var(--stream-bg); padding: 15px 10px; overflow-y: auto; -webkit-overflow-scrolling: touch; position: relative; transition: padding 0.3s; }
+    .stream-container { 
+      flex: 1; 
+      background: var(--stream-bg); 
+      padding: 15px 10px; 
+      overflow-y: auto; 
+      -webkit-overflow-scrolling: touch; 
+      position: relative; 
+      transition: padding 0.3s;
+      /* キーボードが出た時のスクロール確保用 */
+      overscroll-behavior: contain;
+    }
     /* Mode specific padding */
     body.mode-rapid .stream-container { padding-bottom: 80px; }
     body.mode-standard .stream-container { padding-bottom: 20px; }
@@ -67,6 +89,7 @@
     .rapid-footer {
       height: var(--footer-height); border-top: 1px solid var(--border-color);
       background: #111518; padding: 0 10px; display: flex; align-items: center; gap: 10px;
+      /* position absolute to stick to bottom of flex container */
       position: absolute; bottom: 0; left: 0; width: 100%; z-index: 30;
       transform: translateY(0); transition: transform 0.3s;
     }
@@ -75,10 +98,9 @@
     .rapid-send { width: 40px; height: 40px; border-radius: 50%; background: var(--primary); border: none; color: #000; font-size: 20px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; }
     .rapid-send:active { transform: scale(0.9); background: #fff; }
 
-    /* Mode States */
-    body.mode-standard .rapid-footer { transform: translateY(100%); } /* Hide footer */
-    
-    /* Modals & Others */
+    body.mode-standard .rapid-footer { transform: translateY(100%); }
+
+    /* Modals & Others (Unchanged) */
     .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); backdrop-filter: blur(5px); z-index: 100; display: none; align-items: center; justify-content: center; }
     .modal-content { background: #111518; border: 1px solid var(--secondary); width: 90%; max-width: 450px; max-height: 85vh; border-radius: 12px; display: flex; flex-direction: column; box-shadow: 0 0 30px rgba(0,0,0,0.5); }
     .modal-header { padding: 15px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; background: rgba(255, 255, 255, 0.05); color: var(--text-main); font-weight: bold; font-size: 14px; }
@@ -103,8 +125,10 @@
     #snippetModal .modal-content { border-color: var(--code-color); } #shareModal .modal-content { border-color: var(--primary); }
   </style>
 </head>
-<body class="mode-rapid"> <header>
-    <h1>PROMPT<span>v10</span></h1>
+<body class="mode-rapid">
+
+  <header>
+    <h1>PROMPT<span>v11</span></h1>
     <div class="actions">
       <button class="btn-mode" onclick="toggleMode()">⚡ MODE</button>
       <a href="./persona.html" class="btn-link"><button title="Persona">PERSONA→</button></a>
@@ -135,7 +159,7 @@
   </div>
 
   <div class="rapid-footer">
-    <input type="text" id="rapidInput" class="rapid-input" placeholder="Rapid Fire Mode..." onkeypress="handleRapidKey(event)">
+    <input type="text" id="rapidInput" class="rapid-input" placeholder="Type idea here..." onkeypress="handleRapidKey(event)">
     <button class="rapid-send" onclick="sendRapidFire()">↑</button>
   </div>
 
@@ -161,9 +185,23 @@
     let lastFocusedTextarea = null;
     const typeOrder = ['speech', 'char_def', 'code', 'free'];
     
+    // Sortable
     new Sortable(document.getElementById('streamList'), {
       animation: 150, handle: '.drag-handle', ghostClass: 'sortable-ghost', dragClass: 'sortable-drag', onEnd: () => saveToLocal()
     });
+
+    // --- Visual Viewport Handling for Mobile Keyboard ---
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener('resize', () => {
+        // キーボードが出現してビューポートが縮んだ時、Bodyの高さを可視領域に強制一致させる
+        document.body.style.height = window.visualViewport.height + 'px';
+        
+        // 必要ならスクロール位置を調整
+        if(document.activeElement.classList.contains('rapid-input')) {
+            window.scrollTo(0, 0); // 全体スクロールを防ぐ
+        }
+      });
+    }
 
     const templates = {
       speech: { label: 'Dialogue', placeholder: '「……」', rows: 2 },
@@ -197,8 +235,7 @@
       if (!insertAfterNode) div.scrollIntoView({ behavior: "smooth", block: "end" });
       saveToLocal();
       const ta = div.querySelector('textarea'); 
-      // Rapid ModeかつInputにフォーカスがある場合は奪わない
-      if(document.body.classList.contains('mode-standard') || document.activeElement !== document.getElementById('rapidInput')) {
+      if(!document.activeElement.classList.contains('rapid-input')) {
         ta.focus(); lastFocusedTextarea = ta;
       }
     }
@@ -224,34 +261,18 @@
       const ta = card.querySelector('textarea'); if(ta) { ta.addEventListener('input', function() { this.style.height = 'auto'; this.style.height = (this.scrollHeight) + 'px'; saveToLocal(); }); ta.addEventListener('focus', function(e) { lastFocusedTextarea = e.target; }); setTimeout(() => ta.dispatchEvent(new Event('input')), 0); }
     }
 
-    // --- Mode Toggle Logic ---
     function toggleMode() {
       const body = document.body;
-      if (body.classList.contains('mode-rapid')) {
-        body.classList.remove('mode-rapid');
-        body.classList.add('mode-standard');
-        localStorage.setItem('promptMode', 'standard');
-      } else {
-        body.classList.remove('mode-standard');
-        body.classList.add('mode-rapid');
-        localStorage.setItem('promptMode', 'rapid');
-      }
+      if (body.classList.contains('mode-rapid')) { body.classList.remove('mode-rapid'); body.classList.add('mode-standard'); localStorage.setItem('promptMode', 'standard'); } 
+      else { body.classList.remove('mode-standard'); body.classList.add('mode-rapid'); localStorage.setItem('promptMode', 'rapid'); }
     }
-
-    // --- Rapid Fire ---
     function handleRapidKey(e) { if(e.key === 'Enter') sendRapidFire(); }
     function sendRapidFire() {
-      const input = document.getElementById('rapidInput');
-      const val = input.value.trim();
-      if(!val) return;
-      let type = 'free';
-      if(val.startsWith('「') || val.startsWith('『')) type = 'speech';
-      else if(val.startsWith('[')) type = 'code'; 
-      addNewCard(type, val);
-      input.value = ''; input.focus();
+      const input = document.getElementById('rapidInput'); const val = input.value.trim(); if(!val) return;
+      let type = 'free'; if(val.startsWith('「') || val.startsWith('『')) type = 'speech'; else if(val.startsWith('[')) type = 'code'; 
+      addNewCard(type, val); input.value = ''; input.focus();
     }
 
-    // --- Inline ---
     function insertAtCursor(textToInsert, wrap = false) {
       if (!lastFocusedTextarea) { alert("Select a text area first!"); return; }
       const field = lastFocusedTextarea; const startPos = field.selectionStart; const endPos = field.selectionEnd; const originalText = field.value; const selectedText = originalText.substring(startPos, endPos);
@@ -264,18 +285,17 @@
     function insertBracket(e) { e.preventDefault(); insertAtCursor(["[", "]"], true); }
     function insertSeparator(e) { e.preventDefault(); insertAtCursor("\n---\n"); }
 
-    // --- Share / Export ---
     function openShareModal() { document.getElementById('shareModal').style.display = 'flex'; }
     function getAllText() { const cards = document.querySelectorAll('#streamList .card textarea'); let text = ""; cards.forEach(ta => { const val = ta.value.trim(); if(val) text += val + "\n\n"; }); return text; }
     async function shareContent(mode) { const rawText = getAllText(); const textToShare = (mode === 'code') ? "```markdown\n" + rawText + "\n```" : rawText; const title = (mode === 'code') ? "Prompt Code" : "Prompt Text"; if (navigator.share) { try { await navigator.share({ title: title, text: textToShare }); } catch (err) { if(err.name !== 'AbortError') alert("Share failed: " + err); } } else { navigator.clipboard.writeText(textToShare); alert("Web Share API not supported.\nCopied to clipboard!"); } document.getElementById('shareModal').style.display = 'none'; }
     async function shareAsFile(ext) { const text = getAllText(); const fileName = `PROMPT_${new Date().toISOString().slice(0,10)}.${ext}`; const file = new File([text], fileName, { type: 'text/plain' }); if (navigator.canShare && navigator.canShare({ files: [file] })) { try { await navigator.share({ files: [file], title: 'Prompt File', text: 'Sending Prompt File...' }); } catch (err) { if(err.name !== 'AbortError') alert("File Share failed: " + err); } } else { downloadFile(ext); } document.getElementById('shareModal').style.display = 'none'; }
     function downloadFile(ext) { const text = getAllText(); const blob = new Blob([text], { type: 'text/plain' }); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `PROMPT_${new Date().toISOString().slice(0,10)}.${ext}`; a.click(); }
 
-    // --- Parts/Char/Proj/Snip (Minified logic) ---
     function openPartModal(e) { e.preventDefault(); renderPartList(); document.getElementById('partModal').style.display = 'flex'; }
     function savePart() { const text = document.getElementById('newPartText').value; if(!text) return; const parts = JSON.parse(localStorage.getItem('promptInlineParts') || '[]'); parts.push(text); localStorage.setItem('promptInlineParts', JSON.stringify(parts)); document.getElementById('newPartText').value = ''; renderPartList(); }
     function renderPartList() { const list = document.getElementById('partList'); const parts = JSON.parse(localStorage.getItem('promptInlineParts') || '[]'); list.innerHTML = ''; parts.forEach((text, index) => { const chip = document.createElement('div'); chip.className = 'part-chip'; chip.innerHTML = `${text} <span class="del" onclick="deletePart(${index}, event)">×</span>`; chip.onclick = (e) => { if(!e.target.classList.contains('del')){ insertAtCursor(text); document.getElementById('partModal').style.display='none'; }}; list.appendChild(chip); }); }
     function deletePart(index, e) { e.stopPropagation(); const parts = JSON.parse(localStorage.getItem('promptInlineParts')||'[]'); parts.splice(index,1); localStorage.setItem('promptInlineParts', JSON.stringify(parts)); renderPartList(); }
+
     function openCharModal() { renderCharList(); document.getElementById('charModal').style.display = 'flex'; }
     function renderCharList() { const list = document.getElementById('charList'); const filter = document.getElementById('charTagFilter'); const db = JSON.parse(localStorage.getItem('promptChars') || '{}'); const tags = new Set(['ALL']); Object.values(db).forEach(obj => { if(obj.tag) tags.add(obj.tag); }); const currentVal = filter.value; filter.innerHTML = ''; tags.forEach(t => { const opt = document.createElement('option'); opt.value = t; opt.innerText = t; filter.appendChild(opt); }); if(tags.has(currentVal)) filter.value = currentVal; list.innerHTML = ''; const selectedTag = filter.value; Object.keys(db).forEach(name => { const entry = db[name]; if(selectedTag !== 'ALL' && entry.tag !== selectedTag) return; const item = document.createElement('div'); item.className = 'list-item'; item.innerHTML = `<div class="list-info"><span class="list-tag">${entry.tag||'-'}</span><span class="list-name">${name}</span></div><div class="btn-group"><button class="btn-sm btn-load" onclick="loadCharacter('${name}')">ADD</button><button class="btn-sm btn-del" onclick="deleteCharacter('${name}')">×</button></div>`; list.appendChild(item); }); }
     window.loadCharacter = (name) => { const db = JSON.parse(localStorage.getItem('promptChars') || '{}'); if(db[name]) { const entry = db[name]; let content = entry.text || `[AI personality: ${name}]`; if(!entry.text && entry.role) { content = `[AI personality: ${name}, role: ${entry.role}]`; } addNewCard('char_def', content); document.getElementById('charModal').style.display = 'none'; } };
@@ -294,15 +314,11 @@
     function saveToLocal() { const data = []; document.querySelectorAll('#streamList .card').forEach(card => data.push({ type: card.dataset.type, text: card.querySelector('textarea').value })); localStorage.setItem('promptStreamMobile', JSON.stringify(data)); }
     function clearBoard() { if(confirm("Clear board?")) { document.getElementById('streamList').innerHTML = '<p style="text-align:center; color:var(--border-color); font-size:12px; margin-top:50px;">TAP PALETTE TO START</p>'; saveToLocal(); } }
     
-    // On Load
     window.onload = function() {
-      // Restore Mode
       const savedMode = localStorage.getItem('promptMode') || 'rapid';
       const body = document.body;
       body.classList.remove('mode-rapid', 'mode-standard');
       body.classList.add(`mode-${savedMode}`);
-
-      // Restore Data
       const saved = localStorage.getItem('promptStreamMobile');
       if (saved) {
         const data = JSON.parse(saved);
