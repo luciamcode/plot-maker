@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>PROMPT STREAM // v8</title>
+  <title>PROMPT STREAM // HYBRID</title>
   <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600&family=Share+Tech+Mono&family=Zen+Kaku+Gothic+New:wght@400;700&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
   <style>
@@ -12,137 +12,73 @@
       --primary: #00f3ff; --secondary: #ffaa00; --accent: #ff0055;
       --code-color: #00ff99; --char-color: #ff00cc; --part-color: #bd00ff;
       --text-main: #cceeee; --text-dim: #668888; --border-color: #334444;
-      --header-height: 50px;
+      --header-height: 50px; --footer-height: 60px;
     }
-
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-
-    body {
-      font-family: 'Share Tech Mono', 'Zen Kaku Gothic New', monospace;
-      background-color: var(--bg-color); color: var(--text-main);
-      margin: 0; height: 100dvh; overflow: hidden; display: flex; flex-direction: column;
-    }
-
-    /* ヘッダー */
-    header {
-      height: var(--header-height); border-bottom: 1px solid var(--border-color);
-      display: flex; align-items: center; justify-content: space-between; padding: 0 8px;
-      background: rgba(11, 15, 18, 0.98); z-index: 20; flex-shrink: 0;
-    }
-    h1 { font-size: 16px; color: var(--text-main); margin: 0; letter-spacing: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 25%; }
-
+    
+    body { font-family: 'Share Tech Mono', 'Zen Kaku Gothic New', monospace; background-color: var(--bg-color); color: var(--text-main); margin: 0; height: 100dvh; overflow: hidden; display: flex; flex-direction: column; transition: 0.3s; }
+    
+    /* Header */
+    header { height: var(--header-height); border-bottom: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between; padding: 0 8px; background: rgba(11, 15, 18, 0.98); z-index: 20; flex-shrink: 0; }
+    h1 { font-size: 16px; color: var(--text-main); margin: 0; letter-spacing: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 20%; }
     .actions { display: flex; gap: 6px; align-items: center; }
-    .actions button {
-      background: transparent; border: 1px solid var(--border-color); color: var(--primary);
-      padding: 6px 8px; font-family: 'Share Tech Mono'; cursor: pointer; font-size: 11px;
-      border-radius: 4px; min-width: 40px; white-space: nowrap;
-    }
+    .actions button { background: transparent; border: 1px solid var(--border-color); color: var(--primary); padding: 6px 8px; font-family: 'Share Tech Mono'; cursor: pointer; font-size: 11px; border-radius: 4px; min-width: 36px; white-space: nowrap; }
     .actions button:active { background: var(--primary); color: #000; }
-    .btn-link { text-decoration: none; display: inline-flex; }
-    .btn-link button { border-color: var(--char-color); color: var(--char-color); }
-    .btn-link button:active { background: var(--char-color); color: #fff; }
-    .actions button.accent { border-color: var(--secondary); color: var(--secondary); }
-    .actions button.accent:active { background: var(--secondary); color: #000; }
-    .actions button.danger { border-color: var(--accent); color: var(--accent); }
-    .actions button.danger:active { background: var(--accent); color: #000; }
+    .btn-link { text-decoration: none; display: inline-flex; } .btn-link button { border-color: var(--char-color); color: var(--char-color); } .btn-link button:active { background: var(--char-color); color: #fff; }
+    .actions button.accent { border-color: var(--secondary); color: var(--secondary); } .actions button.accent:active { background: var(--secondary); color: #000; }
+    .actions button.danger { border-color: var(--accent); color: var(--accent); } .actions button.danger:active { background: var(--accent); color: #000; }
+    /* Mode Toggle Button */
+    .btn-mode { border-color: #fff !important; color: #fff !important; background: #333 !important; }
 
-    /* パレットエリア */
-    .palette {
-      background: var(--palette-bg); padding: 10px; border-bottom: 1px solid var(--border-color);
-      display: flex; gap: 8px; overflow-x: auto; flex-shrink: 0; align-items: center; z-index: 15;
-    }
+    /* Palette */
+    .palette { background: var(--palette-bg); padding: 10px; border-bottom: 1px solid var(--border-color); display: flex; gap: 8px; overflow-x: auto; flex-shrink: 0; align-items: center; z-index: 15; }
     .palette::-webkit-scrollbar { height: 2px; }
-
-    .add-btn {
-      flex: 0 0 auto; background: #000; border: 1px solid var(--border-color); border-left: 3px solid #555;
-      color: var(--text-main); padding: 8px 10px; font-size: 12px; border-radius: 4px;
-      cursor: pointer; display: flex; flex-direction: column; align-items: flex-start; min-width: 75px;
-    }
+    .add-btn { flex: 0 0 auto; background: #000; border: 1px solid var(--border-color); border-left: 3px solid #555; color: var(--text-main); padding: 8px 10px; font-size: 12px; border-radius: 4px; cursor: pointer; display: flex; flex-direction: column; align-items: flex-start; min-width: 75px; }
     .add-btn:active { transform: scale(0.95); background: rgba(255,255,255,0.1); }
     .add-btn span { font-size: 9px; color: var(--text-dim); margin-top: 2px; }
-    
     .btn-inline { border-color: #fff; border-style: dashed; background: #222; align-items: center; justify-content: center; min-width: 50px; }
     .btn-part { border-color: var(--part-color); color: var(--part-color); border-style: dotted; }
-    .btn-speech { border-left-color: var(--primary); }
-    .btn-char { border-left-color: var(--char-color); }
-    .btn-code { border-left-color: var(--code-color); }
-    .btn-snip { border-left-color: var(--secondary); border-style: dotted; }
+    .btn-speech { border-left-color: var(--primary); } .btn-char { border-left-color: var(--char-color); } .btn-code { border-left-color: var(--code-color); } .btn-snip { border-left-color: var(--secondary); border-style: dotted; }
 
-    /* メインエリア */
-    .stream-container {
-      flex: 1; background: var(--stream-bg); padding: 15px 10px;
-      overflow-y: auto; -webkit-overflow-scrolling: touch; position: relative;
-    }
+    /* Stream Container */
+    .stream-container { flex: 1; background: var(--stream-bg); padding: 15px 10px; overflow-y: auto; -webkit-overflow-scrolling: touch; position: relative; transition: padding 0.3s; }
+    /* Mode specific padding */
+    body.mode-rapid .stream-container { padding-bottom: 80px; }
+    body.mode-standard .stream-container { padding-bottom: 20px; }
 
-    /* --- 新・カードデザイン (ヘッダー分離型) --- */
-    .card {
-      background: var(--card-bg); border: 1px solid var(--border-color); border-left: 3px solid var(--text-dim);
-      margin-bottom: 12px; padding: 0; /* paddingなし */
-      position: relative; border-radius: 4px; display: flex; flex-direction: column;
-    }
-    
-    /* カードヘッダー行 */
-    .card-header-row {
-      display: flex; justify-content: space-between; align-items: center;
-      padding: 6px 10px;
-      background: rgba(0,0,0,0.3);
-      border-bottom: 1px solid rgba(255,255,255,0.05);
-      border-top-right-radius: 4px;
-    }
-
-    /* 左側：種別ラベル（クリック可能） */
-    .card-label-btn {
-      font-size: 10px; color: var(--secondary); text-transform: uppercase;
-      cursor: pointer; user-select: none; font-weight: bold;
-      padding: 2px 6px; border-radius: 4px; transition: 0.2s;
-    }
-    .card-label-btn:active { background: rgba(255,255,255,0.1); }
-    .card-label-btn::after { content: ' ↻'; font-size: 9px; opacity: 0.5; }
-
-    /* 右側：操作エリア */
+    /* Cards */
+    .card { background: var(--card-bg); border: 1px solid var(--border-color); border-left: 3px solid var(--text-dim); margin-bottom: 12px; padding: 0; position: relative; border-radius: 4px; display: flex; flex-direction: column; }
+    .card-header-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 10px; background: rgba(0,0,0,0.3); border-bottom: 1px solid rgba(255,255,255,0.05); border-top-right-radius: 4px; }
+    .card-label-btn { font-size: 10px; color: var(--secondary); text-transform: uppercase; cursor: pointer; user-select: none; font-weight: bold; padding: 2px 6px; border-radius: 4px; transition: 0.2s; }
+    .card-label-btn:active { background: rgba(255,255,255,0.1); } .card-label-btn::after { content: ' ↻'; font-size: 9px; opacity: 0.5; }
     .card-controls { display: flex; align-items: center; gap: 8px; }
-
-    /* 操作ボタン */
-    .card-btn {
-      width: 24px; height: 24px; display: flex; align-items: center; justify-content: center;
-      border: 1px solid #333; background: #000; color: #777; border-radius: 4px; cursor: pointer; font-size: 12px;
-    }
+    .card-btn { width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; border: 1px solid #333; background: #000; color: #777; border-radius: 4px; cursor: pointer; font-size: 12px; }
     .card-btn:hover { color: #fff; border-color: #555; }
-    .card-btn.del:hover { color: var(--accent); border-color: var(--accent); }
-    .card-btn.clone:hover { color: var(--code-color); border-color: var(--code-color); }
-    .card-btn.copy:hover { color: var(--primary); border-color: var(--primary); }
+    .card-btn.del:hover { color: var(--accent); border-color: var(--accent); } .card-btn.clone:hover { color: var(--code-color); border-color: var(--code-color); } .card-btn.copy:hover { color: var(--primary); border-color: var(--primary); }
+    .drag-handle { width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; color: var(--border-color); font-size: 18px; cursor: grab; touch-action: none; } .drag-handle::after { content: '≡'; }
+    .card textarea { width: 100%; padding: 12px; background: transparent; border: none; color: var(--text-main); resize: none; font-family: 'Zen Kaku Gothic New', monospace; font-size: 15px; line-height: 1.5; outline: none; min-height: 50px; max-height: 300px; display: block; }
+    
+    .type-speech { border-left-color: var(--primary); } .type-speech .card-label-btn { color: var(--primary); }
+    .type-char { border-left-color: var(--char-color); background: #1a0f15; } .type-char .card-label-btn { color: var(--char-color); }
+    .type-code { border-left-color: var(--code-color); background: #080a0c; } .type-code .card-label-btn { color: var(--code-color); } .type-code textarea { font-family: 'Fira Code', monospace; color: var(--code-color); font-size: 13px; }
+    .type-free { border-left-color: var(--text-dim); } .type-free .card-label-btn { color: var(--text-dim); }
 
-    /* ドラッグハンドル (右端に配置) */
-    .drag-handle {
-      width: 24px; height: 24px; display: flex; align-items: center; justify-content: center;
-      color: var(--border-color); font-size: 18px; cursor: grab; touch-action: none;
+    /* Rapid Fire Footer */
+    .rapid-footer {
+      height: var(--footer-height); border-top: 1px solid var(--border-color);
+      background: #111518; padding: 0 10px; display: flex; align-items: center; gap: 10px;
+      position: absolute; bottom: 0; left: 0; width: 100%; z-index: 30;
+      transform: translateY(0); transition: transform 0.3s;
     }
-    .drag-handle::after { content: '≡'; }
+    .rapid-input { flex: 1; background: #000; border: 1px solid #444; color: #fff; padding: 10px; border-radius: 20px; font-family: 'Zen Kaku Gothic New', monospace; font-size: 14px; outline: none; height: 40px; transition: 0.2s; }
+    .rapid-input:focus { border-color: var(--primary); box-shadow: 0 0 10px rgba(0,243,255,0.1); }
+    .rapid-send { width: 40px; height: 40px; border-radius: 50%; background: var(--primary); border: none; color: #000; font-size: 20px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+    .rapid-send:active { transform: scale(0.9); background: #fff; }
 
-    /* テキストエリア (ヘッダーの下) */
-    .card textarea {
-      width: 100%; padding: 12px;
-      background: transparent; border: none;
-      color: var(--text-main); resize: none; font-family: 'Zen Kaku Gothic New', monospace;
-      font-size: 15px; line-height: 1.5; outline: none; min-height: 50px; max-height: 300px;
-      display: block; /* 余白除去 */
-    }
+    /* Mode States */
+    body.mode-standard .rapid-footer { transform: translateY(100%); } /* Hide footer */
     
-    /* 色分け定義 */
-    .type-speech { border-left-color: var(--primary); }
-    .type-speech .card-label-btn { color: var(--primary); }
-    
-    .type-char { border-left-color: var(--char-color); background: #1a0f15; }
-    .type-char .card-label-btn { color: var(--char-color); }
-    
-    .type-code { border-left-color: var(--code-color); background: #080a0c; }
-    .type-code .card-label-btn { color: var(--code-color); }
-    .type-code textarea { font-family: 'Fira Code', monospace; color: var(--code-color); font-size: 13px; }
-
-    .type-free { border-left-color: var(--text-dim); }
-    .type-free .card-label-btn { color: var(--text-dim); }
-
-    /* モーダル等 (変更なし) */
+    /* Modals & Others */
     .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); backdrop-filter: blur(5px); z-index: 100; display: none; align-items: center; justify-content: center; }
     .modal-content { background: #111518; border: 1px solid var(--secondary); width: 90%; max-width: 450px; max-height: 85vh; border-radius: 12px; display: flex; flex-direction: column; box-shadow: 0 0 30px rgba(0,0,0,0.5); }
     .modal-header { padding: 15px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; background: rgba(255, 255, 255, 0.05); color: var(--text-main); font-weight: bold; font-size: 14px; }
@@ -158,25 +94,19 @@
     .list-name { font-size: 14px; font-weight: bold; color: var(--text-main); }
     .btn-group { display: flex; gap: 6px; }
     .btn-sm { padding: 6px 10px; font-size: 11px; border-radius: 4px; cursor: pointer; border: none; font-weight: bold; }
-    .btn-load { background: var(--primary); color: #000; }
-    .btn-del { background: transparent; border: 1px solid var(--accent); color: var(--accent); }
+    .btn-load { background: var(--primary); color: #000; } .btn-del { background: transparent; border: 1px solid var(--accent); color: var(--accent); }
     .part-chip { display: inline-block; padding: 8px 12px; margin: 4px; background: rgba(189, 0, 255, 0.1); border: 1px solid var(--part-color); color: var(--part-color); border-radius: 20px; font-family: monospace; font-size: 13px; cursor: pointer; transition: 0.2s; }
-    .part-chip:active { background: var(--part-color); color: #fff; }
-    .part-chip .del { font-weight: bold; margin-left: 8px; color: var(--accent); opacity: 0.7; }
-    .part-container { display: flex; flex-wrap: wrap; gap: 5px; }
+    .part-chip:active { background: var(--part-color); color: #fff; } .part-chip .del { font-weight: bold; margin-left: 8px; color: var(--accent); opacity: 0.7; } .part-container { display: flex; flex-wrap: wrap; gap: 5px; }
     .save-form input { width: 100%; padding: 8px; margin-bottom: 8px; background: #000; border: 1px solid #444; color: #fff; }
     .btn-save-new { width: 100%; padding: 10px; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; background: var(--secondary); color:#000; }
-    #charModal .modal-content { border-color: var(--char-color); }
-    #partModal .modal-content { border-color: var(--part-color); }
-    #snippetModal .modal-content { border-color: var(--code-color); }
-    #shareModal .modal-content { border-color: var(--primary); }
+    #charModal .modal-content { border-color: var(--char-color); } #partModal .modal-content { border-color: var(--part-color); }
+    #snippetModal .modal-content { border-color: var(--code-color); } #shareModal .modal-content { border-color: var(--primary); }
   </style>
 </head>
-<body>
-
-  <header>
-    <h1>PROMPT<span>v8</span></h1>
+<body class="mode-rapid"> <header>
+    <h1>PROMPT<span>v10</span></h1>
     <div class="actions">
+      <button class="btn-mode" onclick="toggleMode()">⚡ MODE</button>
       <a href="./persona.html" class="btn-link"><button title="Persona">PERSONA→</button></a>
       <button onclick="clearBoard()" class="danger">CLR</button>
       <button onclick="openCharModal()" style="border-color:var(--char-color); color:var(--char-color);">CHARS</button>
@@ -200,9 +130,13 @@
 
   <div class="stream-container">
     <div id="streamList">
-      <p style="text-align:center; color:var(--border-color); font-size:12px; margin-top:50px;">TAP PALETTE TO START</p>
+      <p style="text-align:center; color:var(--border-color); font-size:12px; margin-top:50px;">TAP PALETTE or TYPE BELOW</p>
     </div>
-    <div style="height: 100px;"></div>
+  </div>
+
+  <div class="rapid-footer">
+    <input type="text" id="rapidInput" class="rapid-input" placeholder="Rapid Fire Mode..." onkeypress="handleRapidKey(event)">
+    <button class="rapid-send" onclick="sendRapidFire()">↑</button>
   </div>
 
   <div id="shareModal" class="modal-overlay">
@@ -225,11 +159,10 @@
 
   <script>
     let lastFocusedTextarea = null;
+    const typeOrder = ['speech', 'char_def', 'code', 'free'];
     
-    // Sortable
     new Sortable(document.getElementById('streamList'), {
-      animation: 150, handle: '.drag-handle', ghostClass: 'sortable-ghost', dragClass: 'sortable-drag',
-      onEnd: () => saveToLocal()
+      animation: 150, handle: '.drag-handle', ghostClass: 'sortable-ghost', dragClass: 'sortable-drag', onEnd: () => saveToLocal()
     });
 
     const templates = {
@@ -238,20 +171,15 @@
       code: { label: 'Logic / Code', placeholder: 'if (flag) {\n  \n}', rows: 3 },
       free: { label: 'Narration', placeholder: '...', rows: 3 }
     };
-    
-    // カード種別定義（循環用）
-    const typeOrder = ['speech', 'char_def', 'code', 'free'];
 
     function addNewCard(type, initialValue = null, insertAfterNode = null) {
       const list = document.getElementById('streamList'); if(list.querySelector('p')) list.innerHTML = '';
       const tmpl = templates[type];
-      const div = document.createElement('div');
-      div.className = `card type-${type}`;
-      div.dataset.type = type;
+      const div = document.createElement('div'); div.className = `card type-${type}`; div.dataset.type = type;
       
       div.innerHTML = `
         <div class="card-header-row">
-          <div class="card-label-btn" title="Tap to change type">${tmpl.label}</div>
+          <div class="card-label-btn" title="Tap to change">${tmpl.label}</div>
           <div class="card-controls">
             <div class="card-btn copy" title="Copy">❐</div>
             <div class="card-btn clone" title="Clone">＋</div>
@@ -268,53 +196,59 @@
       setupCardEvents(div);
       if (!insertAfterNode) div.scrollIntoView({ behavior: "smooth", block: "end" });
       saveToLocal();
-      const ta = div.querySelector('textarea'); ta.focus(); lastFocusedTextarea = ta;
+      const ta = div.querySelector('textarea'); 
+      // Rapid ModeかつInputにフォーカスがある場合は奪わない
+      if(document.body.classList.contains('mode-standard') || document.activeElement !== document.getElementById('rapidInput')) {
+        ta.focus(); lastFocusedTextarea = ta;
+      }
     }
 
     function setupCardEvents(card) {
-      // 種別変更 (Label Click)
       const labelBtn = card.querySelector('.card-label-btn');
       labelBtn.onclick = function() {
         const currentType = card.dataset.type;
         let nextIdx = typeOrder.indexOf(currentType) + 1;
         if(nextIdx >= typeOrder.length) nextIdx = 0;
         const nextType = typeOrder[nextIdx];
-        
-        // クラスとデータ属性更新
-        card.classList.remove(`type-${currentType}`);
-        card.classList.add(`type-${nextType}`);
-        card.dataset.type = nextType;
+        card.classList.remove(`type-${currentType}`); card.classList.add(`type-${nextType}`); card.dataset.type = nextType;
         labelBtn.innerText = templates[nextType].label;
-        
-        // Textareaのフォント切り替えなどがあるため再設定
         const ta = card.querySelector('textarea');
-        if(nextType === 'code') {
-           ta.placeholder = templates.code.placeholder;
-           ta.style.fontFamily = "'Fira Code', monospace";
-           ta.style.color = "var(--code-color)";
-        } else {
-           ta.placeholder = templates[nextType].placeholder;
-           ta.style.fontFamily = "'Zen Kaku Gothic New', monospace";
-           ta.style.color = "var(--text-main)";
-        }
-        if(nextType === 'char_def') labelBtn.style.color = "var(--char-color)";
-        else if(nextType === 'speech') labelBtn.style.color = "var(--primary)";
-        else if(nextType === 'free') labelBtn.style.color = "var(--text-dim)";
-        
+        if(nextType === 'code') { ta.placeholder = templates.code.placeholder; ta.style.fontFamily = "'Fira Code', monospace"; ta.style.color = "var(--code-color)"; } 
+        else { ta.placeholder = templates[nextType].placeholder; ta.style.fontFamily = "'Zen Kaku Gothic New', monospace"; ta.style.color = "var(--text-main)"; }
+        if(nextType === 'char_def') labelBtn.style.color = "var(--char-color)"; else if(nextType === 'speech') labelBtn.style.color = "var(--primary)"; else if(nextType === 'free') labelBtn.style.color = "var(--text-dim)";
         saveToLocal();
       };
-
-      // 既存ボタン
       card.querySelector('.del').onclick = function() { if(confirm("Delete block?")) { card.remove(); saveToLocal(); } };
       card.querySelector('.clone').onclick = function() { const type = card.dataset.type; const text = card.querySelector('textarea').value; addNewCard(type, text, card); };
       card.querySelector('.copy').onclick = function() { const text = card.querySelector('textarea').value; navigator.clipboard.writeText(text).then(() => { const btn = card.querySelector('.copy'); const original = btn.innerText; btn.innerText = "✓"; btn.style.color = "var(--primary)"; setTimeout(() => { btn.innerText = original; btn.style.color = ""; }, 1000); }); };
-      
-      const ta = card.querySelector('textarea');
-      if(ta) {
-        ta.addEventListener('input', function() { this.style.height = 'auto'; this.style.height = (this.scrollHeight) + 'px'; saveToLocal(); });
-        ta.addEventListener('focus', function(e) { lastFocusedTextarea = e.target; });
-        setTimeout(() => ta.dispatchEvent(new Event('input')), 0);
+      const ta = card.querySelector('textarea'); if(ta) { ta.addEventListener('input', function() { this.style.height = 'auto'; this.style.height = (this.scrollHeight) + 'px'; saveToLocal(); }); ta.addEventListener('focus', function(e) { lastFocusedTextarea = e.target; }); setTimeout(() => ta.dispatchEvent(new Event('input')), 0); }
+    }
+
+    // --- Mode Toggle Logic ---
+    function toggleMode() {
+      const body = document.body;
+      if (body.classList.contains('mode-rapid')) {
+        body.classList.remove('mode-rapid');
+        body.classList.add('mode-standard');
+        localStorage.setItem('promptMode', 'standard');
+      } else {
+        body.classList.remove('mode-standard');
+        body.classList.add('mode-rapid');
+        localStorage.setItem('promptMode', 'rapid');
       }
+    }
+
+    // --- Rapid Fire ---
+    function handleRapidKey(e) { if(e.key === 'Enter') sendRapidFire(); }
+    function sendRapidFire() {
+      const input = document.getElementById('rapidInput');
+      const val = input.value.trim();
+      if(!val) return;
+      let type = 'free';
+      if(val.startsWith('「') || val.startsWith('『')) type = 'speech';
+      else if(val.startsWith('[')) type = 'code'; 
+      addNewCard(type, val);
+      input.value = ''; input.focus();
     }
 
     // --- Inline ---
@@ -330,28 +264,18 @@
     function insertBracket(e) { e.preventDefault(); insertAtCursor(["[", "]"], true); }
     function insertSeparator(e) { e.preventDefault(); insertAtCursor("\n---\n"); }
 
-    // --- Share System ---
+    // --- Share / Export ---
     function openShareModal() { document.getElementById('shareModal').style.display = 'flex'; }
     function getAllText() { const cards = document.querySelectorAll('#streamList .card textarea'); let text = ""; cards.forEach(ta => { const val = ta.value.trim(); if(val) text += val + "\n\n"; }); return text; }
-    async function shareContent(mode) {
-      const rawText = getAllText(); const textToShare = (mode === 'code') ? "```markdown\n" + rawText + "\n```" : rawText; const title = (mode === 'code') ? "Prompt Code" : "Prompt Text";
-      if (navigator.share) { try { await navigator.share({ title: title, text: textToShare }); } catch (err) { if(err.name !== 'AbortError') alert("Share failed: " + err); } } else { navigator.clipboard.writeText(textToShare); alert("Web Share API not supported.\nCopied to clipboard!"); }
-      document.getElementById('shareModal').style.display = 'none';
-    }
-    async function shareAsFile(ext) {
-      const text = getAllText(); const fileName = `PROMPT_${new Date().toISOString().slice(0,10)}.${ext}`; const file = new File([text], fileName, { type: 'text/plain' });
-      if (navigator.canShare && navigator.canShare({ files: [file] })) { try { await navigator.share({ files: [file], title: 'Prompt File', text: 'Sending Prompt File...' }); } catch (err) { if(err.name !== 'AbortError') alert("File Share failed: " + err); } } else { downloadFile(ext); }
-      document.getElementById('shareModal').style.display = 'none';
-    }
+    async function shareContent(mode) { const rawText = getAllText(); const textToShare = (mode === 'code') ? "```markdown\n" + rawText + "\n```" : rawText; const title = (mode === 'code') ? "Prompt Code" : "Prompt Text"; if (navigator.share) { try { await navigator.share({ title: title, text: textToShare }); } catch (err) { if(err.name !== 'AbortError') alert("Share failed: " + err); } } else { navigator.clipboard.writeText(textToShare); alert("Web Share API not supported.\nCopied to clipboard!"); } document.getElementById('shareModal').style.display = 'none'; }
+    async function shareAsFile(ext) { const text = getAllText(); const fileName = `PROMPT_${new Date().toISOString().slice(0,10)}.${ext}`; const file = new File([text], fileName, { type: 'text/plain' }); if (navigator.canShare && navigator.canShare({ files: [file] })) { try { await navigator.share({ files: [file], title: 'Prompt File', text: 'Sending Prompt File...' }); } catch (err) { if(err.name !== 'AbortError') alert("File Share failed: " + err); } } else { downloadFile(ext); } document.getElementById('shareModal').style.display = 'none'; }
     function downloadFile(ext) { const text = getAllText(); const blob = new Blob([text], { type: 'text/plain' }); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `PROMPT_${new Date().toISOString().slice(0,10)}.${ext}`; a.click(); }
 
-    // --- Parts ---
+    // --- Parts/Char/Proj/Snip (Minified logic) ---
     function openPartModal(e) { e.preventDefault(); renderPartList(); document.getElementById('partModal').style.display = 'flex'; }
     function savePart() { const text = document.getElementById('newPartText').value; if(!text) return; const parts = JSON.parse(localStorage.getItem('promptInlineParts') || '[]'); parts.push(text); localStorage.setItem('promptInlineParts', JSON.stringify(parts)); document.getElementById('newPartText').value = ''; renderPartList(); }
     function renderPartList() { const list = document.getElementById('partList'); const parts = JSON.parse(localStorage.getItem('promptInlineParts') || '[]'); list.innerHTML = ''; parts.forEach((text, index) => { const chip = document.createElement('div'); chip.className = 'part-chip'; chip.innerHTML = `${text} <span class="del" onclick="deletePart(${index}, event)">×</span>`; chip.onclick = (e) => { if(!e.target.classList.contains('del')){ insertAtCursor(text); document.getElementById('partModal').style.display='none'; }}; list.appendChild(chip); }); }
     function deletePart(index, e) { e.stopPropagation(); const parts = JSON.parse(localStorage.getItem('promptInlineParts')||'[]'); parts.splice(index,1); localStorage.setItem('promptInlineParts', JSON.stringify(parts)); renderPartList(); }
-
-    // --- Char/Project/Snippet ---
     function openCharModal() { renderCharList(); document.getElementById('charModal').style.display = 'flex'; }
     function renderCharList() { const list = document.getElementById('charList'); const filter = document.getElementById('charTagFilter'); const db = JSON.parse(localStorage.getItem('promptChars') || '{}'); const tags = new Set(['ALL']); Object.values(db).forEach(obj => { if(obj.tag) tags.add(obj.tag); }); const currentVal = filter.value; filter.innerHTML = ''; tags.forEach(t => { const opt = document.createElement('option'); opt.value = t; opt.innerText = t; filter.appendChild(opt); }); if(tags.has(currentVal)) filter.value = currentVal; list.innerHTML = ''; const selectedTag = filter.value; Object.keys(db).forEach(name => { const entry = db[name]; if(selectedTag !== 'ALL' && entry.tag !== selectedTag) return; const item = document.createElement('div'); item.className = 'list-item'; item.innerHTML = `<div class="list-info"><span class="list-tag">${entry.tag||'-'}</span><span class="list-name">${name}</span></div><div class="btn-group"><button class="btn-sm btn-load" onclick="loadCharacter('${name}')">ADD</button><button class="btn-sm btn-del" onclick="deleteCharacter('${name}')">×</button></div>`; list.appendChild(item); }); }
     window.loadCharacter = (name) => { const db = JSON.parse(localStorage.getItem('promptChars') || '{}'); if(db[name]) { const entry = db[name]; let content = entry.text || `[AI personality: ${name}]`; if(!entry.text && entry.role) { content = `[AI personality: ${name}, role: ${entry.role}]`; } addNewCard('char_def', content); document.getElementById('charModal').style.display = 'none'; } };
@@ -369,7 +293,25 @@
 
     function saveToLocal() { const data = []; document.querySelectorAll('#streamList .card').forEach(card => data.push({ type: card.dataset.type, text: card.querySelector('textarea').value })); localStorage.setItem('promptStreamMobile', JSON.stringify(data)); }
     function clearBoard() { if(confirm("Clear board?")) { document.getElementById('streamList').innerHTML = '<p style="text-align:center; color:var(--border-color); font-size:12px; margin-top:50px;">TAP PALETTE TO START</p>'; saveToLocal(); } }
-    window.onload = function() { const saved = localStorage.getItem('promptStreamMobile'); if (saved) { const data = JSON.parse(saved); if(data.length > 0) { document.getElementById('streamList').innerHTML = ''; data.forEach(item => addNewCard(item.type, item.text)); } } };
+    
+    // On Load
+    window.onload = function() {
+      // Restore Mode
+      const savedMode = localStorage.getItem('promptMode') || 'rapid';
+      const body = document.body;
+      body.classList.remove('mode-rapid', 'mode-standard');
+      body.classList.add(`mode-${savedMode}`);
+
+      // Restore Data
+      const saved = localStorage.getItem('promptStreamMobile');
+      if (saved) {
+        const data = JSON.parse(saved);
+        if(data.length > 0) {
+          document.getElementById('streamList').innerHTML = '';
+          data.forEach(item => addNewCard(item.type, item.text));
+        }
+      }
+    };
   </script>
 </body>
 </html>
