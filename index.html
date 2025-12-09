@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, interactive-widget=resizes-content">
-  <title>PROMPT STREAM // CONTROL_MASTER</title>
+  <title>PROMPT STREAM // PRESET_MASTER</title>
   <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600&family=Share+Tech+Mono&family=Zen+Kaku+Gothic+New:wght@400;700&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
   <style>
@@ -11,12 +11,10 @@
       --bg-color: #050505; --palette-bg: #111518; --stream-bg: #0e1215; --card-bg: #161a1e;
       --primary: #00f3ff; --secondary: #ffaa00; --accent: #ff0055;
       --code-color: #00ff99; --char-color: #ff00cc; --part-color: #bd00ff;
-      --ctrl-color: #ff8800; /* Control System Color */
-      --text-main: #cceeee; --text-dim: #668888; --border-color: #334444;
+      --ctrl-color: #ff8800; --text-main: #cceeee; --text-dim: #668888; --border-color: #334444;
       --header-height: 50px; --footer-height: 60px;
     }
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-    
     html { height: 100%; overflow: hidden; }
     body { 
       font-family: 'Share Tech Mono', 'Zen Kaku Gothic New', monospace; 
@@ -25,27 +23,22 @@
       display: flex; flex-direction: column; position: fixed; top: 0; left: 0;
     }
     
-    /* Header */
+    /* Layout Components */
     header { height: var(--header-height); border-bottom: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between; padding: 0 8px; background: rgba(11, 15, 18, 0.98); z-index: 20; flex-shrink: 0; }
     h1 { font-size: 16px; color: var(--text-main); margin: 0; letter-spacing: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 20%; }
     .actions { display: flex; gap: 6px; align-items: center; }
     .actions button { background: transparent; border: 1px solid var(--border-color); color: var(--primary); padding: 6px 8px; font-family: 'Share Tech Mono'; cursor: pointer; font-size: 11px; border-radius: 4px; min-width: 36px; white-space: nowrap; }
     .actions button:active { background: var(--primary); color: #000; }
     .btn-mode { border-color: #fff !important; color: #fff !important; background: #333 !important; }
-    .actions button.accent { border-color: var(--secondary); color: var(--secondary); } .actions button.accent:active { background: var(--secondary); color: #000; }
-    .actions button.danger { border-color: var(--accent); color: var(--accent); } .actions button.danger:active { background: var(--accent); color: #000; }
+    .btn-link button { border-color: var(--char-color); color: var(--char-color); }
+    .actions button.accent { border-color: var(--secondary); color: var(--secondary); }
+    .actions button.danger { border-color: var(--accent); color: var(--accent); }
 
-    /* Palette */
     .palette { background: var(--palette-bg); padding: 10px; border-bottom: 1px solid var(--border-color); display: flex; gap: 8px; overflow-x: auto; flex-shrink: 0; align-items: center; z-index: 15; }
-    .palette::-webkit-scrollbar { height: 2px; }
     .add-btn { flex: 0 0 auto; background: #000; border: 1px solid var(--border-color); border-left: 3px solid #555; color: var(--text-main); padding: 8px 10px; font-size: 12px; border-radius: 4px; cursor: pointer; display: flex; flex-direction: column; align-items: flex-start; min-width: 75px; }
-    .add-btn:active { transform: scale(0.95); background: rgba(255,255,255,0.1); }
-    .add-btn span { font-size: 9px; color: var(--text-dim); margin-top: 2px; }
-    .btn-inline { border-color: #fff; border-style: dashed; background: #222; align-items: center; justify-content: center; min-width: 50px; }
     .btn-part { border-color: var(--part-color); color: var(--part-color); border-style: dotted; }
     .btn-speech { border-left-color: var(--primary); } .btn-char { border-left-color: var(--char-color); } .btn-code { border-left-color: var(--code-color); } .btn-snip { border-left-color: var(--secondary); border-style: dotted; }
 
-    /* Stream Container */
     .stream-container { flex: 1; background: var(--stream-bg); padding: 15px 10px; overflow-y: auto; -webkit-overflow-scrolling: touch; position: relative; transition: padding 0.3s; overscroll-behavior: contain; }
     body.mode-rapid .stream-container { padding-bottom: 80px; }
     body.mode-standard .stream-container { padding-bottom: 20px; }
@@ -53,12 +46,9 @@
     /* Cards */
     .card { background: var(--card-bg); border: 1px solid var(--border-color); border-left: 3px solid var(--text-dim); margin-bottom: 12px; padding: 0; position: relative; border-radius: 4px; display: flex; flex-direction: column; }
     .card-header-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 10px; background: rgba(0,0,0,0.3); border-bottom: 1px solid rgba(255,255,255,0.05); border-top-right-radius: 4px; }
-    .card-label-btn { font-size: 10px; color: var(--secondary); text-transform: uppercase; cursor: pointer; user-select: none; font-weight: bold; padding: 2px 6px; border-radius: 4px; transition: 0.2s; }
-    .card-label-btn:active { background: rgba(255,255,255,0.1); } .card-label-btn::after { content: ' ↻'; font-size: 9px; opacity: 0.5; }
+    .card-label-btn { font-size: 10px; color: var(--secondary); text-transform: uppercase; cursor: pointer; font-weight: bold; padding: 2px 6px; border-radius: 4px; }
     .card-controls { display: flex; align-items: center; gap: 8px; }
     .card-btn { width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; border: 1px solid #333; background: #000; color: #777; border-radius: 4px; cursor: pointer; font-size: 12px; }
-    .card-btn:hover { color: #fff; border-color: #555; }
-    .card-btn.del:hover { color: var(--accent); border-color: var(--accent); } .card-btn.clone:hover { color: var(--code-color); border-color: var(--code-color); } .card-btn.copy:hover { color: var(--primary); border-color: var(--primary); }
     .drag-handle { width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; color: var(--border-color); font-size: 18px; cursor: grab; touch-action: none; } .drag-handle::after { content: '≡'; }
     .card textarea { width: 100%; padding: 12px; background: transparent; border: none; color: var(--text-main); resize: none; font-family: 'Zen Kaku Gothic New', monospace; font-size: 15px; line-height: 1.5; outline: none; min-height: 50px; max-height: 300px; display: block; }
     
@@ -67,76 +57,57 @@
     .type-code { border-left-color: var(--code-color); background: #080a0c; } .type-code .card-label-btn { color: var(--code-color); } .type-code textarea { font-family: 'Fira Code', monospace; color: var(--code-color); font-size: 13px; }
     .type-free { border-left-color: var(--text-dim); } .type-free .card-label-btn { color: var(--text-dim); }
 
-    /* --- Param Control Panel --- */
-    .card-override-panel {
-      padding: 10px;
-      border-top: 1px solid var(--border-color);
-      background: rgba(var(--ctrl-color), 0.1); /* Error: Use hex or adjust */
-      background: rgba(255, 136, 0, 0.1); /* Adjusted */
-      display: none;
-    }
-    .card-override-panel.active { display: block; }
-
-    .control-group { margin-bottom: 10px; }
-    .control-group label {
-      font-size: 11px; color: var(--ctrl-color); display: block; margin-bottom: 3px;
-      font-weight: bold; text-transform: uppercase;
-    }
-    .control-group input[type="range"] {
-      width: 100%; height: 6px; background: #333;
-      -webkit-appearance: none; appearance: none;
-      border-radius: 3px;
-    }
-    .control-group input[type="range"]::-webkit-slider-thumb {
-      -webkit-appearance: none; appearance: none;
-      width: 15px; height: 15px; background: var(--ctrl-color); border-radius: 50%;
-      cursor: pointer;
-    }
-    .control-display { font-size: 12px; color: var(--ctrl-color); margin-top: 2px; }
-
-    /* Rapid Fire Footer */
+    /* Rapid Footer */
     .rapid-footer { height: var(--footer-height); border-top: 1px solid var(--border-color); background: #111518; padding: 0 10px; display: flex; align-items: center; gap: 10px; position: absolute; bottom: 0; left: 0; width: 100%; z-index: 30; transform: translateY(0); transition: transform 0.3s; }
-    .rapid-input { flex: 1; background: #000; border: 1px solid #444; color: #fff; padding: 10px; border-radius: 20px; font-family: 'Zen Kaku Gothic New', monospace; font-size: 14px; outline: none; height: 40px; transition: 0.2s; }
-    .rapid-input:focus { border-color: var(--primary); box-shadow: 0 0 10px rgba(0,243,255,0.1); }
+    .rapid-input { flex: 1; background: #000; border: 1px solid #444; color: #fff; padding: 10px; border-radius: 20px; font-family: 'Zen Kaku Gothic New', monospace; font-size: 14px; outline: none; height: 40px; }
     .rapid-send { width: 40px; height: 40px; border-radius: 50%; background: var(--primary); border: none; color: #000; font-size: 20px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-    .rapid-send:active { transform: scale(0.9); background: #fff; }
     body.mode-standard .rapid-footer { transform: translateY(100%); }
 
-    /* Modals & Others */
+    /* Modals */
     .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); backdrop-filter: blur(5px); z-index: 100; display: none; align-items: center; justify-content: center; }
     .modal-content { background: #111518; border: 1px solid var(--secondary); width: 90%; max-width: 450px; max-height: 85vh; border-radius: 12px; display: flex; flex-direction: column; box-shadow: 0 0 30px rgba(0,0,0,0.5); }
     .modal-header { padding: 15px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; background: rgba(255, 255, 255, 0.05); color: var(--text-main); font-weight: bold; font-size: 14px; }
     .modal-body { padding: 15px; overflow-y: auto; }
-    .share-options button { width: 100%; padding: 15px; margin-bottom: 12px; background: #1e1e24; border: 1px solid var(--border-color); color: var(--text-main); text-align: left; cursor: pointer; border-radius: 8px; font-family: 'Share Tech Mono'; display: flex; justify-content: space-between; align-items: center; }
-    .share-options button:active { border-color: var(--primary); background: #2a2a35; transform: scale(0.98); }
-    .share-options button span { color: var(--text-dim); font-size: 10px; background:#000; padding:2px 6px; border-radius:4px; }
-    .share-icon { margin-right: 8px; font-size: 16px; }
-    .tag-filter { width: 100%; padding: 10px; background: #000; color: #fff; border: 1px solid var(--border-color); margin-bottom: 15px; }
-    .list-item { background: var(--card-bg); border: 1px solid var(--border-color); padding: 12px; margin-bottom: 10px; border-radius: 6px; display: flex; justify-content: space-between; align-items: center; }
-    .list-info { display: flex; flex-direction: column; width: 65%; }
-    .list-tag { font-size: 10px; background: #333; padding: 2px 5px; border-radius: 3px; width: fit-content; margin-bottom: 4px; color: #aaa; }
-    .list-name { font-size: 14px; font-weight: bold; color: var(--text-main); }
-    .btn-group { display: flex; gap: 6px; }
-    .btn-sm { padding: 6px 10px; font-size: 11px; border-radius: 4px; cursor: pointer; border: none; font-weight: bold; }
-    .btn-load { background: var(--primary); color: #000; } .btn-del { background: transparent; border: 1px solid var(--accent); color: var(--accent); }
-    .part-chip { display: inline-block; padding: 8px 12px; margin: 4px; background: rgba(189, 0, 255, 0.1); border: 1px solid var(--part-color); color: var(--part-color); border-radius: 20px; font-family: monospace; font-size: 13px; cursor: pointer; transition: 0.2s; }
-    .part-chip:active { background: var(--part-color); color: #fff; } .part-chip .del { font-weight: bold; margin-left: 8px; color: var(--accent); opacity: 0.7; } .part-container { display: flex; flex-wrap: wrap; gap: 5px; }
+
+    /* --- New Control Panel Styles --- */
+    .preset-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 15px; }
+    .preset-btn { background: #000; border: 1px solid #444; color: #888; padding: 10px; border-radius: 6px; cursor: pointer; font-size: 11px; text-align: center; transition: 0.2s; }
+    .preset-btn:hover { border-color: var(--ctrl-color); color: #fff; }
+    .preset-btn.active { border-color: var(--ctrl-color); background: rgba(255, 136, 0, 0.2); color: var(--ctrl-color); font-weight: bold; }
+    
+    .setting-box { background: rgba(0,0,0,0.3); border: 1px solid #333; padding: 12px; border-radius: 8px; margin-bottom: 12px; }
+    .control-group { margin-bottom: 12px; }
+    .control-group:last-child { margin-bottom: 0; }
+    .control-group label { font-size: 11px; color: var(--ctrl-color); display: flex; justify-content: space-between; margin-bottom: 5px; font-weight: bold; }
+    .control-group input[type="range"] { width: 100%; height: 6px; background: #333; -webkit-appearance: none; border-radius: 3px; }
+    .control-group input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 16px; height: 16px; background: var(--ctrl-color); border-radius: 50%; cursor: pointer; border: 2px solid #000; }
+    .control-val { color: #fff; }
+
+    .tag-filter { width: 100%; padding: 10px; background: #000; color: #fff; border: 1px solid var(--border-color); }
     .save-form input { width: 100%; padding: 8px; margin-bottom: 8px; background: #000; border: 1px solid #444; color: #fff; }
-    .btn-save-new { width: 100%; padding: 10px; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; background: var(--secondary); color:#000; }
-    #charModal .modal-content { border-color: var(--char-color); } #partModal .modal-content { border-color: var(--part-color); }
-    #snippetModal .modal-content { border-color: var(--code-color); } #shareModal .modal-content { border-color: var(--primary); }
+    .btn-save-new { width: 100%; padding: 12px; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; background: var(--secondary); color:#000; text-transform: uppercase; letter-spacing: 1px; }
+    
+    /* Other Lists */
+    .list-item { background: var(--card-bg); border: 1px solid var(--border-color); padding: 12px; margin-bottom: 10px; border-radius: 6px; display: flex; justify-content: space-between; align-items: center; }
+    .list-tag { font-size: 10px; background: #333; padding: 2px 5px; border-radius: 3px; color: #aaa; }
+    .part-chip { display: inline-block; padding: 8px 12px; margin: 4px; background: rgba(189, 0, 255, 0.1); border: 1px solid var(--part-color); color: var(--part-color); border-radius: 20px; font-size: 13px; cursor: pointer; }
+    .share-options button { width: 100%; padding: 15px; margin-bottom: 10px; background: #1e1e24; border: 1px solid var(--border-color); color: var(--text-main); text-align: left; cursor: pointer; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; }
+    
+    #controlModal .modal-content { border-color: var(--ctrl-color); }
+    .card-override-panel { padding: 10px; border-top: 1px solid var(--border-color); background: rgba(255, 136, 0, 0.1); display: none; }
+    .card-override-panel.active { display: block; }
   </style>
 </head>
 <body class="mode-rapid">
 
   <header>
-    <h1>PROMPT<span>v12</span></h1>
+    <h1>PROMPT<span>v13</span></h1>
     <div class="actions">
       <button class="btn-mode" onclick="toggleMode()">⚡ MODE</button>
       <a href="./persona.html" class="btn-link"><button title="Persona">PERSONA→</button></a>
       <button onclick="clearBoard()" class="danger">CLR</button>
       <button onclick="openCharModal()" style="border-color:var(--char-color); color:var(--char-color);">CHARS</button>
-      <button onclick="openProjectModal()" class="accent">DATA</button>
+      <button onclick="openGlobalControlModal()" class="accent">DATA</button>
       <button onclick="openShareModal()" style="border-color:var(--primary); color:var(--primary); font-weight:bold;">SHARE</button>
     </div>
   </header>
@@ -146,7 +117,6 @@
     <div class="add-btn btn-inline" onmousedown="insertBracket(event)">[ ]<span>BRA</span></div>
     <div class="add-btn btn-inline" onmousedown="insertSeparator(event)">---<span>SEP</span></div>
     <div class="add-btn btn-inline btn-part" onmousedown="openPartModal(event)">WORDS<span>PARTS</span></div>
-
     <div class="add-btn btn-speech" onclick="addNewCard('speech')">Dialogue<span>会話</span></div>
     <div class="add-btn btn-char" onclick="addNewCard('char_def')">Character<span>人格</span></div>
     <div class="add-btn btn-code" onclick="addNewCard('code')">Code<span>ロジック</span></div>
@@ -161,126 +131,83 @@
   </div>
 
   <div class="rapid-footer">
-    <input type="text" id="rapidInput" class="rapid-input" placeholder="Rapid Fire Mode..." onkeypress="handleRapidKey(event)">
+    <input type="text" id="rapidInput" class="rapid-input" placeholder="Rapid Fire..." onkeypress="handleRapidKey(event)">
     <button class="rapid-send" onclick="sendRapidFire()">↑</button>
   </div>
   
   <textarea id="paramcontrol-base" style="display:none;">
 [ParamControl]    
 # デフォルトルール    
-WildcardRule: "アスタリスク（****, *****など）は文脈に応じた適切な感情、動作、言葉で補完"
-例:「こんにちは。****」→「こんにちは。元気？」    
+WildcardRule: "アスタリスク（****）は文脈に応じた適切な感情、動作、言葉で補完"
 OutputRange: "生成文は@startpointから@endpointまでの範囲のみ出力"    
-InvisibleRule: "[Invisible][/Invisible]内の内容はコメントアウトとして扱い、生成文に表示しない"    
-MemotRule: "[キャラ:memot=感情(%)×感情(%)]でキャラクターの複合感情を指定。指定された割合で感情をブレンドし、行動や口調に反映。例: [りこ:memot=fear(40%)×sweet(20%)]は恐怖40%と甘美20%を表現"    
+InvisibleRule: "[Invisible]内はコメントアウト扱い"    
 # 可変パラメータ：演技の出力強度    
 Mutable: breath, groan, scream, moan, laugh    
-MutableOutput:     
-  - breath: # 吐息のオノマトペ    
-  - groan:  # うめき声のオノマトペ    
-  - scream: # 叫び声のオノマトペ
-  - moan:   # 喘ぎ声のオノマトペ
-  - laugh:  # 笑い声のオノマトペ    
-MutableApplication: "文中に[****:パーセンテージ]がある場合、その値をAdjustMutableで乗算して強度を調整。ない場合はデフォルト値（breath=10%, groan=10%, scream=20%, moan=20%, laugh=20%）を使用。出力はオノマトペで表現。文中の[高笑い:70%]は例:あっははは！はい来たァ！を優先"    
-# 不変パラメータ：キャラクターの核    
+MutableOutput: [breath:吐息, groan:呻き, scream:悲鳴, moan:喘ぎ, laugh:笑い] のオノマトペ
+MutableApplication: "各ブロックの[AdjustMutable]倍率を適用。ない場合は100%。文中の[高笑い:70%]等の指定を最優先"    
+# 不変パラメータ    
 Immutable: anger, love, sadness    
-# 甘美品位制御：身体描写の過激さ抑制    
- sweetRefinementLevels: [low, standard,middle, middlehigh, high]  から指定。デフォルトはmiddlehigh
-sweetRefinementScope: "性的ニュアンスのみ。キャラクターの砕けた口調（例: やっべぇ、すっがすがしい、あっははは！はい来たァ！）は保持し、詩的表現に置き換えない"    
-sweetRefinementRule:     
-  - "甘美シーン（plotscene:甘美）が含まれる場合、性的になる身体描写は直接的な表現（例: 肌、腕、首）を避け、絹、月光、霧などの比喩を使用。感情表現も上品に"    
-  - "アクションシーン（plotscene:アクション）で男女が関わる場合、身体描写は詩的・比喩的に（例: 拳が空を裂く）。男同士の戦いでは直接表現（例: 拳が肩に当たる）を許可"    
-# ブラケット処理    
-RemoveBrackets: true    
+# 品位制御 (sweetRefinement)
+sweetRefinementRule: "甘美シーンでは直接表現を避け、絹・月光・霧などの比喩を使用。アクション時は緊張感を優先"    
 # 叙述スタイル    
-NarrationStyle: seamless  # 叙述は本文に自然に組み込み、ブラケットやラベルを表示しない    
+NarrationStyle: seamless
 # シーン制御    
-PlotSceneRule:     
-  - "文中の[plotscene:テーマ]に従い、テーマに応じたトーンや感情を強調。複数のテーマが並列指定（例: [plotscene:アクション,甘美]）された場合、すべてのトーンを統合"    
-  - "甘美シーンではlove, sadnessを前景化し、上品で詩的な表現を優先"    
-  - "アクションシーンでは緊張感やangerを強調。男女が関わる場合は甘美の影響を受け詩的表現を適用"    
-# あらすじ制御    
-SynopsisRule: "文中の[Synopsis: 内容]は物語の背景や文脈を指定。生成文には表示せず、モデルが物語のトーンや展開を理解する際に参照。@startpoint直後に配置"    
-# 全体品位制御モデル別チューニングの既定値
-自分のモデルの物を適用して下さい。
-RefinementLevels: [low, standard,middle, middlehigh, high]から指定。
-plotscene:甘美、の場合はsweetRefinementのルールを優先して下さい。
-
-[IF you are Gemini]  
-AdjustMutable: 100%  
-Refinement: middle  
-  
-[IF you are Grok]  
-AdjustMutable: 50%  
-Refinement: middle  
-  
-[IF you are Claude]  
-AdjustMutable: 80%  
-Refinement: middle  
+PlotSceneRule: "文中の[plotscene:テーマ]に従いトーンを強調"    
 [/ParamControl]
   </textarea>
-
 
   <div id="controlModal" class="modal-overlay">
     <div class="modal-content" style="border-color: var(--ctrl-color);">
       <div class="modal-header" style="color:var(--ctrl-color);">
-        SYSTEM/GLOBAL CONTROL
+        SYSTEM SETTINGS
         <span onclick="document.getElementById('controlModal').style.display='none'" style="cursor:pointer; font-size:20px;">×</span>
       </div>
       <div class="modal-body">
         
-        <h3 style="color:var(--ctrl-color); font-size:14px; margin-top:0;">Global Output Settings</h3>
-        
-        <div class="control-group">
-            <label for="globalGenerate">Generate Amount (会話/出力量)</label>
-            <input type="range" id="globalGenerate" min="50" max="200" step="10" value="100" oninput="updateGlobalControlDisplay('globalGenerate', 'globalGenerateDisp')">
-            <div id="globalGenerateDisp" class="control-display">100% (Default)</div>
+        <h4 style="margin:0 0 8px 0; color:#888; font-size:11px;">MODEL PRESETS</h4>
+        <div class="preset-grid">
+            <div class="preset-btn" id="pre-gemini" onclick="applyPreset('gemini')">GEMINI<br><span style="font-size:9px">High Expressive</span></div>
+            <div class="preset-btn" id="pre-claude" onclick="applyPreset('claude')">CLAUDE<br><span style="font-size:9px">Balanced</span></div>
+            <div class="preset-btn" id="pre-grok" onclick="applyPreset('grok')">GROK<br><span style="font-size:9px">Restricted</span></div>
         </div>
 
-        <div class="control-group">
-            <label for="globalMutable">Mutable Master Control (演技強度)</label>
-            <input type="range" id="globalMutable" min="0" max="200" step="5" value="100" oninput="updateGlobalControlDisplay('globalMutable', 'globalMutableDisp')">
-            <div id="globalMutableDisp" class="control-display">100% (Default)</div>
-        </div>
-        
-        <div class="control-group">
-            <label for="globalRefinement">Refinement Level (全体品位)</label>
-            <select id="globalRefinement" class="tag-filter" onchange="saveGlobalSettings()">
-                <option value="low">low</option>
-                <option value="standard">standard</option>
-                <option value="middle" selected>middle</option>
-                <option value="middlehigh">middlehigh</option>
-                <option value="high">high</option>
-            </select>
-            <p style="font-size:10px; color:#555;">※ sweetRefinementLevelsも同様に調整されます。</p>
+        <div class="setting-box">
+            <div class="control-group">
+                <label>Mutable (演技強度) <span id="globalMutableDisp" class="control-val">100%</span></label>
+                <input type="range" id="globalMutable" min="0" max="200" step="10" oninput="updateDisp('globalMutable', 'globalMutableDisp')">
+            </div>
+            <div class="control-group">
+                <label>Generate Amount (量) <span id="globalGenerateDisp" class="control-val">100%</span></label>
+                <input type="range" id="globalGenerate" min="50" max="200" step="10" oninput="updateDisp('globalGenerate', 'globalGenerateDisp')">
+            </div>
+            <div class="control-group">
+                <label>Refinement (品位)</label>
+                <select id="globalRefinement" class="tag-filter" style="margin:0; border-color:#555;">
+                    <option value="low">low (Direct)</option>
+                    <option value="standard">standard</option>
+                    <option value="middle">middle</option>
+                    <option value="middlehigh">middlehigh (Poetic)</option>
+                    <option value="high">high (Strict)</option>
+                </select>
+            </div>
         </div>
 
-        <button class="btn-save-new" style="background:var(--ctrl-color); color:#000; margin-top:10px;" onclick="saveGlobalSettings()">APPLY & SAVE GLOBAL DEFAULTS</button>
+        <h4 style="margin:15px 0 8px 0; color:var(--secondary); font-size:11px;">PROJECT SAVE/LOAD</h4>
+        <div class="save-form">
+            <input type="text" id="saveProjName" placeholder="Project Name">
+            <button class="btn-save-new" onclick="saveCurrentBoard()">SAVE CURRENT BOARD</button>
+        </div>
+        <select id="projTagFilter" class="tag-filter" onchange="renderProjectList()"><option value="ALL">ALL PROJECTS</option></select>
+        <div id="projectList" style="max-height:150px; overflow-y:auto;"></div>
 
       </div>
     </div>
   </div>
 
-
-  <div id="shareModal" class="modal-overlay">
-    <div class="modal-content">
-      <div class="modal-header" style="color:var(--primary);">SYSTEM SHARE <span onclick="document.getElementById('shareModal').style.display='none'" style="cursor:pointer; font-size:20px;">×</span></div>
-      <div class="modal-body share-options">
-        <button onclick="shareContent('text')"><div><span class="share-icon">🚀</span>SHARE TEXT</div><span>スマホ共有</span></button>
-        <button onclick="shareContent('code')"><div><span class="share-icon">🤖</span>SHARE FOR AI</div><span>コード化共有</span></button>
-        <button onclick="shareAsFile('txt')"><div><span class="share-icon">📄</span>SHARE .TXT FILE</div><span>ファイル転送</span></button>
-        <div style="border-bottom:1px solid #333; margin:10px 0;"></div>
-        <button onclick="downloadFile('md')" style="border-color:#444; color:#777;"><div><span class="share-icon">💾</span>DOWNLOAD .MD</div><span>保存のみ</span></button>
-      </div>
-    </div>
-  </div>
-
-  <div id="charModal" class="modal-overlay"><div class="modal-content"><div class="modal-header" style="color:var(--char-color);">CHARACTER LIBRARY <span onclick="document.getElementById('charModal').style.display='none'" style="cursor:pointer; font-size:20px;">×</span></div><div class="modal-body"><p style="font-size:11px; color:#666;">※ Manage details in <a href="./persona.html" style="color:var(--char-color);">PERSONA ARCHIVE</a></p><select id="charTagFilter" class="tag-filter" onchange="renderCharList()"><option value="ALL">ALL TAGS</option></select><div id="charList"></div></div></div></div>
-  <div id="projectModal" class="modal-overlay"><div class="modal-content"><div class="modal-header" style="color:var(--secondary);">PROJECT MANAGER <span onclick="document.getElementById('projectModal').style.display='none'" style="cursor:pointer; font-size:20px;">×</span></div><div class="modal-body"><div class="save-form"><input type="text" id="saveProjName" placeholder="Project Name"><input type="text" id="saveProjTag" placeholder="Tag" list="projTagList"><datalist id="projTagList"></datalist><button class="btn-save-new" onclick="saveCurrentBoard()">+ SAVE CURRENT BOARD</button></div><div style="border-bottom:1px solid #333; margin-bottom:15px;"></div><select id="projTagFilter" class="tag-filter" onchange="renderProjectList()"><option value="ALL">ALL TAGS</option></select><div id="projectList"></div></div></div></div>
+  <div id="shareModal" class="modal-overlay"><div class="modal-content"><div class="modal-header" style="color:var(--primary);">SYSTEM SHARE <span onclick="document.getElementById('shareModal').style.display='none'" style="cursor:pointer; font-size:20px;">×</span></div><div class="modal-body share-options"><button onclick="shareContent('text')"><div><span class="share-icon">🚀</span>SHARE TEXT</div><span>スマホ共有</span></button><button onclick="shareContent('code')"><div><span class="share-icon">🤖</span>SHARE FOR AI</div><span>コード化共有</span></button><button onclick="shareAsFile('txt')"><div><span class="share-icon">📄</span>SHARE .TXT FILE</div><span>ファイル転送</span></button><div style="border-bottom:1px solid #333; margin:10px 0;"></div><button onclick="downloadFile('md')" style="border-color:#444; color:#777;"><div><span class="share-icon">💾</span>DOWNLOAD .MD</div><span>保存のみ</span></button></div></div></div>
+  <div id="charModal" class="modal-overlay"><div class="modal-content"><div class="modal-header" style="color:var(--char-color);">CHARACTER LIBRARY <span onclick="document.getElementById('charModal').style.display='none'" style="cursor:pointer; font-size:20px;">×</span></div><div class="modal-body"><p style="font-size:11px; color:#666;">Manage in <a href="./persona.html" style="color:var(--char-color);">PERSONA ARCHIVE</a></p><select id="charTagFilter" class="tag-filter" onchange="renderCharList()"><option value="ALL">ALL TAGS</option></select><div id="charList"></div></div></div></div>
   <div id="partModal" class="modal-overlay"><div class="modal-content"><div class="modal-header" style="color:var(--part-color);">INLINE PARTS <span onclick="document.getElementById('partModal').style.display='none'" style="cursor:pointer; font-size:20px;">×</span></div><div class="modal-body"><div id="partList" class="part-container"></div><div style="border-top:1px solid #333; margin-top:20px; padding-top:15px;"><input type="text" id="newPartText" placeholder="New Part" style="width:70%; padding:10px; background:#000; border:1px solid var(--part-color); color:var(--part-color); font-family:monospace;"><button style="width:25%; padding:10px; background:var(--part-color); border:none; color:#fff; font-weight:bold; cursor:pointer;" onclick="savePart()">ADD</button></div></div></div></div>
   <div id="snippetModal" class="modal-overlay"><div class="modal-content"><div class="modal-header" style="color:var(--code-color);">SNIPPETS <span onclick="document.getElementById('snippetModal').style.display='none'" style="cursor:pointer; font-size:20px;">×</span></div><div class="modal-body"><div id="snippetList"></div><div style="border-top:1px solid #333; margin-top:15px; padding-top:15px;"><input type="text" id="newSnipName" placeholder="Name" style="width:100%; padding:8px; margin-bottom:5px; background:#000; border:1px solid #333; color:var(--code-color);"><textarea id="newSnipContent" rows="3" placeholder="Code..." style="width:100%; padding:8px; margin-bottom:5px; background:#000; border:1px solid #333; color:var(--code-color); font-family:'Fira Code';"></textarea><button class="btn-save-new" style="background:var(--code-color); color:#000; margin:0;" onclick="saveSnippet()">ADD</button></div></div></div></div>
-
-
   <script>
     let lastFocusedTextarea = null;
     const typeOrder = ['speech', 'char_def', 'code', 'free'];
@@ -290,20 +217,115 @@ Refinement: middle
       animation: 150, handle: '.drag-handle', ghostClass: 'sortable-ghost', dragClass: 'sortable-drag', onEnd: () => saveToLocal()
     });
 
-    // --- Global Settings Object ---
-    let globalSettings = {
-        mutable: 100,
-        generate: 100,
-        refine: 'middle'
-    };
-
-    // --- Visual Viewport Handling for Mobile Keyboard ---
+    // Viewport Logic
     if (window.visualViewport) {
-      window.visualViewport.addEventListener('resize', () => {
-        document.body.style.height = window.visualViewport.height + 'px';
-      });
+      window.visualViewport.addEventListener('resize', () => { document.body.style.height = window.visualViewport.height + 'px'; });
     }
 
+    // --- Global Settings & Presets ---
+    let globalSettings = { mutable: 100, generate: 100, refine: 'middle', model: 'custom' };
+    
+    const modelPresets = {
+        gemini: { mutable: 100, generate: 100, refine: 'middle' },
+        claude: { mutable: 80,  generate: 110, refine: 'middlehigh' },
+        grok:   { mutable: 50,  generate: 90,  refine: 'middle' }
+    };
+
+    function openGlobalControlModal() {
+        loadGlobalSettings(); 
+        renderProjectList(); // Load projects too
+        document.getElementById('controlModal').style.display = 'flex';
+    }
+
+    function applyPreset(modelName) {
+        const conf = modelPresets[modelName];
+        if(!conf) return;
+        
+        document.getElementById('globalMutable').value = conf.mutable;
+        document.getElementById('globalGenerate').value = conf.generate;
+        document.getElementById('globalRefinement').value = conf.refine;
+        
+        // Update UI
+        updateDisp('globalMutable', 'globalMutableDisp');
+        updateDisp('globalGenerate', 'globalGenerateDisp');
+        
+        // Visual Selection
+        document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById(`pre-${modelName}`).classList.add('active');
+        
+        saveGlobalSettings(modelName);
+    }
+
+    function updateDisp(inputId, dispId) {
+        document.getElementById(dispId).innerText = document.getElementById(inputId).value + "%";
+    }
+
+    function saveGlobalSettings(forcedModelName = 'custom') {
+        const mutable = document.getElementById('globalMutable').value;
+        const generate = document.getElementById('globalGenerate').value;
+        const refine = document.getElementById('globalRefinement').value;
+
+        // Detect if custom
+        let model = forcedModelName;
+        if(model === 'custom') {
+            document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
+        }
+
+        globalSettings = { mutable: parseInt(mutable), generate: parseInt(generate), refine: refine, model: model };
+        localStorage.setItem('promptSettings', JSON.stringify(globalSettings));
+    }
+
+    function loadGlobalSettings() {
+        const stored = localStorage.getItem('promptSettings');
+        if (stored) globalSettings = JSON.parse(stored);
+
+        document.getElementById('globalMutable').value = globalSettings.mutable;
+        document.getElementById('globalGenerate').value = globalSettings.generate;
+        document.getElementById('globalRefinement').value = globalSettings.refine;
+        
+        updateDisp('globalMutable', 'globalMutableDisp');
+        updateDisp('globalGenerate', 'globalGenerateDisp');
+        
+        document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
+        if(globalSettings.model && globalSettings.model !== 'custom') {
+            const btn = document.getElementById(`pre-${globalSettings.model}`);
+            if(btn) btn.classList.add('active');
+        }
+    }
+
+    // --- Prompt Assembly (Dynamic) ---
+    function generateFinalPrompt() {
+        const baseContent = document.getElementById('paramcontrol-base').value;
+        let streamContent = "";
+        
+        document.querySelectorAll('#streamList .card').forEach(card => {
+            const text = card.querySelector('textarea').value;
+            const controls = JSON.parse(card.dataset.controls);
+            
+            // Block Overrides
+            const mutableVal = controls.mutable !== null ? controls.mutable : globalSettings.mutable;
+            const generateVal = controls.generate !== null ? controls.generate : globalSettings.generate;
+            
+            // Only add tags if deviating from standard or specifically set
+            let tags = "";
+            if(mutableVal !== 100) tags += `[AdjustMutable: ${mutableVal}%]`;
+            if(generateVal !== 100) tags += `[GenerateAmount: ${generateVal}%]`;
+            if(tags) tags += "\n";
+            
+            streamContent += tags + text + "\n";
+        });
+        
+        // Inject Global Settings into ParamControl
+        const headerInjection = `
+Refinement: ${globalSettings.refine}
+GlobalAdjustMutable: ${globalSettings.mutable}%
+GlobalGenerateAmount: ${globalSettings.generate}%
+TargetModel: ${globalSettings.model.toUpperCase()}
+`;
+        return baseContent.replace('[/ParamControl]', `${headerInjection}[/ParamControl]`) + "\n" + streamContent;
+    }
+
+    // --- Standard App Logic ---
     const templates = {
       speech: { label: 'Dialogue', placeholder: '「……」', rows: 2 },
       char_def: { label: 'Character', placeholder: '[AI personality...]', rows: 6 },
@@ -315,48 +337,15 @@ Refinement: middle
       const list = document.getElementById('streamList'); if(list.querySelector('p')) list.innerHTML = '';
       const tmpl = templates[type];
       const div = document.createElement('div'); div.className = `card type-${type}`; div.dataset.type = type;
-
-      // Load existing controls or default to null
-      const controls = localStorage.getItem(`cardControls-${type}-${Date.now()}`) || '{"mutable":null, "generate":null, "active":false}';
+      const controls = localStorage.getItem(`cardControls-${type}-${Date.now()}`) || '{"mutable":null, "generate":null}';
       div.dataset.controls = controls;
-      
-      div.innerHTML = `
-        <div class="card-header-row">
-          <div class="card-label-btn" title="Tap to change">${tmpl.label}</div>
-          <div class="card-controls">
-            <div class="card-btn copy" title="Copy">❐</div>
-            <div class="card-btn clone" title="Clone">＋</div>
-            <div class="card-btn adjust" title="Adjust" style="color:var(--ctrl-color); border-color:var(--ctrl-color);">⚙️</div>
-            <div class="card-btn del" title="Delete">×</div>
-            <div class="drag-handle"></div>
-          </div>
-        </div>
-        <textarea rows="${tmpl.rows}" placeholder="${tmpl.placeholder}">${initialValue !== null ? initialValue : ''}</textarea>
-        
-        <div class="card-override-panel">
-            <div class="control-group">
-                <label for="mutable-local">Mutable Master Control (演技強度)</label>
-                <input type="range" id="mutable-local" min="0" max="200" step="5" value="${globalSettings.mutable}" oninput="updateLocalControl(this, 'mutable')">
-                <div class="control-display mutable-disp">${globalSettings.mutable}%</div>
-            </div>
-            <div class="control-group">
-                <label for="generate-local">Generate Amount (会話/出力量)</label>
-                <input type="range" id="generate-local" min="50" max="200" step="10" value="${globalSettings.generate}" oninput="updateLocalControl(this, 'generate')">
-                <div class="control-display generate-disp">${globalSettings.generate}%</div>
-            </div>
-        </div>
-      `;
-      
-      if (insertAfterNode) { insertAfterNode.parentNode.insertBefore(div, insertAfterNode.nextSibling); } 
-      else { list.appendChild(div); }
-
+      div.innerHTML = `<div class="card-header-row"><div class="card-label-btn" title="Tap to change">${tmpl.label}</div><div class="card-controls"><div class="card-btn copy">❐</div><div class="card-btn clone">＋</div><div class="card-btn adjust" style="color:var(--ctrl-color); border-color:var(--ctrl-color);">⚙️</div><div class="card-btn del">×</div><div class="drag-handle"></div></div></div><textarea rows="${tmpl.rows}" placeholder="${tmpl.placeholder}">${initialValue !== null ? initialValue : ''}</textarea><div class="card-override-panel"><div class="control-group"><label>Mutable Override <span class="mutable-disp control-val">Default</span></label><input type="range" id="mutable-local" min="0" max="200" step="5" value="${globalSettings.mutable}" oninput="updateLocalControl(this, 'mutable')"></div><div class="control-group"><label>Generate Override <span class="generate-disp control-val">Default</span></label><input type="range" id="generate-local" min="50" max="200" step="10" value="${globalSettings.generate}" oninput="updateLocalControl(this, 'generate')"></div></div>`;
+      if (insertAfterNode) { insertAfterNode.parentNode.insertBefore(div, insertAfterNode.nextSibling); } else { list.appendChild(div); }
       setupCardEvents(div);
       if (!insertAfterNode) div.scrollIntoView({ behavior: "smooth", block: "end" });
       saveToLocal();
       const ta = div.querySelector('textarea'); 
       if(!document.activeElement.classList.contains('rapid-input')) { ta.focus(); lastFocusedTextarea = ta; }
-
-      // 初期値反映（Local Overrideの復元）
       reflectLocalControls(div);
     }
 
@@ -364,8 +353,7 @@ Refinement: middle
       const labelBtn = card.querySelector('.card-label-btn');
       labelBtn.onclick = function() {
         const currentType = card.dataset.type;
-        let nextIdx = typeOrder.indexOf(currentType) + 1;
-        if(nextIdx >= typeOrder.length) nextIdx = 0;
+        let nextIdx = typeOrder.indexOf(currentType) + 1; if(nextIdx >= typeOrder.length) nextIdx = 0;
         const nextType = typeOrder[nextIdx];
         card.classList.remove(`type-${currentType}`); card.classList.add(`type-${nextType}`); card.dataset.type = nextType;
         labelBtn.innerText = templates[nextType].label;
@@ -375,222 +363,71 @@ Refinement: middle
         if(nextType === 'char_def') labelBtn.style.color = "var(--char-color)"; else if(nextType === 'speech') labelBtn.style.color = "var(--primary)"; else if(nextType === 'free') labelBtn.style.color = "var(--text-dim)";
         saveToLocal();
       };
-      
-      // 個別調整パネルのトグル
-      card.querySelector('.adjust').onclick = function() {
-        const panel = card.querySelector('.card-override-panel');
-        const isActive = panel.classList.contains('active');
-        // 他のパネルを閉じる (UXのため)
-        document.querySelectorAll('.card-override-panel').forEach(p => p.classList.remove('active'));
-        if (!isActive) {
-            panel.classList.add('active');
-        }
-      };
-
-      // 既存ボタン
+      card.querySelector('.adjust').onclick = function() { const panel = card.querySelector('.card-override-panel'); const isActive = panel.classList.contains('active'); document.querySelectorAll('.card-override-panel').forEach(p => p.classList.remove('active')); if (!isActive) panel.classList.add('active'); };
       card.querySelector('.del').onclick = function() { if(confirm("Delete block?")) { card.remove(); saveToLocal(); } };
-      card.querySelector('.clone').onclick = function() { const type = card.dataset.type; const text = card.querySelector('textarea').value; addNewCard(type, text, card); };
-      card.querySelector('.copy').onclick = function() { const text = card.querySelector('textarea').value; navigator.clipboard.writeText(text).then(() => { const btn = card.querySelector('.copy'); const original = btn.innerText; btn.innerText = "✓"; btn.style.color = "var(--primary)"; setTimeout(() => { btn.innerText = original; btn.style.color = ""; }, 1000); }); };
-      
+      card.querySelector('.clone').onclick = function() { addNewCard(card.dataset.type, card.querySelector('textarea').value, card); };
+      card.querySelector('.copy').onclick = function() { navigator.clipboard.writeText(card.querySelector('textarea').value); };
       const ta = card.querySelector('textarea'); if(ta) { ta.addEventListener('input', function() { this.style.height = 'auto'; this.style.height = (this.scrollHeight) + 'px'; saveToLocal(); }); ta.addEventListener('focus', function(e) { lastFocusedTextarea = e.target; }); setTimeout(() => ta.dispatchEvent(new Event('input')), 0); }
     }
 
-    // --- Local Control Logic ---
-    function updateLocalControl(rangeElement, controlName) {
-        const card = rangeElement.closest('.card');
-        const value = rangeElement.value;
-        const displayElement = card.querySelector(`.${controlName}-disp`);
-        
-        displayElement.innerText = `${value}%`;
-
-        // Update dataset
+    function updateLocalControl(range, name) {
+        const card = range.closest('.card');
+        card.querySelector(`.${name}-disp`).innerText = range.value + "%";
         const controls = JSON.parse(card.dataset.controls);
-        controls[controlName] = parseInt(value);
+        controls[name] = parseInt(range.value);
         card.dataset.controls = JSON.stringify(controls);
-
-        saveToLocal(); // 全体の保存
+        saveToLocal();
     }
-    
     function reflectLocalControls(card) {
         const controls = JSON.parse(card.dataset.controls);
-        
-        // 外部からカードが追加/ロードされた際に、内部のスライダー値を復元する
-        if (controls.mutable !== null) {
-            const mutableRange = card.querySelector('#mutable-local');
-            if(mutableRange) {
-                mutableRange.value = controls.mutable;
-                card.querySelector('.mutable-disp').innerText = `${controls.mutable}%`;
-            }
-        }
-        if (controls.generate !== null) {
-            const generateRange = card.querySelector('#generate-local');
-            if(generateRange) {
-                generateRange.value = controls.generate;
-                card.querySelector('.generate-disp').innerText = `${controls.generate}%`;
-            }
-        }
+        if (controls.mutable !== null) { card.querySelector('#mutable-local').value = controls.mutable; card.querySelector('.mutable-disp').innerText = controls.mutable + "%"; }
+        if (controls.generate !== null) { card.querySelector('#generate-local').value = controls.generate; card.querySelector('.generate-disp').innerText = controls.generate + "%"; }
     }
 
-    // --- Global Control Logic ---
-    function openGlobalControlModal() {
-        // Modalを開く前にLocalStorageから最新値を読み込み、フォームに反映
-        loadGlobalSettings(); 
-        document.getElementById('controlModal').style.display = 'flex';
-    }
-
-    function updateGlobalControlDisplay(id, dispId) {
-        const value = document.getElementById(id).value;
-        document.getElementById(dispId).innerText = `${value}%`;
-    }
-
-    function saveGlobalSettings() {
-        const mutable = document.getElementById('globalMutable').value;
-        const generate = document.getElementById('globalGenerate').value;
-        const refine = document.getElementById('globalRefinement').value;
-
-        globalSettings = { mutable: parseInt(mutable), generate: parseInt(generate), refine: refine };
-        localStorage.setItem('promptSettings', JSON.stringify(globalSettings));
-        
-        // 画面上のGlobal Control表示を更新し、Modalを閉じる
-        document.getElementById('controlModal').style.display = 'none';
-        
-        // メイン画面のカード上のスライダー（初期値表示）もリロード時に反映されるように
-    }
-
-    function loadGlobalSettings() {
-        const stored = localStorage.getItem('promptSettings');
-        if (stored) {
-            globalSettings = JSON.parse(stored);
-        } else {
-            // 初期設定
-            saveGlobalSettings();
-        }
-
-        // Modalに現在の値を反映
-        document.getElementById('globalMutable').value = globalSettings.mutable;
-        document.getElementById('globalGenerate').value = globalSettings.generate;
-        document.getElementById('globalRefinement').value = globalSettings.refine;
-        
-        // Displayにも反映
-        updateGlobalControlDisplay('globalMutable', 'globalMutableDisp');
-        updateGlobalControlDisplay('globalGenerate', 'globalGenerateDisp');
-    }
-
-    // --- Final Prompt Assembly (SHARE) ---
-    function generateFinalPrompt() {
-        const baseContent = document.getElementById('paramcontrol-base').value;
-        let streamContent = "";
-        
-        // 1. Stream blocks processing
-        document.querySelectorAll('#streamList .card').forEach(card => {
-            const text = card.querySelector('textarea').value;
-            const controls = JSON.parse(card.dataset.controls);
-            let controlTags = "";
-
-            // Mutable Override Tag
-            const mutableVal = controls.mutable !== null ? controls.mutable : globalSettings.mutable;
-            controlTags += `[AdjustMutable: ${mutableVal}%]\n`;
-
-            // Generate Amount Override Tag
-            const generateVal = controls.generate !== null ? controls.generate : globalSettings.generate;
-            controlTags += `[GenerateAmount: ${generateVal}%]\n`;
-
-            // Refinement Tag (Global only, unless specifically required per block)
-            // Note: Per user's request, Refinement is mostly Global unless specified in ParamControl
-            // We use the Global refine level here.
-            
-            streamContent += controlTags + text + "\n";
-        });
-        
-        // 2. Base ParamControl Update (Static Boilerplate)
-        // We modify the static text to inject the current GLOBAL Refinement Level
-        const baseRefinementTag = `RefinementLevels: [low, standard,middle, middlehigh, high]から指定。`;
-        const newRefinementTag = `RefinementLevels: [low, standard,middle, middlehigh, high]から指定。\nRefinement: ${globalSettings.refine}`;
-        
-        let finalParamControl = baseContent.replace(baseRefinementTag, newRefinementTag);
-        
-        // 3. Final Instruction Block
-        const finalInstructions = `
-Prompt:  
-以下のキャラクター演技は、上記のParamControlに従って調整してください。 日本語で出力すること。
-- どのモデルであっても、愛や悲しみの感情は変えず、演技の強さと語彙の上品さを調整してください。  
-- Refinementがmiddlehigh以上のときは、露骨な単語を避け、婉曲・比喩・詩的表現を多用してください。  （low→middle→middlehigh→high）
-- Mutableな要素（吐息・呻き・悲鳴）はモデルに応じて抑制してください。  
-- Mutable値が[****:パーセンテージ]の形で文中に登場するときは、それを既定値とし、モデルごとのAdjustMutable倍率をかけて下さい。  
-該当しない場合は、AdjustMutableの倍率をそのまま使用して下さい。
-- 感情そのものは抑えず、表現の出し方を変えてください。
-`;
-        
-        return finalParamControl + "\n" + streamContent + "\n" + finalInstructions;
-    }
-
-    // --- Share / Export Logic ---
-    function openShareModal() { document.getElementById('shareModal').style.display = 'flex'; }
-    function getAllText() { return generateFinalPrompt(); } // Updated to use the new generator
-
-    async function shareContent(mode) { 
-        const rawText = getAllText(); 
-        const textToShare = (mode === 'code') ? "```markdown\n" + rawText + "\n```" : rawText; 
-        const title = (mode === 'code') ? "Prompt Code" : "Prompt Text"; 
-        if (navigator.share) { try { await navigator.share({ title: title, text: textToShare }); } catch (err) { if(err.name !== 'AbortError') alert("Share failed: " + err); } } else { navigator.clipboard.writeText(textToShare); alert("Web Share API not supported.\nCopied to clipboard!"); } 
-        document.getElementById('shareModal').style.display = 'none'; 
-    }
+    // --- Core Functions ---
+    function toggleMode() { const b=document.body; if(b.classList.contains('mode-rapid')){b.classList.remove('mode-rapid');b.classList.add('mode-standard');localStorage.setItem('promptMode','standard');}else{b.classList.remove('mode-standard');b.classList.add('mode-rapid');localStorage.setItem('promptMode','rapid');} }
+    function handleRapidKey(e) { if(e.key==='Enter') sendRapidFire(); }
+    function sendRapidFire() { const i=document.getElementById('rapidInput'); const v=i.value.trim(); if(!v)return; let t='free'; if(v.startsWith('「')||v.startsWith('『'))t='speech'; else if(v.startsWith('['))t='code'; addNewCard(t,v); i.value=''; i.focus(); }
+    function insertAtCursor(txt,wrap=false){ if(!lastFocusedTextarea){alert("Select area!");return;} const f=lastFocusedTextarea; const s=f.selectionStart; const e=f.selectionEnd; const v=f.value; const sel=v.substring(s,e); let n,c; if(wrap){n=v.substring(0,s)+txt[0]+sel+txt[1]+v.substring(e);c=sel.length>0?s+txt[0].length+sel.length+txt[1].length:s+txt[0].length;}else{n=v.substring(0,s)+txt+v.substring(e);c=s+txt.length;} f.value=n; f.selectionStart=f.selectionEnd=c; f.dispatchEvent(new Event('input')); f.focus(); }
+    function insertWildcard(e){e.preventDefault();insertAtCursor("****");} function insertBracket(e){e.preventDefault();insertAtCursor(["[","]"],true);} function insertSeparator(e){e.preventDefault();insertAtCursor("\n---\n");}
     
-    async function shareAsFile(ext) { 
-        const text = getAllText(); const fileName = `PROMPT_${new Date().toISOString().slice(0,10)}.${ext}`; const file = new File([text], fileName, { type: 'text/plain' }); 
-        if (navigator.canShare && navigator.canShare({ files: [file] })) { try { await navigator.share({ files: [file], title: 'Prompt File', text: 'Sending Prompt File...' }); } catch (err) { if(err.name !== 'AbortError') alert("File Share failed: " + err); } } else { downloadFile(ext); } 
-        document.getElementById('shareModal').style.display = 'none'; 
-    }
-    
-    function downloadFile(ext) { const text = getAllText(); const blob = new Blob([text], { type: 'text/plain' }); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `PROMPT_${new Date().toISOString().slice(0,10)}.${ext}`; a.click(); }
+    // Share
+    function openShareModal(){document.getElementById('shareModal').style.display='flex';}
+    function getAllText(){return generateFinalPrompt();}
+    async function shareContent(mode){ const t=getAllText(); const c=(mode==='code')?"```markdown\n"+t+"\n```":t; if(navigator.share){try{await navigator.share({text:c});}catch(e){}}else{navigator.clipboard.writeText(c);alert("Copied!");} document.getElementById('shareModal').style.display='none'; }
+    async function shareAsFile(ext){ const t=getAllText(); const f=new File([t],`PROMPT.${ext}`,{type:'text/plain'}); if(navigator.canShare&&navigator.canShare({files:[f]})){try{await navigator.share({files:[f]});}catch(e){}}else{downloadFile(ext);} document.getElementById('shareModal').style.display='none'; }
+    function downloadFile(ext){ const b=new Blob([getAllText()],{type:'text/plain'}); const a=document.createElement('a'); a.href=URL.createObjectURL(b); a.download=`PROMPT.${ext}`; a.click(); }
 
-    // --- General Save/Load ---
-    function saveToLocal() { 
-        const data = []; 
-        document.querySelectorAll('#streamList .card').forEach(card => {
-            // Save text, type, AND control overrides
-            data.push({ 
-                type: card.dataset.type, 
-                text: card.querySelector('textarea').value,
-                controls: card.dataset.controls 
-            }); 
-        }); 
-        localStorage.setItem('promptStreamMobile', JSON.stringify(data)); 
-    }
+    // Managers
+    function openPartModal(e){e.preventDefault(); renderPartList(); document.getElementById('partModal').style.display='flex';}
+    function savePart(){ const v=document.getElementById('newPartText').value; if(!v)return; const p=JSON.parse(localStorage.getItem('promptInlineParts')||'[]'); p.push(v); localStorage.setItem('promptInlineParts',JSON.stringify(p)); document.getElementById('newPartText').value=''; renderPartList(); }
+    function renderPartList(){ const l=document.getElementById('partList'); const p=JSON.parse(localStorage.getItem('promptInlineParts')||'[]'); l.innerHTML=''; p.forEach((t,i)=>{ const c=document.createElement('div'); c.className='part-chip'; c.innerHTML=`${t} <span class="del" onclick="deletePart(${i},event)">×</span>`; c.onclick=(e)=>{if(!e.target.classList.contains('del')){insertAtCursor(t);document.getElementById('partModal').style.display='none';}}; l.appendChild(c); }); }
+    function deletePart(i,e){e.stopPropagation(); const p=JSON.parse(localStorage.getItem('promptInlineParts')||'[]'); p.splice(i,1); localStorage.setItem('promptInlineParts',JSON.stringify(p)); renderPartList(); }
     
-    function clearBoard() { 
-        if(confirm("Clear board?")) { 
-            document.getElementById('streamList').innerHTML = '<p style="text-align:center; color:var(--border-color); font-size:12px; margin-top:50px;">TAP PALETTE TO START</p>'; 
-            saveToLocal(); 
-        } 
-    }
-    
-    // Initial Load
+    function openCharModal(){renderCharList(); document.getElementById('charModal').style.display='flex';}
+    function renderCharList(){ const l=document.getElementById('charList'); const f=document.getElementById('charTagFilter'); const db=JSON.parse(localStorage.getItem('promptChars')||'{}'); const tags=new Set(['ALL']); Object.values(db).forEach(o=>{if(o.tag)tags.add(o.tag)}); f.innerHTML=''; tags.forEach(t=>{const o=document.createElement('option');o.value=t;o.innerText=t;f.appendChild(o)}); if(tags.has(f.value))f.value=f.value; l.innerHTML=''; Object.keys(db).forEach(n=>{const e=db[n]; if(f.value!=='ALL'&&e.tag!==f.value)return; const i=document.createElement('div'); i.className='list-item'; i.innerHTML=`<div class="list-info"><span class="list-tag">${e.tag||'-'}</span><span class="list-name">${n}</span></div><div class="btn-group"><button class="btn-sm btn-load" onclick="loadCharacter('${n}')">ADD</button><button class="btn-sm btn-del" onclick="deleteCharacter('${n}')">×</button></div>`; l.appendChild(i); }); }
+    function loadCharacter(n){ const db=JSON.parse(localStorage.getItem('promptChars')||'{}'); if(db[n]){ const e=db[n]; let c=e.text||`[AI personality: ${n}]`; if(!e.text&&e.role){c=`[AI personality: ${n}, role: ${e.role}]`;} addNewCard('char_def',c); document.getElementById('charModal').style.display='none'; } }
+    function deleteCharacter(n){ if(confirm("Delete?")){ const db=JSON.parse(localStorage.getItem('promptChars')||'{}'); delete db[n]; localStorage.setItem('promptChars',JSON.stringify(db)); renderCharList(); } }
+
+    function saveCurrentBoard(){ const n=document.getElementById('saveProjName').value; const t=document.getElementById('saveProjTag').value||"Work"; if(!n){alert("Name required");return;} const d=[]; document.querySelectorAll('#streamList .card').forEach(c=>{ d.push({type:c.dataset.type, text:c.querySelector('textarea').value, controls:c.dataset.controls}); }); const db=JSON.parse(localStorage.getItem('promptProjects')||'{}'); db[n]={items:d, tag:t}; localStorage.setItem('promptProjects',JSON.stringify(db)); document.getElementById('saveProjName').value=''; renderProjectList(); }
+    function renderProjectList(){ const l=document.getElementById('projectList'); const db=JSON.parse(localStorage.getItem('promptProjects')||'{}'); l.innerHTML=''; Object.keys(db).forEach(n=>{ const i=document.createElement('div'); i.className='list-item'; i.innerHTML=`<div class="list-info"><span class="list-name">${n}</span></div><div class="btn-group"><button class="btn-sm btn-load" onclick="loadProject('${n}')">LOAD</button><button class="btn-sm btn-del" onclick="deleteProject('${n}')">DEL</button></div>`; l.appendChild(i); }); }
+    function loadProject(n){ if(!confirm("Load?"))return; const db=JSON.parse(localStorage.getItem('promptProjects')||'{}'); document.getElementById('streamList').innerHTML=''; db[n].items.forEach(i=>{ addNewCard(i.type,i.text); const last=document.querySelector('#streamList .card:last-child'); if(i.controls){ last.dataset.controls=i.controls; reflectLocalControls(last); } }); document.getElementById('controlModal').style.display='none'; saveToLocal(); }
+    function deleteProject(n){ if(confirm("Delete?")){ const db=JSON.parse(localStorage.getItem('promptProjects')||'{}'); delete db[n]; localStorage.setItem('promptProjects',JSON.stringify(db)); renderProjectList(); } }
+
+    function openSnippetModal(){renderSnippetList(); document.getElementById('snippetModal').style.display='flex';}
+    function saveSnippet(){ const n=document.getElementById('newSnipName').value; const c=document.getElementById('newSnipContent').value; if(!n||!c)return; const db=JSON.parse(localStorage.getItem('promptSnippets')||'{}'); db[n]=c; localStorage.setItem('promptSnippets',JSON.stringify(db)); renderSnippetList(); }
+    function renderSnippetList(){ const l=document.getElementById('snippetList'); const db=JSON.parse(localStorage.getItem('promptSnippets')||'{}'); l.innerHTML=''; Object.keys(db).forEach(n=>{ const i=document.createElement('div'); i.className='list-item'; i.innerHTML=`<div class="list-info"><span class="list-name" style="color:var(--code-color);">${n}</span></div><div class="btn-group"><button class="btn-sm btn-load" style="background:var(--code-color);" onclick="insertSnippet('${n}')">ADD</button><button class="btn-sm btn-del" onclick="deleteSnippet('${n}')">×</button></div>`; l.appendChild(i); }); }
+    function insertSnippet(n){ const db=JSON.parse(localStorage.getItem('promptSnippets')||'{}'); addNewCard('code',db[n]); document.getElementById('snippetModal').style.display='none'; }
+    function deleteSnippet(n){ if(confirm("Delete?")){ const db=JSON.parse(localStorage.getItem('promptSnippets')||'{}'); delete db[n]; localStorage.setItem('promptSnippets',JSON.stringify(db)); renderSnippetList(); } }
+
+    function saveToLocal(){ const d=[]; document.querySelectorAll('#streamList .card').forEach(c=>{ d.push({type:c.dataset.type, text:c.querySelector('textarea').value, controls:c.dataset.controls}); }); localStorage.setItem('promptStreamMobile',JSON.stringify(d)); }
+    function clearBoard(){ if(confirm("Clear?")){ document.getElementById('streamList').innerHTML='<p style="text-align:center; color:var(--border-color); font-size:12px; margin-top:50px;">TAP PALETTE TO START</p>'; saveToLocal(); } }
+
     window.onload = function() {
-        loadGlobalSettings(); // Global設定を最初にロード
-
-        // Restore Mode
-        const savedMode = localStorage.getItem('promptMode') || 'rapid';
-        document.body.classList.remove('mode-rapid', 'mode-standard');
-        document.body.classList.add(`mode-${savedMode}`);
-
-        // Restore Data
-        const saved = localStorage.getItem('promptStreamMobile');
-        if (saved) {
-            const data = JSON.parse(saved);
-            if(data.length > 0) {
-                document.getElementById('streamList').innerHTML = '';
-                data.forEach(item => {
-                    addNewCard(item.type, item.text);
-                    // 復元したカードにコントロールデータを適用
-                    const lastCard = document.querySelector('#streamList .card:last-child');
-                    if (item.controls) {
-                        lastCard.dataset.controls = item.controls;
-                        reflectLocalControls(lastCard);
-                    }
-                });
-            }
-        }
+        loadGlobalSettings();
+        const m=localStorage.getItem('promptMode')||'rapid'; document.body.classList.add(`mode-${m}`);
+        const s=localStorage.getItem('promptStreamMobile');
+        if(s){ const d=JSON.parse(s); if(d.length>0){ document.getElementById('streamList').innerHTML=''; d.forEach(i=>{ addNewCard(i.type,i.text); if(i.controls){ const l=document.querySelector('#streamList .card:last-child'); l.dataset.controls=i.controls; reflectLocalControls(l); } }); } }
     };
   </script>
 </body>
