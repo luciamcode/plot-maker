@@ -3,140 +3,94 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, interactive-widget=resizes-content">
-  <title>PROMPT STREAM // REFACTORED</title>
+  <title>PROMPT STREAM // DASHBOARD</title>
   <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600&family=Share+Tech+Mono&family=Zen+Kaku+Gothic+New:wght@400;700&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
   <style>
-    /* --- 1. Variables & Base --- */
     :root {
       --bg: #050505; --panel-bg: #111518; --card-bg: #161a1e;
       --primary: #00f3ff; --secondary: #ffaa00; --accent: #ff0055;
       --text: #cceeee; --dim: #668888; --border: #334444;
-      --type-speech: #00f3ff; --type-char: #ff00cc; --type-code: #00ff99; --type-text: #668888;
+      --type-speech: #00f3ff; --type-char: #ff00cc; --type-code: #00ff99; --type-free: #668888;
       --header-h: 50px; --footer-h: 60px;
     }
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-    body {
-      font-family: 'Share Tech Mono', 'Zen Kaku Gothic New', monospace;
-      background: var(--bg); color: var(--text);
-      margin: 0; height: 100dvh; overflow: hidden; display: flex; flex-direction: column;
-    }
+    body { font-family: 'Share Tech Mono', 'Zen Kaku Gothic New', monospace; background: var(--bg); color: var(--text); margin: 0; height: 100dvh; overflow: hidden; display: flex; flex-direction: column; }
 
-    /* --- 2. Layout Components --- */
-    header {
-      height: var(--header-h); background: rgba(11,15,18,0.98); border-bottom: 1px solid var(--border);
-      display: flex; align-items: center; justify-content: space-between; padding: 0 8px; z-index: 20;
-    }
+    /* UI Components */
+    header { height: var(--header-h); background: rgba(11,15,18,0.98); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 8px; z-index: 20; flex-shrink: 0; }
     h1 { font-size: 16px; letter-spacing: 1px; margin: 0; }
-    
     .actions { display: flex; gap: 6px; }
-    .btn {
-      background: transparent; border: 1px solid var(--border); color: var(--text);
-      padding: 6px 8px; border-radius: 4px; cursor: pointer; font-size: 11px; font-family: inherit;
-    }
-    .btn:active, .btn.active { background: var(--border); color: #fff; }
+    .btn { background: transparent; border: 1px solid var(--border); color: var(--text); padding: 6px 8px; border-radius: 4px; cursor: pointer; font-size: 11px; font-family: inherit; }
+    .btn.active, .btn:active { background: var(--border); color: #fff; }
     .btn.primary { border-color: var(--primary); color: var(--primary); }
     .btn.accent { border-color: var(--secondary); color: var(--secondary); }
     .btn.danger { border-color: var(--accent); color: var(--accent); }
 
-    /* Palette Bar */
-    .palette {
-      background: var(--panel-bg); padding: 10px; border-bottom: 1px solid var(--border);
-      display: flex; gap: 8px; overflow-x: auto; align-items: center; z-index: 15;
-    }
-    .p-btn {
-      flex: 0 0 auto; background: #000; border: 1px solid var(--border); border-left: 3px solid #555;
-      color: var(--text); padding: 8px 10px; border-radius: 4px; cursor: pointer; min-width: 75px;
-      display: flex; flex-direction: column; font-size: 12px;
-    }
+    /* Palette */
+    .palette { background: var(--panel-bg); padding: 10px; border-bottom: 1px solid var(--border); display: flex; gap: 8px; overflow-x: auto; align-items: center; z-index: 15; flex-shrink: 0; }
+    .p-btn { flex: 0 0 auto; background: #000; border: 1px solid var(--border); border-left: 3px solid #555; color: var(--text); padding: 8px 10px; border-radius: 4px; cursor: pointer; min-width: 75px; display: flex; flex-direction: column; font-size: 12px; }
     .p-btn span { font-size: 9px; opacity: 0.7; margin-top: 2px; }
-    .pb-speech { border-left-color: var(--type-speech); }
-    .pb-char { border-left-color: var(--type-char); }
-    .pb-code { border-left-color: var(--type-code); }
-    .pb-snip { border-left-color: var(--secondary); border-style: dotted; }
+    .pb-speech { border-left-color: var(--type-speech); } .pb-char { border-left-color: var(--type-char); } .pb-code { border-left-color: var(--type-code); } .pb-snip { border-left-color: var(--secondary); border-style: dotted; }
 
-    /* Stream Area */
+    /* --- DASHBOARD (New Setting Panel) --- */
+    #dashboard { background: #0a0d10; border-bottom: 1px solid var(--secondary); padding: 10px; display: none; overflow-y: auto; max-height: 40vh; flex-shrink: 0; }
+    #dashboard.open { display: block; }
+    .dash-row { display: flex; gap: 10px; margin-bottom: 10px; align-items: flex-end; }
+    .dash-group { flex: 1; }
+    .dash-group label { display: flex; justify-content: space-between; font-size: 10px; color: var(--secondary); margin-bottom: 4px; }
+    .dash-group input[type="range"] { width: 100%; height: 4px; background: #333; appearance: none; border-radius: 2px; }
+    .dash-group input[type="range"]::-webkit-slider-thumb { appearance: none; width: 12px; height: 12px; background: var(--secondary); border-radius: 50%; }
+    .dash-select { width: 100%; background: #000; color: #fff; border: 1px solid var(--border); padding: 4px; font-size: 11px; }
+    
+    .preset-list { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 5px; margin-bottom: 10px; }
+    .pre-tag { flex: 0 0 auto; padding: 4px 8px; border: 1px solid var(--border); border-radius: 4px; font-size: 10px; cursor: pointer; background: #111; }
+    .pre-tag.active { border-color: var(--secondary); color: var(--secondary); background: rgba(255, 170, 0, 0.1); }
+    .pre-tag .del { margin-left: 5px; color: var(--accent); font-weight: bold; }
+
+    /* Stream */
     .stream-container { flex: 1; overflow-y: auto; padding: 15px 10px; position: relative; }
     body.mode-rapid .stream-container { padding-bottom: 80px; }
 
-    /* --- 3. Cards --- */
-    .card {
-      background: var(--card-bg); border: 1px solid var(--border); border-left: 3px solid var(--dim);
-      border-radius: 4px; margin-bottom: 12px; display: flex; flex-direction: column;
-    }
-    .card-head {
-      display: flex; justify-content: space-between; align-items: center; padding: 6px 10px;
-      background: rgba(0,0,0,0.3); border-bottom: 1px solid rgba(255,255,255,0.05);
-    }
-    .card-label { font-size: 10px; text-transform: uppercase; font-weight: bold; cursor: pointer; }
+    /* Cards */
+    .card { background: var(--card-bg); border: 1px solid var(--border); border-left: 3px solid var(--dim); border-radius: 4px; margin-bottom: 12px; display: flex; flex-direction: column; }
+    .card-head { display: flex; justify-content: space-between; align-items: center; padding: 6px 10px; background: rgba(0,0,0,0.3); border-bottom: 1px solid rgba(255,255,255,0.05); }
+    .card-label { font-size: 10px; text-transform: uppercase; font-weight: bold; cursor: pointer; user-select: none; }
+    .card-label::after { content:' ↻'; opacity:0.5; }
     .card-tools { display: flex; gap: 8px; }
-    .tool-btn {
-      width: 24px; height: 24px; display: flex; align-items: center; justify-content: center;
-      border: 1px solid #333; background: #000; color: #777; border-radius: 4px; cursor: pointer;
-    }
-    .drag-handle { cursor: grab; color: var(--border); font-size: 18px; } .drag-handle::after { content: '≡'; }
-    
-    .card textarea {
-      width: 100%; padding: 12px; background: transparent; border: none; color: var(--text);
-      resize: none; font-family: 'Zen Kaku Gothic New', monospace; font-size: 15px; outline: none;
-      min-height: 50px; display: block;
-    }
-
-    /* Card Types */
+    .tool-btn { width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; border: 1px solid #333; background: #000; color: #777; border-radius: 4px; cursor: pointer; font-size: 12px; }
+    .drag-handle { cursor: grab; color: var(--border); font-size: 18px; touch-action: none; } .drag-handle::after { content: '≡'; }
+    .card textarea { width: 100%; padding: 12px; background: transparent; border: none; color: var(--text); resize: none; font-family: 'Zen Kaku Gothic New', monospace; font-size: 15px; outline: none; min-height: 50px; display: block; }
     .type-speech { border-left-color: var(--type-speech); } .type-speech .card-label { color: var(--type-speech); }
     .type-char { border-left-color: var(--type-char); background: #1a0f15; } .type-char .card-label { color: var(--type-char); }
-    .type-code { border-left-color: var(--type-code); background: #080a0c; } 
-    .type-code .card-label { color: var(--type-code); } .type-code textarea { font-family: 'Fira Code', monospace; color: var(--type-code); font-size: 13px; }
-
-    /* Settings Panel inside Card */
+    .type-code { border-left-color: var(--type-code); background: #080a0c; } .type-code .card-label { color: var(--type-code); } .type-code textarea { font-family: 'Fira Code', monospace; color: var(--type-code); font-size: 13px; }
     .card-settings { padding: 10px; background: rgba(255, 170, 0, 0.1); border-top: 1px solid var(--border); display: none; }
     .card-settings.active { display: block; }
-    
-    /* --- 4. Rapid Footer --- */
-    .rapid-footer {
-      height: var(--footer-h); border-top: 1px solid var(--border); background: var(--panel-bg);
-      padding: 0 10px; display: flex; align-items: center; gap: 10px;
-      position: absolute; bottom: 0; width: 100%; transform: translateY(100%); transition: transform 0.3s;
-    }
+
+    /* Footer & Modals */
+    .rapid-footer { height: var(--footer-h); border-top: 1px solid var(--border); background: var(--panel-bg); padding: 0 10px; display: flex; align-items: center; gap: 10px; position: absolute; bottom: 0; width: 100%; transform: translateY(100%); transition: transform 0.3s; }
     body.mode-rapid .rapid-footer { transform: translateY(0); }
     .rapid-input { flex: 1; background: #000; border: 1px solid #444; color: #fff; padding: 10px; border-radius: 20px; outline: none; }
     .rapid-send { width: 40px; height: 40px; border-radius: 50%; background: var(--primary); border: none; font-weight: bold; cursor: pointer; }
-
-    /* --- 5. Modals --- */
-    .modal {
-      position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); backdrop-filter: blur(4px);
-      z-index: 100; display: none; align-items: center; justify-content: center;
-    }
-    .modal-box {
-      background: var(--panel-bg); border: 1px solid var(--border); width: 90%; max-width: 450px; max-height: 85vh;
-      border-radius: 8px; display: flex; flex-direction: column; box-shadow: 0 0 30px rgba(0,0,0,0.5);
-    }
+    
+    .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); backdrop-filter: blur(4px); z-index: 100; display: none; align-items: center; justify-content: center; }
+    .modal-box { background: var(--panel-bg); border: 1px solid var(--border); width: 90%; max-width: 450px; max-height: 85vh; border-radius: 8px; display: flex; flex-direction: column; box-shadow: 0 0 30px rgba(0,0,0,0.5); }
     .modal-head { padding: 15px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; font-weight: bold; }
     .modal-body { padding: 15px; overflow-y: auto; }
-    
-    /* Common UI Elements */
-    .range-group { margin-bottom: 10px; }
-    .range-group label { display: flex; justify-content: space-between; font-size: 11px; color: var(--secondary); margin-bottom: 4px; }
-    .range-group input { width: 100%; }
-    
     .list-item { background: var(--card-bg); border: 1px solid var(--border); padding: 10px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; border-radius: 4px; }
-    .tag { font-size: 10px; background: #333; padding: 2px 5px; border-radius: 3px; color: #aaa; margin-right: 5px; }
-
-    .preset-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 15px; }
-    .preset-btn { background: #000; border: 1px solid #444; color: #888; padding: 10px; border-radius: 6px; cursor: pointer; text-align: center; font-size: 11px; }
-    .preset-btn.active { border-color: var(--secondary); background: rgba(255, 170, 0, 0.2); color: var(--secondary); }
+    .tag { font-size: 10px; background: #333; padding: 2px 5px; border-radius: 3px; color: #aaa; margin-right: 5px; display:inline-block; margin-bottom:4px; cursor:pointer;}
   </style>
 </head>
 <body class="mode-rapid">
 
   <header>
-    <h1>PROMPT<span>v14</span></h1>
+    <h1>PROMPT<span>v15</span></h1>
     <div class="actions">
       <button class="btn" onclick="app.toggleMode()">⚡ MODE</button>
       <a href="./persona.html"><button class="btn">PERSONA→</button></a>
       <button class="btn danger" onclick="app.clearBoard()">CLR</button>
       <button class="btn" style="color:var(--type-char); border-color:var(--type-char)" onclick="modals.open('char')">CHARS</button>
-      <button class="btn accent" onclick="modals.open('settings')">DATA</button>
+      <button class="btn accent" onclick="app.toggleDashboard()">DATA</button>
       <button class="btn primary" onclick="modals.open('share')">SHARE</button>
     </div>
   </header>
@@ -153,6 +107,33 @@
     <div class="p-btn pb-snip" onclick="modals.open('snippet')">Snippet<span>VBA</span></div>
   </div>
 
+  <div id="dashboard">
+    <div class="dash-row">
+      <div class="dash-group">
+        <label>MUTABLE <span id="disp-mutable">100%</span></label>
+        <input type="range" id="global-mutable" min="0" max="200" step="10" oninput="settings.updateUI()">
+      </div>
+      <div class="dash-group">
+        <label>GENERATE <span id="disp-generate">100%</span></label>
+        <input type="range" id="global-generate" min="50" max="200" step="10" oninput="settings.updateUI()">
+      </div>
+      <div class="dash-group" style="flex:0.6">
+        <label>REFINE</label>
+        <select id="global-refine" class="dash-select" onchange="settings.saveState()">
+          <option value="low">low</option><option value="middle" selected>mid</option><option value="high">high</option>
+        </select>
+      </div>
+    </div>
+    
+    <div class="preset-list" id="preset-list-container"></div>
+    
+    <div class="dash-row">
+        <input id="newPresetName" class="dash-select" placeholder="New Preset Name" style="flex:1;">
+        <button class="btn accent" onclick="settings.saveCustom()">SAVE PRESET</button>
+        <button class="btn" onclick="modals.open('projects')">LOAD PROJECT...</button>
+    </div>
+  </div>
+
   <div class="stream-container">
     <div id="streamList"></div>
   </div>
@@ -164,358 +145,139 @@
 
   <textarea id="basePrompt" style="display:none;">
 [ParamControl]
-Refinement: middle
 GlobalAdjustMutable: 100%
 GlobalGenerateAmount: 100%
-WildcardRule: "アスタリスク（****）は文脈に応じた適切な感情、動作、言葉で補完"
-OutputRange: "生成文は@startpointから@endpointまでの範囲のみ出力"
-MutableApplication: "各ブロックの[AdjustMutable]倍率を適用。ない場合は100%"
-NarrationStyle: seamless
+Refinement: middle
+WildcardRule: "****は文脈に応じ補完"
+OutputRange: "@startpointから@endpointのみ"
+MutableApplication: "[AdjustMutable]優先。なければGlobal値"
 [/ParamControl]
   </textarea>
 
-  <div id="modal-settings" class="modal">
-    <div class="modal-box" style="border-color: var(--secondary);">
-      <div class="modal-head" style="color:var(--secondary)">SETTINGS <span onclick="modals.close('settings')">×</span></div>
-      <div class="modal-body">
-        <h4>PRESETS</h4>
-        <div class="preset-grid">
-          <div class="preset-btn" id="pre-gemini" onclick="settings.applyPreset('gemini')">GEMINI</div>
-          <div class="preset-btn" id="pre-claude" onclick="settings.applyPreset('claude')">CLAUDE</div>
-          <div class="preset-btn" id="pre-grok" onclick="settings.applyPreset('grok')">GROK</div>
-        </div>
-        <div class="range-group">
-          <label>Mutable (演技) <span id="disp-mutable">100%</span></label>
-          <input type="range" id="global-mutable" min="0" max="200" step="10" oninput="settings.updateUI()">
-        </div>
-        <div class="range-group">
-          <label>Generate (量) <span id="disp-generate">100%</span></label>
-          <input type="range" id="global-generate" min="50" max="200" step="10" oninput="settings.updateUI()">
-        </div>
-        <hr style="border-color:#333; margin:15px 0;">
-        <h4>PROJECTS</h4>
-        <input type="text" id="projName" placeholder="Project Name" style="width:100%; padding:8px; margin-bottom:8px; background:#000; border:1px solid #444; color:#fff;">
-        <button class="btn accent" style="width:100%; padding:10px;" onclick="projects.save()">SAVE CURRENT BOARD</button>
-        <div id="projectList" style="margin-top:10px;"></div>
-      </div>
-    </div>
-  </div>
-
-  <div id="modal-share" class="modal">
-    <div class="modal-box">
-      <div class="modal-head" style="color:var(--primary)">SHARE <span onclick="modals.close('share')">×</span></div>
-      <div class="modal-body" style="display:flex; flex-direction:column; gap:10px;">
-        <button class="btn" style="padding:15px; text-align:left;" onclick="sharing.copyText()">🚀 COPY TEXT (スマホ用)</button>
-        <button class="btn" style="padding:15px; text-align:left;" onclick="sharing.copyCode()">🤖 COPY FOR AI (Markdown)</button>
-        <button class="btn" style="padding:15px; text-align:left;" onclick="sharing.download()">💾 DOWNLOAD .TXT</button>
-      </div>
-    </div>
-  </div>
-
+  <div id="modal-projects" class="modal"><div class="modal-box" style="border-color:var(--secondary)"><div class="modal-head" style="color:var(--secondary)">PROJECTS <span onclick="modals.close('projects')">×</span></div><div class="modal-body"><input id="projName" placeholder="Project Name" style="width:100%;padding:8px;margin-bottom:8px;background:#000;border:1px solid #444;color:#fff;"><button class="btn accent" style="width:100%;" onclick="projects.save()">SAVE BOARD</button><div id="projectList" style="margin-top:10px;"></div></div></div></div>
+  <div id="modal-share" class="modal"><div class="modal-box"><div class="modal-head" style="color:var(--primary)">SHARE <span onclick="modals.close('share')">×</span></div><div class="modal-body" style="display:flex; flex-direction:column; gap:10px;"><button class="btn" style="padding:15px;" onclick="sharing.copyText()">🚀 COPY TEXT</button><button class="btn" style="padding:15px;" onclick="sharing.copyCode()">🤖 COPY FOR AI</button><button class="btn" style="padding:15px;" onclick="sharing.download()">💾 DOWNLOAD .TXT</button></div></div></div>
   <div id="modal-char" class="modal"><div class="modal-box"><div class="modal-head" style="color:var(--type-char)">CHARACTERS <span onclick="modals.close('char')">×</span></div><div class="modal-body" id="list-char"></div></div></div>
-  <div id="modal-snippet" class="modal"><div class="modal-box"><div class="modal-head" style="color:var(--type-code)">SNIPPETS <span onclick="modals.close('snippet')">×</span></div><div class="modal-body"><div id="list-snippet"></div><input id="snipName" placeholder="Name" style="width:100%; margin-top:10px;"><textarea id="snipContent" placeholder="Code..." style="width:100%;"></textarea><button class="btn" onclick="snippets.add()">ADD</button></div></div></div>
+  <div id="modal-snippet" class="modal"><div class="modal-box"><div class="modal-head" style="color:var(--type-code)">SNIPPETS <span onclick="modals.close('snippet')">×</span></div><div class="modal-body"><div id="list-snippet"></div><input id="snipName" placeholder="Name" style="width:100%;margin-top:10px;"><textarea id="snipContent" placeholder="Code..." style="width:100%;"></textarea><button class="btn" onclick="snippets.add()">ADD</button></div></div></div>
   <div id="modal-parts" class="modal"><div class="modal-box"><div class="modal-head" style="color:var(--secondary)">INLINE PARTS <span onclick="modals.close('parts')">×</span></div><div class="modal-body"><div id="list-parts"></div><input id="partInput" placeholder="New Word" style="width:70%;"><button onclick="parts.add()">ADD</button></div></div></div>
 
   <script>
-    // --- Configuration & Data ---
     const CONFIG = {
-      types: {
-        speech: { label: 'Dialogue', ph: '「……」', rows: 2, class: 'type-speech' },
-        char:   { label: 'Character', ph: '[AI personality...]', rows: 6, class: 'type-char' },
-        code:   { label: 'Logic', ph: 'if (flag) { ... }', rows: 3, class: 'type-code' },
-        free:   { label: 'Narration', ph: '...', rows: 3, class: 'type-free' }
-      },
-      presets: {
-        gemini: { mutable: 100, generate: 100 },
-        claude: { mutable: 80, generate: 110 },
-        grok:   { mutable: 50, generate: 90 }
-      }
+      types: { speech: { l:'Dialogue', p:'「……」', r:2, c:'type-speech'}, char: { l:'Character', p:'[AI personality...]', r:6, c:'type-char'}, code: { l:'Logic', p:'if(flag){...}', r:3, c:'type-code'}, free: { l:'Narration', p:'...', r:3, c:'type-free'} },
+      defaults: { gemini: {m:100, g:100, r:'middle'}, claude: {m:80, g:110, r:'high'}, grok: {m:50, g:90, r:'middle'} }
     };
-    
-    let globalState = { mutable: 100, generate: 100, model: 'custom' };
+    let state = { m:100, g:100, r:'middle' };
     let lastFocused = null;
 
-    // --- Core: Board Management ---
     const board = {
       init: () => {
-        new Sortable(document.getElementById('streamList'), {
-          handle: '.drag-handle', animation: 150, onEnd: storage.saveStream
-        });
-        storage.loadStream();
-        settings.load();
-        // Setup visual viewport hack for mobile keyboards
-        if(window.visualViewport) window.visualViewport.addEventListener('resize', () => document.body.style.height = window.visualViewport.height + 'px');
+        new Sortable(document.getElementById('streamList'), { handle:'.drag-handle', animation:150, onEnd:storage.save });
+        storage.load(); settings.init();
+        if(window.visualViewport) window.visualViewport.addEventListener('resize',()=>document.body.style.height=window.visualViewport.height+'px');
       },
-
-      add: (type, text = '', controls = {mutable:null, generate:null}) => {
+      add: (type, val='', ctrls={m:null, g:null}) => {
         const conf = CONFIG.types[type] || CONFIG.types.free;
         const div = document.createElement('div');
-        div.className = `card ${conf.class}`;
-        div.dataset.type = type;
-        div.dataset.controls = JSON.stringify(controls);
-        
-        div.innerHTML = `
-          <div class="card-head">
-            <div class="card-label" onclick="board.cycleType(this)">${conf.label}</div>
-            <div class="card-tools">
-              <div class="tool-btn" onclick="navigator.clipboard.writeText(this.closest('.card').querySelector('textarea').value)">❐</div>
-              <div class="tool-btn" onclick="board.clone(this)">＋</div>
-              <div class="tool-btn" style="color:var(--secondary); border-color:var(--secondary)" onclick="board.toggleSettings(this)">⚙️</div>
-              <div class="tool-btn" onclick="board.remove(this)">×</div>
-              <div class="drag-handle"></div>
-            </div>
-          </div>
-          <textarea rows="${conf.rows}" placeholder="${conf.ph}" oninput="board.resize(this)">${text}</textarea>
-          <div class="card-settings">
-            <div class="range-group">
-              <label>Mutable Override <span class="val-mut">${controls.mutable||'Default'}</span></label>
-              <input type="range" class="in-mut" min="0" max="200" step="10" value="${controls.mutable||globalState.mutable}" oninput="board.updateControls(this, 'mutable')">
-            </div>
-            <div class="range-group">
-              <label>Generate Override <span class="val-gen">${controls.generate||'Default'}</span></label>
-              <input type="range" class="in-gen" min="50" max="200" step="10" value="${controls.generate||globalState.generate}" oninput="board.updateControls(this, 'generate')">
-            </div>
-          </div>
-        `;
-        
+        div.className = `card ${conf.c}`; div.dataset.type = type; div.dataset.ctrls = JSON.stringify(ctrls);
+        div.innerHTML = `<div class="card-head"><div class="card-label" onclick="board.cycle(this)">${conf.l}</div><div class="card-tools"><div class="tool-btn" onclick="navigator.clipboard.writeText(this.closest('.card').querySelector('textarea').value)">❐</div><div class="tool-btn" onclick="board.clone(this)">＋</div><div class="tool-btn" style="color:var(--secondary);border-color:var(--secondary)" onclick="board.togSet(this)">⚙️</div><div class="tool-btn" onclick="board.del(this)">×</div><div class="drag-handle"></div></div></div><textarea rows="${conf.r}" placeholder="${conf.p}" oninput="board.sz(this)">${val}</textarea><div class="card-settings"><div class="range-group"><label>Mutable <span class="v-m">${ctrls.m||'Def'}</span></label><input type="range" min="0" max="200" step="10" value="${ctrls.m||state.m}" oninput="board.upd(this,'m')"></div><div class="range-group"><label>Generate <span class="v-g">${ctrls.g||'Def'}</span></label><input type="range" min="50" max="200" step="10" value="${ctrls.g||state.g}" oninput="board.upd(this,'g')"></div></div>`;
         document.getElementById('streamList').appendChild(div);
-        const ta = div.querySelector('textarea');
-        ta.addEventListener('focus', (e) => lastFocused = e.target);
-        board.resize(ta);
-        div.scrollIntoView({ behavior: 'smooth', block: 'end' });
-        storage.saveStream();
+        const ta=div.querySelector('textarea'); ta.addEventListener('focus',(e)=>lastFocused=e.target);
+        board.sz(ta); div.scrollIntoView({behavior:'smooth',block:'end'}); storage.save();
         if(!document.activeElement.classList.contains('rapid-input')) ta.focus();
       },
-
-      remove: (btn) => { if(confirm('Delete?')) { btn.closest('.card').remove(); storage.saveStream(); } },
-      clone: (btn) => { const c = btn.closest('.card'); board.add(c.dataset.type, c.querySelector('textarea').value); },
-      resize: (ta) => { ta.style.height = 'auto'; ta.style.height = ta.scrollHeight + 'px'; storage.saveStream(); },
-      
-      cycleType: (lbl) => {
-        const card = lbl.closest('.card');
-        const keys = Object.keys(CONFIG.types);
-        const next = keys[(keys.indexOf(card.dataset.type) + 1) % keys.length];
-        const conf = CONFIG.types[next];
-        
-        card.className = `card ${conf.class}`;
-        card.dataset.type = next;
-        lbl.innerText = conf.label;
-        const ta = card.querySelector('textarea');
-        ta.placeholder = conf.ph;
-        if(next === 'code') { ta.style.fontFamily = 'Fira Code'; ta.style.color = 'var(--type-code)'; }
-        else { ta.style.fontFamily = 'Zen Kaku Gothic New'; ta.style.color = 'var(--text)'; }
-        storage.saveStream();
-      },
-
-      toggleSettings: (btn) => {
-        const p = btn.closest('.card').querySelector('.card-settings');
-        document.querySelectorAll('.card-settings').forEach(el => { if(el!==p) el.classList.remove('active'); });
-        p.classList.toggle('active');
-      },
-
-      updateControls: (input, key) => {
-        const card = input.closest('.card');
-        const controls = JSON.parse(card.dataset.controls);
-        controls[key] = parseInt(input.value);
-        card.dataset.controls = JSON.stringify(controls);
-        card.querySelector(`.val-${key.substr(0,3)}`).innerText = input.value + '%';
-        storage.saveStream();
+      del:(b)=>{if(confirm('Delete?')){b.closest('.card').remove();storage.save();}},
+      clone:(b)=>{const c=b.closest('.card'); board.add(c.dataset.type, c.querySelector('textarea').value);},
+      sz:(t)=>{t.style.height='auto';t.style.height=t.scrollHeight+'px';storage.save();},
+      togSet:(b)=>{b.closest('.card').querySelector('.card-settings').classList.toggle('active');},
+      upd:(el,k)=>{const c=el.closest('.card'); const d=JSON.parse(c.dataset.ctrls); d[k]=parseInt(el.value); c.dataset.ctrls=JSON.stringify(d); c.querySelector(`.v-${k}`).innerText=el.value+'%'; storage.save();},
+      cycle:(el)=>{
+        const c=el.closest('.card'); const keys=Object.keys(CONFIG.types);
+        const nxt=keys[(keys.indexOf(c.dataset.type)+1)%4]; const conf=CONFIG.types[nxt];
+        c.className=`card ${conf.c}`; c.dataset.type=nxt; el.innerText=conf.l;
+        const ta=c.querySelector('textarea'); ta.placeholder=conf.p;
+        if(nxt==='code'){ta.style.fontFamily='Fira Code';ta.style.color='var(--type-code)';}else{ta.style.fontFamily='inherit';ta.style.color='var(--text)';}
+        storage.save();
       }
     };
 
-    // --- App Features ---
     const app = {
-      toggleMode: () => {
-        document.body.classList.toggle('mode-rapid');
-        document.body.classList.toggle('mode-standard');
-      },
-      clearBoard: () => {
-        if(confirm('Clear all?')) { document.getElementById('streamList').innerHTML = ''; storage.saveStream(); }
-      },
-      sendRapid: () => {
-        const el = document.getElementById('rapidInput');
-        const v = el.value.trim();
-        if(!v) return;
-        let type = 'free';
-        if(v.match(/^[「『]/)) type = 'speech';
-        if(v.startsWith('[')) type = 'code';
-        board.add(type, v);
-        el.value = '';
-      }
+      toggleMode:()=>{document.body.classList.toggle('mode-rapid');document.body.classList.toggle('mode-standard');},
+      toggleDashboard:()=>{document.getElementById('dashboard').classList.toggle('open');},
+      clearBoard:()=>{if(confirm('Clear?')){document.getElementById('streamList').innerHTML='';storage.save();}},
+      sendRapid:()=>{const el=document.getElementById('rapidInput'),v=el.value.trim();if(v){let t='free';if(v.match(/^[「『]/))t='speech';if(v.startsWith('['))t='code';board.add(t,v);el.value='';}}
     };
 
-    const editor = {
-      insert: (txt, endTxt) => {
-        if(!lastFocused) { alert('Tap a text area first'); return; }
-        const start = lastFocused.selectionStart, end = lastFocused.selectionEnd;
-        const val = lastFocused.value;
-        const textToInsert = endTxt ? txt + val.substring(start, end) + endTxt : txt;
-        lastFocused.value = val.substring(0, start) + textToInsert + val.substring(end);
-        lastFocused.selectionStart = lastFocused.selectionEnd = start + textToInsert.length;
-        lastFocused.dispatchEvent(new Event('input'));
-        lastFocused.focus();
-      }
-    };
-
-    // --- Data Managers (Projects, Settings, Sharing) ---
     const settings = {
-      load: () => {
-        const s = JSON.parse(localStorage.getItem('ps_settings') || '{}');
-        Object.assign(globalState, s);
-        settings.updateUI();
+      init:()=>{
+        state = JSON.parse(localStorage.getItem('ps_state')||JSON.stringify(CONFIG.defaults.gemini));
+        settings.renderPresets(); settings.updateUI();
       },
-      save: () => {
-        localStorage.setItem('ps_settings', JSON.stringify(globalState));
-      },
-      updateUI: () => {
-        document.getElementById('global-mutable').value = globalState.mutable;
-        document.getElementById('global-generate').value = globalState.generate;
-        document.getElementById('disp-mutable').innerText = globalState.mutable + '%';
-        document.getElementById('disp-generate').innerText = globalState.generate + '%';
-        // Active preset styling
-        document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
-        if(globalState.model !== 'custom') document.getElementById(`pre-${globalState.model}`).classList.add('active');
-      },
-      applyPreset: (key) => {
-        globalState = { ...globalState, ...CONFIG.presets[key], model: key };
-        settings.save(); settings.updateUI();
-      }
-    };
-
-    const projects = {
-      save: () => {
-        const name = document.getElementById('projName').value;
-        if(!name) return alert('Enter name');
-        const data = [];
-        document.querySelectorAll('#streamList .card').forEach(c => {
-          data.push({ type:c.dataset.type, text:c.querySelector('textarea').value, controls:JSON.parse(c.dataset.controls) });
-        });
-        const db = JSON.parse(localStorage.getItem('ps_projects')||'{}');
-        db[name] = data;
-        localStorage.setItem('ps_projects', JSON.stringify(db));
-        projects.render();
-      },
-      load: (name) => {
-        if(!confirm('Load project?')) return;
-        const db = JSON.parse(localStorage.getItem('ps_projects')||'{}');
-        document.getElementById('streamList').innerHTML = '';
-        db[name].forEach(i => board.add(i.type, i.text, i.controls));
-        modals.close('settings');
-      },
-      delete: (name) => {
-        if(!confirm('Delete?')) return;
-        const db = JSON.parse(localStorage.getItem('ps_projects')||'{}');
-        delete db[name];
-        localStorage.setItem('ps_projects', JSON.stringify(db));
-        projects.render();
-      },
-      render: () => {
-        const list = document.getElementById('projectList'); list.innerHTML = '';
-        const db = JSON.parse(localStorage.getItem('ps_projects')||'{}');
-        Object.keys(db).forEach(name => {
-          list.innerHTML += `<div class="list-item"><span>${name}</span><div><button class="btn" onclick="projects.load('${name}')">LOAD</button> <button class="btn danger" onclick="projects.delete('${name}')">×</button></div></div>`;
-        });
-      }
-    };
-
-    const sharing = {
-      buildText: () => {
-        let txt = document.getElementById('basePrompt').value + '\n';
-        document.querySelectorAll('#streamList .card').forEach(c => {
-          const controls = JSON.parse(c.dataset.controls);
-          if(controls.mutable || controls.generate) {
-             txt += `[Adjust: ${controls.mutable||globalState.mutable}%, Gen: ${controls.generate||globalState.generate}%]\n`;
-          }
-          txt += c.querySelector('textarea').value + '\n';
-        });
-        return txt;
-      },
-      copyText: () => { navigator.clipboard.writeText(sharing.buildText()); alert('Copied!'); modals.close('share'); },
-      copyCode: () => { navigator.clipboard.writeText("```markdown\n" + sharing.buildText() + "\n```"); alert('Copied for AI!'); modals.close('share'); },
-      download: () => {
-        const b = new Blob([sharing.buildText()], {type:'text/plain'});
-        const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = 'PROMPT.txt'; a.click();
-      }
-    };
-
-    // --- Sub-Managers (Chars, Snippets, Parts) ---
-    // Simplified into one common pattern usually, but kept separate for clarity here
-    const modals = {
-      open: (id) => {
-        document.getElementById(`modal-${id}`).style.display = 'flex';
-        if(id === 'settings') projects.render();
-        if(id === 'char') subMgr.render('char');
-        if(id === 'snippet') subMgr.render('snippet');
-        if(id === 'parts') subMgr.render('parts');
-      },
-      close: (id) => document.getElementById(`modal-${id}`).style.display = 'none'
-    };
-
-    const subMgr = {
-      db: (key) => JSON.parse(localStorage.getItem(key) || (key==='ps_parts'?'[]':'{}')),
-      saveDB: (key, data) => localStorage.setItem(key, JSON.stringify(data)),
-      
-      render: (type) => {
-        const list = document.getElementById(`list-${type}`); list.innerHTML = '';
-        if(type === 'parts') {
-          subMgr.db('ps_parts').forEach((txt, i) => {
-             const span = document.createElement('span'); span.className = 'tag'; span.style.fontSize='14px'; span.style.padding='8px';
-             span.innerHTML = `${txt} <span onclick="parts.del(${i})">×</span>`;
-             span.onclick = (e) => { if(!e.target.innerHTML.includes('×')) { editor.insert(txt); modals.close('parts'); }};
-             list.appendChild(span);
-          });
-          return;
+      updateUI:()=>{
+        if(event && event.target.id) {
+           state.m = document.getElementById('global-mutable').value;
+           state.g = document.getElementById('global-generate').value;
+           state.r = document.getElementById('global-refine').value;
+        } else {
+           document.getElementById('global-mutable').value = state.m;
+           document.getElementById('global-generate').value = state.g;
+           document.getElementById('global-refine').value = state.r;
         }
-        // Key-Value Types (Char, Snippet)
-        const db = subMgr.db(type === 'char' ? 'promptChars' : 'promptSnippets'); // Legacy keys support
-        Object.keys(db).forEach(k => {
-          const val = type==='char' ? (db[k].text || k) : db[k];
-          list.innerHTML += `<div class="list-item"><span>${k}</span><div><button class="btn" onclick="subMgr.insert('${type}', '${k}')">ADD</button> <button class="btn danger" onclick="subMgr.del('${type}', '${k}')">×</button></div></div>`;
-        });
+        document.getElementById('disp-mutable').innerText = state.m + '%';
+        document.getElementById('disp-generate').innerText = state.g + '%';
+        settings.saveState();
       },
-      insert: (type, key) => {
-        const db = subMgr.db(type === 'char' ? 'promptChars' : 'promptSnippets');
-        const val = type === 'char' ? (db[key].text || `[AI: ${key}]`) : db[key];
-        board.add(type === 'char' ? 'char' : 'code', val);
-        modals.close(type);
+      saveState:()=>{ localStorage.setItem('ps_state', JSON.stringify(state)); },
+      saveCustom:()=>{
+        const name=document.getElementById('newPresetName').value; if(!name)return;
+        const customs=JSON.parse(localStorage.getItem('ps_presets')||'{}');
+        customs[name]={m:state.m, g:state.g, r:state.r};
+        localStorage.setItem('ps_presets',JSON.stringify(customs));
+        document.getElementById('newPresetName').value=''; settings.renderPresets();
       },
-      del: (type, key) => {
-        if(!confirm('Delete?')) return;
-        const k = type === 'char' ? 'promptChars' : 'promptSnippets';
-        const db = subMgr.db(k);
-        delete db[key];
-        subMgr.saveDB(k, db);
-        subMgr.render(type);
+      delCustom:(name,e)=>{e.stopPropagation(); const c=JSON.parse(localStorage.getItem('ps_presets')); delete c[name]; localStorage.setItem('ps_presets',JSON.stringify(c)); settings.renderPresets();},
+      loadPreset:(conf)=>{state={...conf}; settings.updateUI();},
+      renderPresets:()=>{
+        const box=document.getElementById('preset-list-container'); box.innerHTML='';
+        const render=(n,d,del=false)=>{
+           const div=document.createElement('div'); div.className='pre-tag'; div.innerHTML=`${n.toUpperCase()}${del?`<span class="del" onclick="settings.delCustom('${n}',event)">×</span>`:''}`;
+           div.onclick=()=>settings.loadPreset(d); box.appendChild(div);
+        };
+        Object.keys(CONFIG.defaults).forEach(k=>render(k,CONFIG.defaults[k]));
+        const customs=JSON.parse(localStorage.getItem('ps_presets')||'{}');
+        Object.keys(customs).forEach(k=>render(k,customs[k],true));
       }
     };
 
-    // Specific wrappers for UI calls
-    const parts = {
-      add: () => { const el = document.getElementById('partInput'); const v = el.value; if(v){ const d = subMgr.db('ps_parts'); d.push(v); subMgr.saveDB('ps_parts', d); el.value=''; subMgr.render('parts'); } },
-      del: (i) => { const d = subMgr.db('ps_parts'); d.splice(i,1); subMgr.saveDB('ps_parts', d); subMgr.render('parts'); }
-    };
-    const snippets = {
-      add: () => { 
-        const n = document.getElementById('snipName').value, c = document.getElementById('snipContent').value;
-        if(n&&c) { const db = subMgr.db('promptSnippets'); db[n] = c; subMgr.saveDB('promptSnippets', db); subMgr.render('snippet'); }
-      }
+    const editor = { insert:(t,e)=>{if(!lastFocused)return alert('Tap text'); const f=lastFocused,s=f.selectionStart,en=f.selectionEnd,v=f.value; f.value=v.substring(0,s)+(e?t+v.substring(s,en)+e:t)+v.substring(en); f.dispatchEvent(new Event('input')); f.focus();} };
+    const sharing = {
+      txt:()=>{let t=document.getElementById('basePrompt').value+'\n'; t+=`Refinement:${state.r}\nGlobalAdjustMutable:${state.m}%\nGlobalGenerateAmount:${state.g}%\n`; document.querySelectorAll('#streamList .card').forEach(c=>{const d=JSON.parse(c.dataset.ctrls); if(d.m||d.g)t+=`[Adjust:${d.m||state.m}%,Gen:${d.g||state.g}%]\n`; t+=c.querySelector('textarea').value+'\n';}); return t;},
+      copyText:()=>{navigator.clipboard.writeText(sharing.txt());alert('Copied');modals.close('share');},
+      copyCode:()=>{navigator.clipboard.writeText("```markdown\n"+sharing.txt()+"\n```");alert('Copied Code');modals.close('share');},
+      download:()=>{const b=new Blob([sharing.txt()],{type:'text/plain'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='P.txt';a.click();}
     };
 
-    const storage = {
-      saveStream: () => {
-        const data = [];
-        document.querySelectorAll('#streamList .card').forEach(c => {
-          data.push({ type:c.dataset.type, text:c.querySelector('textarea').value, controls:JSON.parse(c.dataset.controls) });
-        });
-        localStorage.setItem('ps_stream', JSON.stringify(data));
+    // Sub-Managers
+    const modals={open:(id)=>{document.getElementById(`modal-${id}`).style.display='flex';if(id==='projects')projects.render();if(id==='char'||id==='snippet'||id==='parts')subMgr.render(id);}, close:(id)=>document.getElementById(`modal-${id}`).style.display='none'};
+    const subMgr={
+      db:(k)=>JSON.parse(localStorage.getItem(k)||'{}'),
+      save:(k,d)=>localStorage.setItem(k,JSON.stringify(d)),
+      render:(t)=>{
+        const l=document.getElementById(`list-${t}`), k=t==='parts'?'ps_parts':(t==='char'?'promptChars':'promptSnippets');
+        l.innerHTML=''; const d=subMgr.db(k);
+        if(t==='parts'){
+           (Array.isArray(d)?d:[]).forEach((v,i)=>{l.innerHTML+=`<span class="tag" onclick="if(!event.target.classList.contains('del')){editor.insert('${v}');modals.close('parts')}">${v} <span class="del" onclick="event.stopPropagation();parts.del(${i})">×</span></span>`});
+        } else {
+           Object.keys(d).forEach(key=>{l.innerHTML+=`<div class="list-item"><span>${key}</span><div><button class="btn" onclick="subMgr.add('${t}','${key}')">ADD</button> <button class="btn danger" onclick="subMgr.del('${t}','${key}')">×</button></div></div>`});
+        }
       },
-      loadStream: () => {
-        const data = JSON.parse(localStorage.getItem('ps_stream') || '[]');
-        data.forEach(i => board.add(i.type, i.text, i.controls));
-      }
+      add:(t,key)=>{const db=subMgr.db(t==='char'?'promptChars':'promptSnippets'); const v=t==='char'?(db[key].text||db[key]):db[key]; board.add(t==='char'?'char':'code',v); modals.close(t);},
+      del:(t,key)=>{if(confirm('Del?')){const k=t==='char'?'promptChars':'promptSnippets',d=subMgr.db(k);delete d[key];subMgr.save(k,d);subMgr.render(t);}}
     };
-
-    window.onload = board.init;
+    const parts={add:()=>{const el=document.getElementById('partInput'),v=el.value;if(v){const d=JSON.parse(localStorage.getItem('ps_parts')||'[]');d.push(v);localStorage.setItem('ps_parts',JSON.stringify(d));el.value='';subMgr.render('parts');}},del:(i)=>{const d=JSON.parse(localStorage.getItem('ps_parts'));d.splice(i,1);localStorage.setItem('ps_parts',JSON.stringify(d));subMgr.render('parts');}};
+    const snippets={add:()=>{const n=document.getElementById('snipName').value,c=document.getElementById('snipContent').value;if(n&&c){const d=subMgr.db('promptSnippets');d[n]=c;subMgr.save('promptSnippets',d);subMgr.render('snippet');}}};
+    const projects={save:()=>{const n=document.getElementById('projName').value;if(!n)return;const d=[];document.querySelectorAll('#streamList .card').forEach(c=>d.push({type:c.dataset.type,text:c.querySelector('textarea').value,ctrls:JSON.parse(c.dataset.ctrls)}));const db=JSON.parse(localStorage.getItem('ps_projects')||'{}');db[n]=d;localStorage.setItem('ps_projects',JSON.stringify(db));projects.render();}, load:(n)=>{if(confirm('Load?')){const db=JSON.parse(localStorage.getItem('ps_projects'));document.getElementById('streamList').innerHTML='';db[n].forEach(i=>board.add(i.type,i.text,i.ctrls));modals.close('projects');}}, del:(n)=>{if(confirm('Del?')){const db=JSON.parse(localStorage.getItem('ps_projects'));delete db[n];localStorage.setItem('ps_projects',JSON.stringify(db));projects.render();}}, render:()=>{const l=document.getElementById('projectList'),db=JSON.parse(localStorage.getItem('ps_projects')||'{}');l.innerHTML='';Object.keys(db).forEach(n=>l.innerHTML+=`<div class="list-item"><span>${n}</span><div><button class="btn" onclick="projects.load('${n}')">LOAD</button> <button class="btn danger" onclick="projects.del('${n}')">×</button></div></div>`);}};
+    
+    const storage={save:()=>{const d=[];document.querySelectorAll('#streamList .card').forEach(c=>d.push({type:c.dataset.type,text:c.querySelector('textarea').value,ctrls:JSON.parse(c.dataset.ctrls)}));localStorage.setItem('ps_stream',JSON.stringify(d));}, load:()=>{const d=JSON.parse(localStorage.getItem('ps_stream')||'[]');d.forEach(i=>board.add(i.type,i.text,i.ctrls));}};
+    window.onload=board.init;
   </script>
 </body>
 </html>
