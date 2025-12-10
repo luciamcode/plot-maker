@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, interactive-widget=resizes-content">
-  <title>PROMPT STREAM // SCREENSHOT_MASTER</title>
-  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600&family=Share+Tech+Mono&family=Zen+Kaku+Gothic+New:wght@400;700&display=swap" rel="stylesheet">
+  <title>PROMPT STREAM // NOVELIST</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600&family=Share+Tech+Mono&family=Zen+Kaku+Gothic+New:wght@400;700&family=Shippori+Mincho&display=swap" rel="stylesheet">
   <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
   <style>
@@ -95,12 +95,28 @@
     .share-btn.primary { border-color: var(--primary); color: var(--primary); font-weight: bold; }
     .share-btn.img { border-color: var(--type-char); color: var(--type-char); }
     .share-desc { font-size: 10px; opacity: 0.6; }
+
+    /* --- NOVEL PREVIEW STYLES --- */
+    #novel-container {
+        font-family: 'Shippori Mincho', serif;
+        background: #fff; color: #000;
+        padding: 40px; line-height: 1.8; font-size: 16px;
+        white-space: pre-wrap; overflow-y: auto; height: 100%;
+        border-radius: 4px;
+    }
+    /* Vertical Writing Mode */
+    #novel-container.vertical {
+        writing-mode: vertical-rl;
+        text-orientation: upright;
+        overflow-x: auto; overflow-y: hidden;
+        height: 60vh; /* Adjustment for modal */
+    }
   </style>
 </head>
 <body class="mode-rapid">
 
   <header>
-    <h1>PROMPT<span>v18</span></h1>
+    <h1>PROMPT<span>v19</span></h1>
     <div class="actions">
       <button class="btn" onclick="app.toggleMode()">⚡ MODE</button>
       <a href="./persona.html"><button class="btn">PERSONA→</button></a>
@@ -116,6 +132,7 @@
     <div class="p-btn" onmousedown="editor.insert('[', ']')">[ ]<span>BRA</span></div>
     <div class="p-btn" onmousedown="editor.insert('\n---\n')">---<span>SEP</span></div>
     <div class="p-btn pb-ref" onclick="modals.open('ref')">Ref<span>MEMO</span></div>
+    
     <div class="p-btn pb-speech" onclick="board.add('speech')">Dialogue<span>会話</span></div>
     <div class="p-btn pb-char" onclick="board.add('char')">Character<span>人格</span></div>
     <div class="p-btn pb-code" onclick="board.add('code')">Code<span>ロジック</span></div>
@@ -161,19 +178,38 @@ MutableApplication: "[AdjustMutable]優先。なければGlobal値"
     <div class="modal-box">
       <div class="modal-head" style="color:var(--primary)">SHARE MENU <span onclick="modals.close('share')">×</span></div>
       <div class="modal-body">
-        <button class="share-btn primary" onclick="sharing.shareText()">
-            🚀 SYSTEM SHARE (TEXT) <span class="share-desc">App Default</span>
+        <button class="share-btn primary" onclick="sharing.system()">
+            📡 SYSTEM SHARE (TEXT) <span class="share-desc">App Default</span>
         </button>
-        <button class="share-btn" onclick="sharing.shareCode()">
-            🤖 SYSTEM SHARE (CODE) <span class="share-desc">For LLM</span>
+        <button class="share-btn" onclick="novel.open()">
+            📖 PREVIEW NOVEL <span class="share-desc">Formatter</span>
+        </button>
+        <div style="height:1px; background:#333; margin:10px 0;"></div>
+        <button class="share-btn" onclick="sharing.copyCode()">
+            🤖 COPY FOR AI <span class="share-desc">Markdown Code</span>
         </button>
         <button class="share-btn img" onclick="sharing.shareImage()">
             🖼️ SHARE IMAGE <span class="share-desc">Screenshot</span>
         </button>
-        <div style="height:1px; background:#333; margin:10px 0;"></div>
         <button class="share-btn" onclick="sharing.download()">
             💾 DOWNLOAD .TXT <span class="share-desc">File</span>
         </button>
+      </div>
+    </div>
+  </div>
+
+  <div id="modal-novel" class="modal">
+    <div class="modal-box" style="background:#eee; color:#000; width:95%; max-width:600px;">
+      <div class="modal-head" style="border-color:#ccc; color:#000;">
+        NOVEL PREVIEW
+        <div style="display:flex; gap:5px;">
+            <button class="btn" style="color:#000; border-color:#000;" onclick="novel.toggleVertical()">縦/横</button>
+            <button class="btn" style="color:#000; border-color:#000;" onclick="novel.copy()">COPY</button>
+            <span onclick="modals.close('novel')" style="cursor:pointer; margin-left:10px; font-size:20px;">×</span>
+        </div>
+      </div>
+      <div class="modal-body" style="background:#fff; padding:0;">
+        <div id="novel-container"></div>
       </div>
     </div>
   </div>
@@ -278,6 +314,40 @@ MutableApplication: "[AdjustMutable]優先。なければGlobal値"
 
     const editor = { insert:(t,e)=>{if(!lastFocused)return alert('Tap text'); const f=lastFocused,s=f.selectionStart,en=f.selectionEnd,v=f.value; f.value=v.substring(0,s)+(e?t+v.substring(s,en)+e:t)+v.substring(en); f.dispatchEvent(new Event('input')); f.focus();} };
     
+    // --- NOVEL BUILDER ---
+    const novel = {
+        open: () => {
+            const container = document.getElementById('novel-container');
+            let html = "";
+            document.querySelectorAll('#streamList .card').forEach(c => {
+                const type = c.dataset.type;
+                let text = c.querySelector('textarea').value.trim();
+                if (!text) return;
+                
+                // Skip logic/char blocks for the novel view
+                if (type === 'code' || type === 'char') return;
+
+                if (type === 'speech') {
+                    // Auto-bracket if missing
+                    if (!text.startsWith('「') && !text.startsWith('『')) text = '「' + text;
+                    if (!text.endsWith('」') && !text.endsWith('』')) text = text + '」';
+                    html += `<p>${text}</p>`;
+                } else {
+                    // Narration: Indent
+                    html += `<p>　${text}</p>`;
+                }
+            });
+            container.innerHTML = html || "<p>No content...</p>";
+            document.getElementById('modal-novel').style.display = 'flex';
+            modals.close('share');
+        },
+        toggleVertical: () => document.getElementById('novel-container').classList.toggle('vertical'),
+        copy: () => {
+            navigator.clipboard.writeText(document.getElementById('novel-container').innerText);
+            alert("Copied Novel Text");
+        }
+    };
+
     const sharing = {
       buildText: () => {
         let txt = "";
@@ -297,32 +367,25 @@ MutableApplication: "[AdjustMutable]優先。なければGlobal値"
         });
         return txt;
       },
-      shareText:async()=>{const t=sharing.buildText(); if(navigator.share){await navigator.share({text:t});}else{navigator.clipboard.writeText(t);alert('Copied');} modals.close('share');},
-      shareCode:async()=>{const t="```markdown\n"+sharing.buildText()+"\n```"; if(navigator.share){await navigator.share({text:t});}else{navigator.clipboard.writeText(t);alert('Copied Code');} modals.close('share');},
+      system:async()=>{const t=sharing.buildText(); if(navigator.share){await navigator.share({text:t});}else{sharing.copyText();}},
       copyText:()=>{navigator.clipboard.writeText(sharing.buildText());alert('Copied');modals.close('share');},
       copyCode:()=>{navigator.clipboard.writeText("```markdown\n"+sharing.buildText()+"\n```");alert('Copied Code');modals.close('share');},
       download:()=>{const b=new Blob([sharing.buildText()],{type:'text/plain'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='P.txt';a.click();},
       
-      // Image Clone & Capture Logic
       shareImage: async () => {
         const stream = document.getElementById('streamList');
         if(!stream || stream.children.length === 0) { alert("Empty"); return; }
-        
-        // 1. Create Clone
         const clone = stream.cloneNode(true);
         clone.style.position = "absolute"; clone.style.top = "-9999px"; clone.style.left = "0";
         clone.style.width = stream.offsetWidth + "px"; clone.style.height = "auto";
         clone.style.overflow = "visible"; clone.style.background = "#0e1215";
         document.body.appendChild(clone);
-
-        // 2. Swap Textareas
         const originalCards = stream.querySelectorAll('.card');
         clone.querySelectorAll('.card').forEach((card, i) => {
             const originalTa = originalCards[i].querySelector('textarea');
             const cloneTa = card.querySelector('textarea');
             const div = document.createElement('div');
             div.innerText = originalTa.value;
-            // Apply text styles
             div.style.color = "#cceeee"; 
             div.style.fontFamily = getComputedStyle(originalTa).fontFamily;
             div.style.fontSize = "15px"; div.style.lineHeight = "1.5";
@@ -330,8 +393,6 @@ MutableApplication: "[AdjustMutable]優先。なければGlobal値"
             div.style.padding = "12px"; div.style.minHeight = "50px";
             if(cloneTa) card.replaceChild(div, cloneTa);
         });
-
-        // 3. Capture
         try {
             const canvas = await html2canvas(clone, { backgroundColor: '#0e1215', scale: 2, useCORS: true, windowWidth: clone.scrollWidth, windowHeight: clone.scrollHeight });
             canvas.toBlob(async (blob) => {
