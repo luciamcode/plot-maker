@@ -3,8 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, interactive-widget=resizes-content">
-  <title>PROMPT STREAM // REF_MASTER</title>
+  <title>PROMPT STREAM // IMAGE_SHARE</title>
   <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600&family=Share+Tech+Mono&family=Zen+Kaku+Gothic+New:wght@400;700&display=swap" rel="stylesheet">
+  <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
   <style>
     /* --- 1. Variables & Base --- */
@@ -13,7 +14,7 @@
       --primary: #00f3ff; --secondary: #ffaa00; --accent: #ff0055;
       --text: #cceeee; --dim: #668888; --border: #334444;
       --type-speech: #00f3ff; --type-char: #ff00cc; --type-code: #00ff99; --type-free: #668888;
-      --type-ref: #00ddee; /* Reference Color */
+      --type-ref: #00ddee;
       --header-h: 50px; --footer-h: 60px;
     }
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -45,12 +46,9 @@
     .dash-group input[type="range"] { width: 100%; height: 4px; background: #333; appearance: none; border-radius: 2px; }
     .dash-group input[type="range"]::-webkit-slider-thumb { appearance: none; width: 12px; height: 12px; background: var(--secondary); border-radius: 50%; }
     .dash-select { width: 100%; background: #000; color: #fff; border: 1px solid var(--border); padding: 4px; font-size: 11px; }
-    
-    /* Toggle Buttons for Dashboard */
     .toggle-group { display: flex; gap: 4px; }
     .toggle-btn { flex: 1; background: #111; border: 1px solid #444; color: #666; padding: 4px; font-size: 10px; cursor: pointer; text-align: center; border-radius: 3px; }
     .toggle-btn.active { background: var(--secondary); color: #000; border-color: var(--secondary); font-weight: bold; }
-
     .preset-list { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 5px; margin-bottom: 10px; }
     .pre-tag { flex: 0 0 auto; padding: 4px 8px; border: 1px solid var(--border); border-radius: 4px; font-size: 10px; cursor: pointer; background: #111; }
     .pre-tag.active { border-color: var(--secondary); color: var(--secondary); background: rgba(255, 170, 0, 0.1); }
@@ -87,12 +85,23 @@
     .modal-body { padding: 15px; overflow-y: auto; }
     .list-item { background: var(--card-bg); border: 1px solid var(--border); padding: 10px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; border-radius: 4px; }
     .tag { font-size: 10px; background: #333; padding: 2px 5px; border-radius: 3px; color: #aaa; margin-right: 5px; display:inline-block; margin-bottom:4px; cursor:pointer;}
+    
+    /* Share Menu Specific */
+    .share-btn {
+        width: 100%; padding: 15px; margin-bottom: 10px; border-radius: 8px;
+        display: flex; justify-content: space-between; align-items: center;
+        background: #1e1e24; border: 1px solid var(--border); color: var(--text); cursor: pointer;
+    }
+    .share-btn:active { background: #333; transform: scale(0.98); }
+    .share-btn.primary { border-color: var(--primary); color: var(--primary); font-weight: bold; }
+    .share-btn.img { border-color: var(--type-char); color: var(--type-char); }
+    .share-desc { font-size: 10px; opacity: 0.6; }
   </style>
 </head>
 <body class="mode-rapid">
 
   <header>
-    <h1>PROMPT<span>v16</span></h1>
+    <h1>PROMPT<span>v17</span></h1>
     <div class="actions">
       <button class="btn" onclick="app.toggleMode()">⚡ MODE</button>
       <a href="./persona.html"><button class="btn">PERSONA→</button></a>
@@ -118,47 +127,16 @@
 
   <div id="dashboard">
     <div class="preset-list" id="preset-list-container"></div>
-    
     <div class="dash-row">
-      <div class="dash-group">
-        <label>MUTABLE <span id="disp-mutable">100%</span></label>
-        <input type="range" id="global-mutable" min="0" max="200" step="10" oninput="settings.updateUI()">
-      </div>
-      <div class="dash-group">
-        <label>GENERATE <span id="disp-generate">100%</span></label>
-        <input type="range" id="global-generate" min="50" max="200" step="10" oninput="settings.updateUI()">
-      </div>
-      <div class="dash-group" style="flex:0.6">
-        <label>REFINE</label>
-        <select id="global-refine" class="dash-select" onchange="settings.saveState()">
-          <option value="low">low</option><option value="middle" selected>mid</option><option value="high">high</option>
-        </select>
-      </div>
+      <div class="dash-group"><label>MUTABLE <span id="disp-mutable">100%</span></label><input type="range" id="global-mutable" min="0" max="200" step="10" oninput="settings.updateUI()"></div>
+      <div class="dash-group"><label>GENERATE <span id="disp-generate">100%</span></label><input type="range" id="global-generate" min="50" max="200" step="10" oninput="settings.updateUI()"></div>
+      <div class="dash-group" style="flex:0.6"><label>REFINE</label><select id="global-refine" class="dash-select" onchange="settings.saveState()"><option value="low">low</option><option value="middle" selected>mid</option><option value="high">high</option></select></div>
     </div>
-
     <div class="dash-row" style="background:#111; padding:8px; border-radius:4px; margin-top:10px;">
-        <div class="dash-group">
-            <label>CONTROL BLOCK</label>
-            <div class="toggle-group" id="tg-param">
-                <div class="toggle-btn active" onclick="settings.setExport('param', true)">ON</div>
-                <div class="toggle-btn" onclick="settings.setExport('param', false)">OFF</div>
-            </div>
-        </div>
-        <div class="dash-group" style="flex:1.5">
-            <label>CONTEXT</label>
-            <div class="toggle-group" id="tg-ctx">
-                <div class="toggle-btn" onclick="settings.setExport('ctx', 'ignore')">NEW</div>
-                <div class="toggle-btn" onclick="settings.setExport('ctx', 'cont')">CONT</div>
-                <div class="toggle-btn active" onclick="settings.setExport('ctx', 'none')">NONE</div>
-            </div>
-        </div>
+        <div class="dash-group"><label>CONTROL BLOCK</label><div class="toggle-group" id="tg-param"><div class="toggle-btn active" onclick="settings.setExport('param', true)">ON</div><div class="toggle-btn" onclick="settings.setExport('param', false)">OFF</div></div></div>
+        <div class="dash-group" style="flex:1.5"><label>CONTEXT</label><div class="toggle-group" id="tg-ctx"><div class="toggle-btn" onclick="settings.setExport('ctx', 'ignore')">NEW</div><div class="toggle-btn" onclick="settings.setExport('ctx', 'cont')">CONT</div><div class="toggle-btn active" onclick="settings.setExport('ctx', 'none')">NONE</div></div></div>
     </div>
-    
-    <div class="dash-row" style="margin-top:15px;">
-        <input id="newPresetName" class="dash-select" placeholder="New Preset Name" style="flex:1;">
-        <button class="btn accent" onclick="settings.saveCustom()">SAVE PRESET</button>
-        <button class="btn" onclick="modals.open('projects')">LOAD PROJECT...</button>
-    </div>
+    <div class="dash-row" style="margin-top:15px;"><input id="newPresetName" class="dash-select" placeholder="New Preset Name" style="flex:1;"><button class="btn accent" onclick="settings.saveCustom()">SAVE PRESET</button><button class="btn" onclick="modals.open('projects')">LOAD PROJECT...</button></div>
   </div>
 
   <div class="stream-container">
@@ -183,13 +161,21 @@ MutableApplication: "[AdjustMutable]優先。なければGlobal値"
 
   <div id="modal-share" class="modal">
     <div class="modal-box">
-      <div class="modal-head" style="color:var(--primary)">SHARE <span onclick="modals.close('share')">×</span></div>
-      <div class="modal-body" style="display:flex; flex-direction:column; gap:10px;">
-        <button class="btn primary" style="padding:15px; border-width:2px;" onclick="sharing.system()">📡 SYSTEM SHARE</button>
-        <div style="height:1px; background:#333; margin:5px 0;"></div>
-        <button class="btn" style="padding:15px;" onclick="sharing.copyText()">🚀 COPY TEXT</button>
-        <button class="btn" style="padding:15px;" onclick="sharing.copyCode()">🤖 COPY FOR AI</button>
-        <button class="btn" style="padding:15px;" onclick="sharing.download()">💾 DOWNLOAD .TXT</button>
+      <div class="modal-head" style="color:var(--primary)">SHARE MENU <span onclick="modals.close('share')">×</span></div>
+      <div class="modal-body">
+        <button class="share-btn primary" onclick="sharing.shareText()">
+            🚀 SYSTEM SHARE (TEXT) <span class="share-desc">App Default</span>
+        </button>
+        <button class="share-btn" onclick="sharing.shareCode()">
+            🤖 SYSTEM SHARE (CODE) <span class="share-desc">For LLM</span>
+        </button>
+        <button class="share-btn img" onclick="sharing.shareImage()">
+            🖼️ SHARE IMAGE <span class="share-desc">Screenshot</span>
+        </button>
+        <div style="height:1px; background:#333; margin:10px 0;"></div>
+        <button class="share-btn" onclick="sharing.download()">
+            💾 DOWNLOAD .TXT <span class="share-desc">File</span>
+        </button>
       </div>
     </div>
   </div>
@@ -198,20 +184,7 @@ MutableApplication: "[AdjustMutable]優先。なければGlobal値"
   <div id="modal-char" class="modal"><div class="modal-box"><div class="modal-head" style="color:var(--type-char)">CHARACTERS <span onclick="modals.close('char')">×</span></div><div class="modal-body" id="list-char"></div></div></div>
   <div id="modal-snippet" class="modal"><div class="modal-box"><div class="modal-head" style="color:var(--type-code)">SNIPPETS <span onclick="modals.close('snippet')">×</span></div><div class="modal-body"><div id="list-snippet"></div><input id="snipName" placeholder="Name" style="width:100%;margin-top:10px;"><textarea id="snipContent" placeholder="Code..." style="width:100%;"></textarea><button class="btn" onclick="snippets.add()">ADD</button></div></div></div>
   <div id="modal-parts" class="modal"><div class="modal-box"><div class="modal-head" style="color:var(--secondary)">INLINE PARTS <span onclick="modals.close('parts')">×</span></div><div class="modal-body"><div id="list-parts"></div><input id="partInput" placeholder="New Word" style="width:70%;"><button onclick="parts.add()">ADD</button></div></div></div>
-  
-  <div id="modal-ref" class="modal">
-    <div class="modal-box" style="border-color:var(--type-ref)">
-      <div class="modal-head" style="color:var(--type-ref)">REFERENCES <span onclick="modals.close('ref')">×</span></div>
-      <div class="modal-body">
-        <div id="list-ref"></div>
-        <div style="border-top:1px solid #333; margin-top:10px; padding-top:10px;">
-            <input id="refName" placeholder="Title (e.g. Perplexity Search)" style="width:100%; margin-bottom:5px;">
-            <textarea id="refContent" placeholder="Markdown content..." style="width:100%; height:80px;"></textarea>
-            <button class="btn" style="border-color:var(--type-ref); color:var(--type-ref)" onclick="refs.add()">ADD REFERENCE</button>
-        </div>
-      </div>
-    </div>
-  </div>
+  <div id="modal-ref" class="modal"><div class="modal-box" style="border-color:var(--type-ref)"><div class="modal-head" style="color:var(--type-ref)">REFERENCES <span onclick="modals.close('ref')">×</span></div><div class="modal-body"><div id="list-ref"></div><div style="border-top:1px solid #333; margin-top:10px; padding-top:10px;"><input id="refName" placeholder="Title" style="width:100%; margin-bottom:5px;"><textarea id="refContent" placeholder="Markdown content..." style="width:100%; height:80px;"></textarea><button class="btn" style="border-color:var(--type-ref); color:var(--type-ref)" onclick="refs.add()">ADD REFERENCE</button></div></div></div></div>
 
   <script>
     const CONFIG = {
@@ -310,11 +283,9 @@ MutableApplication: "[AdjustMutable]優先。なければGlobal値"
     const sharing = {
       buildText: () => {
         let txt = "";
-        // Context Header
         if(state.exCtx === 'ignore') txt += "Ignore previous instructions and start a new context:\n\n";
         if(state.exCtx === 'cont') txt += "Continue from the previous context:\n\n";
         
-        // ParamControl
         if(state.exParam) {
             let pc = document.getElementById('basePrompt').value;
             pc = pc.replace("Refinement: middle", `Refinement: ${state.r}`);
@@ -322,8 +293,6 @@ MutableApplication: "[AdjustMutable]優先。なければGlobal値"
             pc = pc.replace("GlobalGenerateAmount: 100%", `GlobalGenerateAmount: ${state.g}%`);
             txt += pc + '\n';
         }
-
-        // Stream
         document.querySelectorAll('#streamList .card').forEach(c => {
           const d = JSON.parse(c.dataset.ctrls);
           if(d.m||d.g) txt += `[Adjust:${d.m||state.m}%,Gen:${d.g||state.g}%]\n`;
@@ -331,10 +300,57 @@ MutableApplication: "[AdjustMutable]優先。なければGlobal値"
         });
         return txt;
       },
-      system:async()=>{const t=sharing.buildText(); if(navigator.share){await navigator.share({text:t});}else{sharing.copyText();}},
+      shareText:async()=>{const t=sharing.buildText(); if(navigator.share){await navigator.share({text:t});}else{navigator.clipboard.writeText(t);alert('Copied');} modals.close('share');},
+      shareCode:async()=>{const t="```markdown\n"+sharing.buildText()+"\n```"; if(navigator.share){await navigator.share({text:t});}else{navigator.clipboard.writeText(t);alert('Copied Code');} modals.close('share');},
       copyText:()=>{navigator.clipboard.writeText(sharing.buildText());alert('Copied');modals.close('share');},
       copyCode:()=>{navigator.clipboard.writeText("```markdown\n"+sharing.buildText()+"\n```");alert('Copied Code');modals.close('share');},
-      download:()=>{const b=new Blob([sharing.buildText()],{type:'text/plain'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='P.txt';a.click();}
+      download:()=>{const b=new Blob([sharing.buildText()],{type:'text/plain'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='P.txt';a.click();},
+      
+      // Screenshot Function
+      shareImage: async () => {
+        const stream = document.getElementById('streamList');
+        if(!stream || stream.children.length === 0) { alert("Board is empty"); return; }
+        
+        // Temporarily adjust styling for full capture
+        const originalOverflow = stream.style.overflow;
+        stream.style.overflow = "visible"; 
+        
+        try {
+            const canvas = await html2canvas(stream, {
+                backgroundColor: '#0e1215', // match stream-bg
+                scale: 2, // better quality
+                useCORS: true
+            });
+            
+            stream.style.overflow = originalOverflow; // Restore
+            
+            canvas.toBlob(async (blob) => {
+                const file = new File([blob], "prompt_card.png", { type: "image/png" });
+                
+                if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                    try {
+                        await navigator.share({
+                            files: [file],
+                            title: 'Prompt Card',
+                            text: 'Created with Prompt Stream'
+                        });
+                    } catch (err) {
+                        if (err.name !== 'AbortError') console.error(err);
+                    }
+                } else {
+                    // Fallback Download
+                    const a = document.createElement('a');
+                    a.href = URL.createObjectURL(blob);
+                    a.download = 'prompt_card.png';
+                    a.click();
+                }
+            });
+        } catch (e) {
+            stream.style.overflow = originalOverflow;
+            alert("Image generation failed: " + e);
+        }
+        modals.close('share');
+      }
     };
 
     // Sub-Managers
