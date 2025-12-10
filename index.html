@@ -3,15 +3,17 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, interactive-widget=resizes-content">
-  <title>PROMPT STREAM // DASHBOARD</title>
+  <title>PROMPT STREAM // REF_MASTER</title>
   <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600&family=Share+Tech+Mono&family=Zen+Kaku+Gothic+New:wght@400;700&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
   <style>
+    /* --- 1. Variables & Base --- */
     :root {
       --bg: #050505; --panel-bg: #111518; --card-bg: #161a1e;
       --primary: #00f3ff; --secondary: #ffaa00; --accent: #ff0055;
       --text: #cceeee; --dim: #668888; --border: #334444;
       --type-speech: #00f3ff; --type-char: #ff00cc; --type-code: #00ff99; --type-free: #668888;
+      --type-ref: #00ddee; /* Reference Color */
       --header-h: 50px; --footer-h: 60px;
     }
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -32,9 +34,10 @@
     .p-btn { flex: 0 0 auto; background: #000; border: 1px solid var(--border); border-left: 3px solid #555; color: var(--text); padding: 8px 10px; border-radius: 4px; cursor: pointer; min-width: 75px; display: flex; flex-direction: column; font-size: 12px; }
     .p-btn span { font-size: 9px; opacity: 0.7; margin-top: 2px; }
     .pb-speech { border-left-color: var(--type-speech); } .pb-char { border-left-color: var(--type-char); } .pb-code { border-left-color: var(--type-code); } .pb-snip { border-left-color: var(--secondary); border-style: dotted; }
+    .pb-ref { border-left-color: var(--type-ref); border-style: double; }
 
-    /* --- DASHBOARD (New Setting Panel) --- */
-    #dashboard { background: #0a0d10; border-bottom: 1px solid var(--secondary); padding: 10px; display: none; overflow-y: auto; max-height: 40vh; flex-shrink: 0; }
+    /* --- DASHBOARD --- */
+    #dashboard { background: #0a0d10; border-bottom: 1px solid var(--secondary); padding: 10px; display: none; overflow-y: auto; max-height: 50vh; flex-shrink: 0; }
     #dashboard.open { display: block; }
     .dash-row { display: flex; gap: 10px; margin-bottom: 10px; align-items: flex-end; }
     .dash-group { flex: 1; }
@@ -43,6 +46,11 @@
     .dash-group input[type="range"]::-webkit-slider-thumb { appearance: none; width: 12px; height: 12px; background: var(--secondary); border-radius: 50%; }
     .dash-select { width: 100%; background: #000; color: #fff; border: 1px solid var(--border); padding: 4px; font-size: 11px; }
     
+    /* Toggle Buttons for Dashboard */
+    .toggle-group { display: flex; gap: 4px; }
+    .toggle-btn { flex: 1; background: #111; border: 1px solid #444; color: #666; padding: 4px; font-size: 10px; cursor: pointer; text-align: center; border-radius: 3px; }
+    .toggle-btn.active { background: var(--secondary); color: #000; border-color: var(--secondary); font-weight: bold; }
+
     .preset-list { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 5px; margin-bottom: 10px; }
     .pre-tag { flex: 0 0 auto; padding: 4px 8px; border: 1px solid var(--border); border-radius: 4px; font-size: 10px; cursor: pointer; background: #111; }
     .pre-tag.active { border-color: var(--secondary); color: var(--secondary); background: rgba(255, 170, 0, 0.1); }
@@ -84,7 +92,7 @@
 <body class="mode-rapid">
 
   <header>
-    <h1>PROMPT<span>v15</span></h1>
+    <h1>PROMPT<span>v16</span></h1>
     <div class="actions">
       <button class="btn" onclick="app.toggleMode()">⚡ MODE</button>
       <a href="./persona.html"><button class="btn">PERSONA→</button></a>
@@ -99,7 +107,8 @@
     <div class="p-btn" onmousedown="editor.insert('****')">****<span>WILD</span></div>
     <div class="p-btn" onmousedown="editor.insert('[', ']')">[ ]<span>BRA</span></div>
     <div class="p-btn" onmousedown="editor.insert('\n---\n')">---<span>SEP</span></div>
-    <div class="p-btn pb-snip" onmousedown="modals.open('parts')">WORDS<span>PARTS</span></div>
+    <div class="p-btn pb-ref" onclick="modals.open('ref')">Ref<span>MEMO</span></div>
+    
     <div class="p-btn pb-speech" onclick="board.add('speech')">Dialogue<span>会話</span></div>
     <div class="p-btn pb-char" onclick="board.add('char')">Character<span>人格</span></div>
     <div class="p-btn pb-code" onclick="board.add('code')">Code<span>ロジック</span></div>
@@ -108,6 +117,8 @@
   </div>
 
   <div id="dashboard">
+    <div class="preset-list" id="preset-list-container"></div>
+    
     <div class="dash-row">
       <div class="dash-group">
         <label>MUTABLE <span id="disp-mutable">100%</span></label>
@@ -124,10 +135,26 @@
         </select>
       </div>
     </div>
+
+    <div class="dash-row" style="background:#111; padding:8px; border-radius:4px; margin-top:10px;">
+        <div class="dash-group">
+            <label>CONTROL BLOCK</label>
+            <div class="toggle-group" id="tg-param">
+                <div class="toggle-btn active" onclick="settings.setExport('param', true)">ON</div>
+                <div class="toggle-btn" onclick="settings.setExport('param', false)">OFF</div>
+            </div>
+        </div>
+        <div class="dash-group" style="flex:1.5">
+            <label>CONTEXT</label>
+            <div class="toggle-group" id="tg-ctx">
+                <div class="toggle-btn" onclick="settings.setExport('ctx', 'ignore')">NEW</div>
+                <div class="toggle-btn" onclick="settings.setExport('ctx', 'cont')">CONT</div>
+                <div class="toggle-btn active" onclick="settings.setExport('ctx', 'none')">NONE</div>
+            </div>
+        </div>
+    </div>
     
-    <div class="preset-list" id="preset-list-container"></div>
-    
-    <div class="dash-row">
+    <div class="dash-row" style="margin-top:15px;">
         <input id="newPresetName" class="dash-select" placeholder="New Preset Name" style="flex:1;">
         <button class="btn accent" onclick="settings.saveCustom()">SAVE PRESET</button>
         <button class="btn" onclick="modals.open('projects')">LOAD PROJECT...</button>
@@ -154,18 +181,44 @@ MutableApplication: "[AdjustMutable]優先。なければGlobal値"
 [/ParamControl]
   </textarea>
 
+  <div id="modal-share" class="modal">
+    <div class="modal-box">
+      <div class="modal-head" style="color:var(--primary)">SHARE <span onclick="modals.close('share')">×</span></div>
+      <div class="modal-body" style="display:flex; flex-direction:column; gap:10px;">
+        <button class="btn primary" style="padding:15px; border-width:2px;" onclick="sharing.system()">📡 SYSTEM SHARE</button>
+        <div style="height:1px; background:#333; margin:5px 0;"></div>
+        <button class="btn" style="padding:15px;" onclick="sharing.copyText()">🚀 COPY TEXT</button>
+        <button class="btn" style="padding:15px;" onclick="sharing.copyCode()">🤖 COPY FOR AI</button>
+        <button class="btn" style="padding:15px;" onclick="sharing.download()">💾 DOWNLOAD .TXT</button>
+      </div>
+    </div>
+  </div>
+
   <div id="modal-projects" class="modal"><div class="modal-box" style="border-color:var(--secondary)"><div class="modal-head" style="color:var(--secondary)">PROJECTS <span onclick="modals.close('projects')">×</span></div><div class="modal-body"><input id="projName" placeholder="Project Name" style="width:100%;padding:8px;margin-bottom:8px;background:#000;border:1px solid #444;color:#fff;"><button class="btn accent" style="width:100%;" onclick="projects.save()">SAVE BOARD</button><div id="projectList" style="margin-top:10px;"></div></div></div></div>
-  <div id="modal-share" class="modal"><div class="modal-box"><div class="modal-head" style="color:var(--primary)">SHARE <span onclick="modals.close('share')">×</span></div><div class="modal-body" style="display:flex; flex-direction:column; gap:10px;"><button class="btn" style="padding:15px;" onclick="sharing.copyText()">🚀 COPY TEXT</button><button class="btn" style="padding:15px;" onclick="sharing.copyCode()">🤖 COPY FOR AI</button><button class="btn" style="padding:15px;" onclick="sharing.download()">💾 DOWNLOAD .TXT</button></div></div></div>
   <div id="modal-char" class="modal"><div class="modal-box"><div class="modal-head" style="color:var(--type-char)">CHARACTERS <span onclick="modals.close('char')">×</span></div><div class="modal-body" id="list-char"></div></div></div>
   <div id="modal-snippet" class="modal"><div class="modal-box"><div class="modal-head" style="color:var(--type-code)">SNIPPETS <span onclick="modals.close('snippet')">×</span></div><div class="modal-body"><div id="list-snippet"></div><input id="snipName" placeholder="Name" style="width:100%;margin-top:10px;"><textarea id="snipContent" placeholder="Code..." style="width:100%;"></textarea><button class="btn" onclick="snippets.add()">ADD</button></div></div></div>
   <div id="modal-parts" class="modal"><div class="modal-box"><div class="modal-head" style="color:var(--secondary)">INLINE PARTS <span onclick="modals.close('parts')">×</span></div><div class="modal-body"><div id="list-parts"></div><input id="partInput" placeholder="New Word" style="width:70%;"><button onclick="parts.add()">ADD</button></div></div></div>
+  
+  <div id="modal-ref" class="modal">
+    <div class="modal-box" style="border-color:var(--type-ref)">
+      <div class="modal-head" style="color:var(--type-ref)">REFERENCES <span onclick="modals.close('ref')">×</span></div>
+      <div class="modal-body">
+        <div id="list-ref"></div>
+        <div style="border-top:1px solid #333; margin-top:10px; padding-top:10px;">
+            <input id="refName" placeholder="Title (e.g. Perplexity Search)" style="width:100%; margin-bottom:5px;">
+            <textarea id="refContent" placeholder="Markdown content..." style="width:100%; height:80px;"></textarea>
+            <button class="btn" style="border-color:var(--type-ref); color:var(--type-ref)" onclick="refs.add()">ADD REFERENCE</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <script>
     const CONFIG = {
       types: { speech: { l:'Dialogue', p:'「……」', r:2, c:'type-speech'}, char: { l:'Character', p:'[AI personality...]', r:6, c:'type-char'}, code: { l:'Logic', p:'if(flag){...}', r:3, c:'type-code'}, free: { l:'Narration', p:'...', r:3, c:'type-free'} },
       defaults: { gemini: {m:100, g:100, r:'middle'}, claude: {m:80, g:110, r:'high'}, grok: {m:50, g:90, r:'middle'} }
     };
-    let state = { m:100, g:100, r:'middle' };
+    let state = { m:100, g:100, r:'middle', exParam:true, exCtx:'none' };
     let lastFocused = null;
 
     const board = {
@@ -208,8 +261,8 @@ MutableApplication: "[AdjustMutable]優先。なければGlobal値"
 
     const settings = {
       init:()=>{
-        state = JSON.parse(localStorage.getItem('ps_state')||JSON.stringify(CONFIG.defaults.gemini));
-        settings.renderPresets(); settings.updateUI();
+        state = JSON.parse(localStorage.getItem('ps_state')||JSON.stringify({m:100,g:100,r:'middle',exParam:true,exCtx:'none'}));
+        settings.renderPresets(); settings.updateUI(); settings.renderExportUI();
       },
       updateUI:()=>{
         if(event && event.target.id) {
@@ -225,6 +278,11 @@ MutableApplication: "[AdjustMutable]優先。なければGlobal値"
         document.getElementById('disp-generate').innerText = state.g + '%';
         settings.saveState();
       },
+      setExport:(key, val)=>{ state[key==='param'?'exParam':'exCtx'] = val; settings.saveState(); settings.renderExportUI(); },
+      renderExportUI:()=>{
+        document.querySelectorAll('#tg-param .toggle-btn').forEach((b,i)=>b.classList.toggle('active', (i===0)==state.exParam));
+        document.querySelectorAll('#tg-ctx .toggle-btn').forEach(b=>b.classList.toggle('active', b.innerText.toLowerCase().startsWith(state.exCtx.substring(0,3))));
+      },
       saveState:()=>{ localStorage.setItem('ps_state', JSON.stringify(state)); },
       saveCustom:()=>{
         const name=document.getElementById('newPresetName').value; if(!name)return;
@@ -234,7 +292,7 @@ MutableApplication: "[AdjustMutable]優先。なければGlobal値"
         document.getElementById('newPresetName').value=''; settings.renderPresets();
       },
       delCustom:(name,e)=>{e.stopPropagation(); const c=JSON.parse(localStorage.getItem('ps_presets')); delete c[name]; localStorage.setItem('ps_presets',JSON.stringify(c)); settings.renderPresets();},
-      loadPreset:(conf)=>{state={...conf}; settings.updateUI();},
+      loadPreset:(conf)=>{state={...state, ...conf}; settings.updateUI();},
       renderPresets:()=>{
         const box=document.getElementById('preset-list-container'); box.innerHTML='';
         const render=(n,d,del=false)=>{
@@ -248,31 +306,72 @@ MutableApplication: "[AdjustMutable]優先。なければGlobal値"
     };
 
     const editor = { insert:(t,e)=>{if(!lastFocused)return alert('Tap text'); const f=lastFocused,s=f.selectionStart,en=f.selectionEnd,v=f.value; f.value=v.substring(0,s)+(e?t+v.substring(s,en)+e:t)+v.substring(en); f.dispatchEvent(new Event('input')); f.focus();} };
+    
     const sharing = {
-      txt:()=>{let t=document.getElementById('basePrompt').value+'\n'; t+=`Refinement:${state.r}\nGlobalAdjustMutable:${state.m}%\nGlobalGenerateAmount:${state.g}%\n`; document.querySelectorAll('#streamList .card').forEach(c=>{const d=JSON.parse(c.dataset.ctrls); if(d.m||d.g)t+=`[Adjust:${d.m||state.m}%,Gen:${d.g||state.g}%]\n`; t+=c.querySelector('textarea').value+'\n';}); return t;},
-      copyText:()=>{navigator.clipboard.writeText(sharing.txt());alert('Copied');modals.close('share');},
-      copyCode:()=>{navigator.clipboard.writeText("```markdown\n"+sharing.txt()+"\n```");alert('Copied Code');modals.close('share');},
-      download:()=>{const b=new Blob([sharing.txt()],{type:'text/plain'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='P.txt';a.click();}
+      buildText: () => {
+        let txt = "";
+        // Context Header
+        if(state.exCtx === 'ignore') txt += "Ignore previous instructions and start a new context:\n\n";
+        if(state.exCtx === 'cont') txt += "Continue from the previous context:\n\n";
+        
+        // ParamControl
+        if(state.exParam) {
+            let pc = document.getElementById('basePrompt').value;
+            pc = pc.replace("Refinement: middle", `Refinement: ${state.r}`);
+            pc = pc.replace("GlobalAdjustMutable: 100%", `GlobalAdjustMutable: ${state.m}%`);
+            pc = pc.replace("GlobalGenerateAmount: 100%", `GlobalGenerateAmount: ${state.g}%`);
+            txt += pc + '\n';
+        }
+
+        // Stream
+        document.querySelectorAll('#streamList .card').forEach(c => {
+          const d = JSON.parse(c.dataset.ctrls);
+          if(d.m||d.g) txt += `[Adjust:${d.m||state.m}%,Gen:${d.g||state.g}%]\n`;
+          txt += c.querySelector('textarea').value + '\n';
+        });
+        return txt;
+      },
+      system:async()=>{const t=sharing.buildText(); if(navigator.share){await navigator.share({text:t});}else{sharing.copyText();}},
+      copyText:()=>{navigator.clipboard.writeText(sharing.buildText());alert('Copied');modals.close('share');},
+      copyCode:()=>{navigator.clipboard.writeText("```markdown\n"+sharing.buildText()+"\n```");alert('Copied Code');modals.close('share');},
+      download:()=>{const b=new Blob([sharing.buildText()],{type:'text/plain'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='P.txt';a.click();}
     };
 
     // Sub-Managers
-    const modals={open:(id)=>{document.getElementById(`modal-${id}`).style.display='flex';if(id==='projects')projects.render();if(id==='char'||id==='snippet'||id==='parts')subMgr.render(id);}, close:(id)=>document.getElementById(`modal-${id}`).style.display='none'};
+    const modals={open:(id)=>{document.getElementById(`modal-${id}`).style.display='flex';if(id==='projects')projects.render();if(id==='char'||id==='snippet'||id==='parts'||id==='ref')subMgr.render(id);}, close:(id)=>document.getElementById(`modal-${id}`).style.display='none'};
     const subMgr={
-      db:(k)=>JSON.parse(localStorage.getItem(k)||'{}'),
+      db:(k)=>JSON.parse(localStorage.getItem(k) || (['ps_parts','ps_refs'].includes(k)?'[]':'{}')),
       save:(k,d)=>localStorage.setItem(k,JSON.stringify(d)),
       render:(t)=>{
-        const l=document.getElementById(`list-${t}`), k=t==='parts'?'ps_parts':(t==='char'?'promptChars':'promptSnippets');
-        l.innerHTML=''; const d=subMgr.db(k);
-        if(t==='parts'){
-           (Array.isArray(d)?d:[]).forEach((v,i)=>{l.innerHTML+=`<span class="tag" onclick="if(!event.target.classList.contains('del')){editor.insert('${v}');modals.close('parts')}">${v} <span class="del" onclick="event.stopPropagation();parts.del(${i})">×</span></span>`});
+        const l=document.getElementById(`list-${t}`); l.innerHTML=''; 
+        let k; if(t==='parts')k='ps_parts'; else if(t==='ref')k='ps_refs'; else k=(t==='char'?'promptChars':'promptSnippets');
+        const d=subMgr.db(k);
+
+        if(t==='parts') {
+          (Array.isArray(d)?d:[]).forEach((v,i)=>{l.innerHTML+=`<span class="tag" onclick="if(!event.target.classList.contains('del')){editor.insert('${v}');modals.close('parts')}">${v} <span class="del" onclick="event.stopPropagation();parts.del(${i})">×</span></span>`});
+        } else if(t==='ref') {
+          (Array.isArray(d)?d:[]).forEach((obj,i)=>{l.innerHTML+=`<div class="list-item" style="display:block">
+            <div style="display:flex;justify-content:space-between;margin-bottom:5px"><b>${obj.n}</b><button class="btn danger" onclick="refs.del(${i})">×</button></div>
+            <div style="font-size:10px;color:#666;max-height:60px;overflow:hidden" onclick="editor.insert(this.innerText);modals.close('ref')">${obj.c}</div></div>`});
         } else {
-           Object.keys(d).forEach(key=>{l.innerHTML+=`<div class="list-item"><span>${key}</span><div><button class="btn" onclick="subMgr.add('${t}','${key}')">ADD</button> <button class="btn danger" onclick="subMgr.del('${t}','${key}')">×</button></div></div>`});
+          Object.keys(d).forEach(key=>{l.innerHTML+=`<div class="list-item"><span>${key}</span><div><button class="btn" onclick="subMgr.insert('${t}','${key}')">ADD</button> <button class="btn danger" onclick="subMgr.del('${t}','${key}')">×</button></div></div>`});
         }
       },
-      add:(t,key)=>{const db=subMgr.db(t==='char'?'promptChars':'promptSnippets'); const v=t==='char'?(db[key].text||db[key]):db[key]; board.add(t==='char'?'char':'code',v); modals.close(t);},
-      del:(t,key)=>{if(confirm('Del?')){const k=t==='char'?'promptChars':'promptSnippets',d=subMgr.db(k);delete d[key];subMgr.save(k,d);subMgr.render(t);}}
+      insert: (type, key) => {
+        const db = subMgr.db(type === 'char' ? 'promptChars' : 'promptSnippets');
+        const val = type === 'char' ? (db[key].text || `[AI: ${key}]`) : db[key];
+        board.add(type === 'char' ? 'char' : 'code', val);
+        modals.close(type);
+      },
+      del: (type, key) => {
+        if(!confirm('Del?')) return;
+        const k = type === 'char' ? 'promptChars' : 'promptSnippets'; const db = subMgr.db(k);
+        delete db[key]; subMgr.save(k, db); subMgr.render(type);
+      }
     };
-    const parts={add:()=>{const el=document.getElementById('partInput'),v=el.value;if(v){const d=JSON.parse(localStorage.getItem('ps_parts')||'[]');d.push(v);localStorage.setItem('ps_parts',JSON.stringify(d));el.value='';subMgr.render('parts');}},del:(i)=>{const d=JSON.parse(localStorage.getItem('ps_parts'));d.splice(i,1);localStorage.setItem('ps_parts',JSON.stringify(d));subMgr.render('parts');}};
+
+    const parts={add:()=>{const el=document.getElementById('partInput'),v=el.value;if(v){const d=subMgr.db('ps_parts');d.push(v);subMgr.save('ps_parts',d);el.value='';subMgr.render('parts');}},del:(i)=>{const d=subMgr.db('ps_parts');d.splice(i,1);subMgr.save('ps_parts',d);subMgr.render('parts');}};
+    const refs={add:()=>{const n=document.getElementById('refName').value,c=document.getElementById('refContent').value;if(n&&c){const d=subMgr.db('ps_refs');d.push({n,c});subMgr.save('ps_refs',d);document.getElementById('refName').value='';document.getElementById('refContent').value='';subMgr.render('ref');}},del:(i)=>{const d=subMgr.db('ps_refs');d.splice(i,1);subMgr.save('ps_refs',d);subMgr.render('ref');}};
     const snippets={add:()=>{const n=document.getElementById('snipName').value,c=document.getElementById('snipContent').value;if(n&&c){const d=subMgr.db('promptSnippets');d[n]=c;subMgr.save('promptSnippets',d);subMgr.render('snippet');}}};
     const projects={save:()=>{const n=document.getElementById('projName').value;if(!n)return;const d=[];document.querySelectorAll('#streamList .card').forEach(c=>d.push({type:c.dataset.type,text:c.querySelector('textarea').value,ctrls:JSON.parse(c.dataset.ctrls)}));const db=JSON.parse(localStorage.getItem('ps_projects')||'{}');db[n]=d;localStorage.setItem('ps_projects',JSON.stringify(db));projects.render();}, load:(n)=>{if(confirm('Load?')){const db=JSON.parse(localStorage.getItem('ps_projects'));document.getElementById('streamList').innerHTML='';db[n].forEach(i=>board.add(i.type,i.text,i.ctrls));modals.close('projects');}}, del:(n)=>{if(confirm('Del?')){const db=JSON.parse(localStorage.getItem('ps_projects'));delete db[n];localStorage.setItem('ps_projects',JSON.stringify(db));projects.render();}}, render:()=>{const l=document.getElementById('projectList'),db=JSON.parse(localStorage.getItem('ps_projects')||'{}');l.innerHTML='';Object.keys(db).forEach(n=>l.innerHTML+=`<div class="list-item"><span>${n}</span><div><button class="btn" onclick="projects.load('${n}')">LOAD</button> <button class="btn danger" onclick="projects.del('${n}')">×</button></div></div>`);}};
     
