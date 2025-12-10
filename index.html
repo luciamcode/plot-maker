@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, interactive-widget=resizes-content">
-  <title>PROMPT STREAM // IMAGE_SHARE</title>
+  <title>PROMPT STREAM // SCREENSHOT_MASTER</title>
   <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600&family=Share+Tech+Mono&family=Zen+Kaku+Gothic+New:wght@400;700&display=swap" rel="stylesheet">
   <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
@@ -86,7 +86,6 @@
     .list-item { background: var(--card-bg); border: 1px solid var(--border); padding: 10px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; border-radius: 4px; }
     .tag { font-size: 10px; background: #333; padding: 2px 5px; border-radius: 3px; color: #aaa; margin-right: 5px; display:inline-block; margin-bottom:4px; cursor:pointer;}
     
-    /* Share Menu Specific */
     .share-btn {
         width: 100%; padding: 15px; margin-bottom: 10px; border-radius: 8px;
         display: flex; justify-content: space-between; align-items: center;
@@ -101,7 +100,7 @@
 <body class="mode-rapid">
 
   <header>
-    <h1>PROMPT<span>v17</span></h1>
+    <h1>PROMPT<span>v18</span></h1>
     <div class="actions">
       <button class="btn" onclick="app.toggleMode()">⚡ MODE</button>
       <a href="./persona.html"><button class="btn">PERSONA→</button></a>
@@ -117,7 +116,6 @@
     <div class="p-btn" onmousedown="editor.insert('[', ']')">[ ]<span>BRA</span></div>
     <div class="p-btn" onmousedown="editor.insert('\n---\n')">---<span>SEP</span></div>
     <div class="p-btn pb-ref" onclick="modals.open('ref')">Ref<span>MEMO</span></div>
-    
     <div class="p-btn pb-speech" onclick="board.add('speech')">Dialogue<span>会話</span></div>
     <div class="p-btn pb-char" onclick="board.add('char')">Character<span>人格</span></div>
     <div class="p-btn pb-code" onclick="board.add('code')">Code<span>ロジック</span></div>
@@ -285,7 +283,6 @@ MutableApplication: "[AdjustMutable]優先。なければGlobal値"
         let txt = "";
         if(state.exCtx === 'ignore') txt += "Ignore previous instructions and start a new context:\n\n";
         if(state.exCtx === 'cont') txt += "Continue from the previous context:\n\n";
-        
         if(state.exParam) {
             let pc = document.getElementById('basePrompt').value;
             pc = pc.replace("Refinement: middle", `Refinement: ${state.r}`);
@@ -306,49 +303,46 @@ MutableApplication: "[AdjustMutable]優先。なければGlobal値"
       copyCode:()=>{navigator.clipboard.writeText("```markdown\n"+sharing.buildText()+"\n```");alert('Copied Code');modals.close('share');},
       download:()=>{const b=new Blob([sharing.buildText()],{type:'text/plain'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='P.txt';a.click();},
       
-      // Screenshot Function
+      // Image Clone & Capture Logic
       shareImage: async () => {
         const stream = document.getElementById('streamList');
-        if(!stream || stream.children.length === 0) { alert("Board is empty"); return; }
+        if(!stream || stream.children.length === 0) { alert("Empty"); return; }
         
-        // Temporarily adjust styling for full capture
-        const originalOverflow = stream.style.overflow;
-        stream.style.overflow = "visible"; 
-        
+        // 1. Create Clone
+        const clone = stream.cloneNode(true);
+        clone.style.position = "absolute"; clone.style.top = "-9999px"; clone.style.left = "0";
+        clone.style.width = stream.offsetWidth + "px"; clone.style.height = "auto";
+        clone.style.overflow = "visible"; clone.style.background = "#0e1215";
+        document.body.appendChild(clone);
+
+        // 2. Swap Textareas
+        const originalCards = stream.querySelectorAll('.card');
+        clone.querySelectorAll('.card').forEach((card, i) => {
+            const originalTa = originalCards[i].querySelector('textarea');
+            const cloneTa = card.querySelector('textarea');
+            const div = document.createElement('div');
+            div.innerText = originalTa.value;
+            // Apply text styles
+            div.style.color = "#cceeee"; 
+            div.style.fontFamily = getComputedStyle(originalTa).fontFamily;
+            div.style.fontSize = "15px"; div.style.lineHeight = "1.5";
+            div.style.whiteSpace = "pre-wrap"; div.style.wordBreak = "break-word";
+            div.style.padding = "12px"; div.style.minHeight = "50px";
+            if(cloneTa) card.replaceChild(div, cloneTa);
+        });
+
+        // 3. Capture
         try {
-            const canvas = await html2canvas(stream, {
-                backgroundColor: '#0e1215', // match stream-bg
-                scale: 2, // better quality
-                useCORS: true
-            });
-            
-            stream.style.overflow = originalOverflow; // Restore
-            
+            const canvas = await html2canvas(clone, { backgroundColor: '#0e1215', scale: 2, useCORS: true, windowWidth: clone.scrollWidth, windowHeight: clone.scrollHeight });
             canvas.toBlob(async (blob) => {
                 const file = new File([blob], "prompt_card.png", { type: "image/png" });
-                
                 if (navigator.canShare && navigator.canShare({ files: [file] })) {
-                    try {
-                        await navigator.share({
-                            files: [file],
-                            title: 'Prompt Card',
-                            text: 'Created with Prompt Stream'
-                        });
-                    } catch (err) {
-                        if (err.name !== 'AbortError') console.error(err);
-                    }
+                    try { await navigator.share({ files: [file], title: 'Prompt Card', text: 'Prompt Stream Image' }); } catch (e) {}
                 } else {
-                    // Fallback Download
-                    const a = document.createElement('a');
-                    a.href = URL.createObjectURL(blob);
-                    a.download = 'prompt_card.png';
-                    a.click();
+                    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'prompt_card.png'; a.click();
                 }
             });
-        } catch (e) {
-            stream.style.overflow = originalOverflow;
-            alert("Image generation failed: " + e);
-        }
+        } catch(e) { alert("Image Error: " + e); } finally { document.body.removeChild(clone); }
         modals.close('share');
       }
     };
@@ -366,9 +360,7 @@ MutableApplication: "[AdjustMutable]優先。なければGlobal値"
         if(t==='parts') {
           (Array.isArray(d)?d:[]).forEach((v,i)=>{l.innerHTML+=`<span class="tag" onclick="if(!event.target.classList.contains('del')){editor.insert('${v}');modals.close('parts')}">${v} <span class="del" onclick="event.stopPropagation();parts.del(${i})">×</span></span>`});
         } else if(t==='ref') {
-          (Array.isArray(d)?d:[]).forEach((obj,i)=>{l.innerHTML+=`<div class="list-item" style="display:block">
-            <div style="display:flex;justify-content:space-between;margin-bottom:5px"><b>${obj.n}</b><button class="btn danger" onclick="refs.del(${i})">×</button></div>
-            <div style="font-size:10px;color:#666;max-height:60px;overflow:hidden" onclick="editor.insert(this.innerText);modals.close('ref')">${obj.c}</div></div>`});
+          (Array.isArray(d)?d:[]).forEach((obj,i)=>{l.innerHTML+=`<div class="list-item" style="display:block"><div style="display:flex;justify-content:space-between;margin-bottom:5px"><b>${obj.n}</b><button class="btn danger" onclick="refs.del(${i})">×</button></div><div style="font-size:10px;color:#666;max-height:60px;overflow:hidden" onclick="editor.insert(this.innerText);modals.close('ref')">${obj.c}</div></div>`});
         } else {
           Object.keys(d).forEach(key=>{l.innerHTML+=`<div class="list-item"><span>${key}</span><div><button class="btn" onclick="subMgr.insert('${t}','${key}')">ADD</button> <button class="btn danger" onclick="subMgr.del('${t}','${key}')">×</button></div></div>`});
         }
