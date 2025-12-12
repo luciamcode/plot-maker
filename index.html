@@ -3,24 +3,23 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, interactive-widget=resizes-content">
-  <title>PROMPT STREAM // STYLE_FIXED</title>
+  <title>PROMPT STREAM // HUD_MASTER</title>
   <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600&family=Share+Tech+Mono&family=Zen+Kaku+Gothic+New:wght@400;700&display=swap" rel="stylesheet">
   <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
   <style>
-    /* --- Variables & Base --- */
+    /* --- Base --- */
     :root {
       --bg: #050505; --panel-bg: #111518; --card-bg: #161a1e;
       --primary: #00f3ff; --secondary: #ffaa00; --accent: #ff0055;
       --text: #cceeee; --dim: #668888; --border: #334444;
       --type-speech: #00f3ff; --type-char: #ff00cc; --type-code: #00ff99; --type-free: #668888;
-      --type-ref: #00ddee;
-      --header-h: 50px; --footer-h: 60px;
+      --type-ref: #00ddee; --header-h: 50px; --footer-h: 60px;
     }
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
     body { font-family: 'Share Tech Mono', 'Zen Kaku Gothic New', monospace; background: var(--bg); color: var(--text); margin: 0; height: 100dvh; overflow: hidden; display: flex; flex-direction: column; }
 
-    /* UI Components */
+    /* Header */
     header { height: var(--header-h); background: rgba(11,15,18,0.98); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 8px; z-index: 20; flex-shrink: 0; }
     h1 { font-size: 16px; letter-spacing: 1px; margin: 0; }
     .actions { display: flex; gap: 6px; }
@@ -34,31 +33,41 @@
     .palette { background: var(--panel-bg); padding: 10px; border-bottom: 1px solid var(--border); display: flex; gap: 8px; overflow-x: auto; align-items: center; z-index: 15; flex-shrink: 0; }
     .p-btn { flex: 0 0 auto; background: #000; border: 1px solid var(--border); border-left: 3px solid #555; color: var(--text); padding: 8px 10px; border-radius: 4px; cursor: pointer; min-width: 75px; display: flex; flex-direction: column; font-size: 12px; }
     .p-btn span { font-size: 9px; opacity: 0.7; margin-top: 2px; }
-    .pb-speech { border-left-color: var(--type-speech); } .pb-char { border-left-color: var(--type-char); } .pb-code { border-left-color: var(--type-code); } .pb-snip { border-left-color: var(--secondary); border-style: dotted; }
-    .pb-ref { border-left-color: var(--type-ref); border-style: double; }
+    .pb-speech { border-left-color: var(--type-speech); } .pb-char { border-left-color: var(--type-char); } .pb-code { border-left-color: var(--type-code); } .pb-snip { border-left-color: var(--secondary); border-style: dotted; } .pb-ref { border-left-color: var(--type-ref); border-style: double; }
 
-    /* --- DASHBOARD --- */
-    #dashboard { background: #0a0d10; border-bottom: 1px solid var(--secondary); padding: 10px; display: none; overflow-y: auto; max-height: 50vh; flex-shrink: 0; }
+    /* --- DASHBOARD (HUD Style) --- */
+    #dashboard { background: #080a0c; border-bottom: 2px solid var(--secondary); padding: 15px; display: none; overflow-y: auto; max-height: 60vh; flex-shrink: 0; }
     #dashboard.open { display: block; }
-    .dash-row { display: flex; gap: 10px; margin-bottom: 10px; align-items: flex-end; }
-    .dash-group { flex: 1; }
-    .dash-group label { display: flex; justify-content: space-between; font-size: 10px; color: var(--secondary); margin-bottom: 4px; }
-    .dash-group input[type="range"] { width: 100%; height: 4px; background: #333; appearance: none; border-radius: 2px; }
-    .dash-group input[type="range"]::-webkit-slider-thumb { appearance: none; width: 12px; height: 12px; background: var(--secondary); border-radius: 50%; }
-    .dash-select { width: 100%; background: #000; color: #fff; border: 1px solid var(--border); padding: 4px; font-size: 11px; }
-    .toggle-group { display: flex; gap: 4px; }
-    .toggle-btn { flex: 1; background: #111; border: 1px solid #444; color: #666; padding: 4px; font-size: 10px; cursor: pointer; text-align: center; border-radius: 3px; }
-    .toggle-btn.active { background: var(--secondary); color: #000; border-color: var(--secondary); font-weight: bold; }
-    .preset-list { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 5px; margin-bottom: 10px; }
-    .pre-tag { flex: 0 0 auto; padding: 4px 8px; border: 1px solid var(--border); border-radius: 4px; font-size: 10px; cursor: pointer; background: #111; }
-    .pre-tag.active { border-color: var(--secondary); color: var(--secondary); background: rgba(255, 170, 0, 0.1); }
-    .pre-tag .del { margin-left: 5px; color: var(--accent); font-weight: bold; }
+    
+    .hud-section { border: 1px solid #333; border-radius: 6px; padding: 10px; margin-bottom: 10px; position: relative; }
+    .hud-title { position: absolute; top: -8px; left: 10px; background: #080a0c; padding: 0 5px; font-size: 10px; color: var(--secondary); font-weight: bold; }
+    
+    .hud-row { display: flex; gap: 10px; align-items: center; margin-bottom: 8px; }
+    .hud-row:last-child { margin-bottom: 0; }
+    
+    .hud-label { font-size: 10px; color: #888; width: 60px; flex-shrink: 0; }
+    .hud-val { font-size: 10px; color: var(--primary); width: 35px; text-align: right; }
+    
+    /* Inputs */
+    input[type="range"] { flex: 1; height: 4px; background: #333; appearance: none; border-radius: 2px; }
+    input[type="range"]::-webkit-slider-thumb { appearance: none; width: 14px; height: 14px; background: var(--secondary); border-radius: 50%; cursor: pointer; border: 2px solid #000; }
+    
+    .hud-select { flex: 1; background: #111; color: #fff; border: 1px solid #444; padding: 6px; font-size: 11px; border-radius: 4px; }
+    .hud-select:focus { border-color: var(--secondary); outline: none; }
 
-    /* Stream */
+    /* Toggles */
+    .toggle-group { display: flex; gap: 2px; background: #111; padding: 2px; border-radius: 4px; border: 1px solid #333; }
+    .toggle-btn { flex: 1; padding: 4px 8px; font-size: 10px; cursor: pointer; text-align: center; color: #666; border-radius: 2px; }
+    .toggle-btn.active { background: var(--secondary); color: #000; font-weight: bold; }
+
+    /* Presets */
+    .preset-list { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 5px; }
+    .pre-tag { flex: 0 0 auto; padding: 6px 10px; border: 1px solid #333; border-radius: 4px; font-size: 10px; cursor: pointer; background: #111; color: #aaa; }
+    .pre-tag:hover { border-color: var(--secondary); color: var(--secondary); }
+    
+    /* Stream & Cards */
     .stream-container { flex: 1; overflow-y: auto; padding: 15px 10px; position: relative; }
     body.mode-rapid .stream-container { padding-bottom: 80px; }
-
-    /* Cards */
     .card { background: var(--card-bg); border: 1px solid var(--border); border-left: 3px solid var(--dim); border-radius: 4px; margin-bottom: 12px; display: flex; flex-direction: column; }
     .card-head { display: flex; justify-content: space-between; align-items: center; padding: 6px 10px; background: rgba(0,0,0,0.3); border-bottom: 1px solid rgba(255,255,255,0.05); }
     .card-label { font-size: 10px; text-transform: uppercase; font-weight: bold; cursor: pointer; user-select: none; }
@@ -85,26 +94,22 @@
     .modal-body { padding: 15px; overflow-y: auto; }
     .list-item { background: var(--card-bg); border: 1px solid var(--border); padding: 10px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; border-radius: 4px; }
     .tag { font-size: 10px; background: #333; padding: 2px 5px; border-radius: 3px; color: #aaa; margin-right: 5px; display:inline-block; margin-bottom:4px; cursor:pointer;}
-    
-    .share-btn {
-        width: 100%; padding: 15px; margin-bottom: 10px; border-radius: 8px;
-        display: flex; justify-content: space-between; align-items: center;
-        background: #1e1e24; border: 1px solid var(--border); color: var(--text); cursor: pointer;
-    }
-    .share-btn:active { background: #333; transform: scale(0.98); }
-    .share-btn.primary { border-color: var(--primary); color: var(--primary); font-weight: bold; }
-    .share-btn.img { border-color: var(--type-char); color: var(--type-char); }
-    .share-desc { font-size: 10px; opacity: 0.6; }
-
-    /* Novel Preview */
+    .share-btn { width: 100%; padding: 15px; margin-bottom: 10px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; background: #1e1e24; border: 1px solid var(--border); color: var(--text); cursor: pointer; }
+    .share-btn:active { background: #333; transform: scale(0.98); } .share-btn.primary { border-color: var(--primary); color: var(--primary); font-weight: bold; } .share-btn.img { border-color: var(--type-char); color: var(--type-char); } .share-desc { font-size: 10px; opacity: 0.6; }
     #novel-container { font-family: 'Shippori Mincho', serif; background: #fff; color: #000; padding: 40px; line-height: 1.8; font-size: 16px; white-space: pre-wrap; overflow-y: auto; height: 100%; border-radius: 4px; }
     #novel-container.vertical { writing-mode: vertical-rl; text-orientation: upright; overflow-x: auto; overflow-y: hidden; height: 60vh; }
+
+    /* Toast Notification */
+    #toast { position: fixed; top: 70px; left: 50%; transform: translateX(-50%); background: var(--secondary); color: #000; padding: 8px 16px; border-radius: 20px; font-size: 11px; font-weight: bold; opacity: 0; pointer-events: none; transition: 0.3s; z-index: 999; box-shadow: 0 4px 15px rgba(255,170,0,0.4); }
+    #toast.show { opacity: 1; top: 80px; }
   </style>
 </head>
 <body class="mode-rapid">
 
+  <div id="toast">SETTINGS SAVED</div>
+
   <header>
-    <h1>PROMPT<span>v22</span></h1>
+    <h1>PROMPT<span>v23</span></h1>
     <div class="actions">
       <button class="btn" onclick="app.toggleMode()">⚡ MODE</button>
       <a href="./persona.html"><button class="btn">PERSONA→</button></a>
@@ -120,7 +125,6 @@
     <div class="p-btn" onmousedown="editor.insert('[', ']')">[ ]<span>BRA</span></div>
     <div class="p-btn" onmousedown="editor.insert('\n---\n')">---<span>SEP</span></div>
     <div class="p-btn pb-ref" onclick="modals.open('ref')">Ref<span>MEMO</span></div>
-    
     <div class="p-btn pb-speech" onclick="board.add('speech')">Dialogue<span>会話</span></div>
     <div class="p-btn pb-char" onclick="board.add('char')">Character<span>人格</span></div>
     <div class="p-btn pb-code" onclick="board.add('code')">Code<span>ロジック</span></div>
@@ -129,24 +133,63 @@
   </div>
 
   <div id="dashboard">
-    <div class="preset-list" id="preset-list-container"></div>
-    <div class="dash-row">
-      <div class="dash-group"><label>MUTABLE <span id="disp-mutable">100%</span></label><input type="range" id="global-mutable" min="0" max="200" step="10" oninput="settings.updateUI()"></div>
-      <div class="dash-group"><label>GENERATE <span id="disp-generate">100%</span></label><input type="range" id="global-generate" min="50" max="200" step="10" oninput="settings.updateUI()"></div>
-      <div class="dash-group" style="flex:0.6"><label>REFINE</label><select id="global-refine" class="dash-select" onchange="settings.saveState()"><option value="low">low</option><option value="middle" selected>mid</option><option value="high">high</option></select></div>
-      
-      <div class="dash-group" style="flex:1.2">
-        <label>STYLE <span style="font-size:9px;cursor:pointer;color:var(--primary)" onclick="modals.open('style')">[+EDIT]</span></label>
-        <select id="global-style" class="dash-select" onchange="settings.saveState()"></select>
-      </div>
+    <div class="hud-section">
+        <div class="hud-title">STYLE & TONE</div>
+        <div class="hud-row">
+            <div class="hud-label">STYLE</div>
+            <select id="global-style" class="hud-select" onchange="settings.saveState()"></select>
+            <div class="hud-label" style="width:auto; margin-left:5px; cursor:pointer; color:var(--primary)" onclick="modals.open('style')">[+EDIT]</div>
+        </div>
+        <div class="hud-row">
+            <div class="hud-label">REFINE</div>
+            <select id="global-refine" class="hud-select" onchange="settings.saveState()">
+              <option value="low">low</option><option value="middle" selected>mid</option><option value="high">high</option>
+            </select>
+        </div>
     </div>
 
-    <div class="dash-row" style="background:#111; padding:8px; border-radius:4px; margin-top:10px;">
-        <div class="dash-group"><label>CONTROL BLOCK</label><div class="toggle-group" id="tg-param"><div class="toggle-btn active" onclick="settings.setExport('param', true)">ON</div><div class="toggle-btn" onclick="settings.setExport('param', false)">OFF</div></div></div>
-        <div class="dash-group" style="flex:1.5"><label>CONTEXT</label><div class="toggle-group" id="tg-ctx"><div class="toggle-btn" onclick="settings.setExport('ctx', 'ignore')">NEW</div><div class="toggle-btn" onclick="settings.setExport('ctx', 'cont')">CONT</div><div class="toggle-btn active" onclick="settings.setExport('ctx', 'none')">NONE</div></div></div>
+    <div class="hud-section">
+        <div class="hud-title">PARAMETERS</div>
+        <div class="hud-row">
+            <div class="hud-label">MUTABLE</div>
+            <input type="range" id="global-mutable" min="0" max="200" step="10" oninput="settings.updateUI()">
+            <div class="hud-val" id="disp-mutable">100%</div>
+        </div>
+        <div class="hud-row">
+            <div class="hud-label">GENERATE</div>
+            <input type="range" id="global-generate" min="50" max="200" step="10" oninput="settings.updateUI()">
+            <div class="hud-val" id="disp-generate">100%</div>
+        </div>
     </div>
-    
-    <div class="dash-row" style="margin-top:15px;"><input id="newPresetName" class="dash-select" placeholder="New Preset Name" style="flex:1;"><button class="btn accent" onclick="settings.saveCustom()">SAVE PRESET</button><button class="btn" onclick="modals.open('projects')">LOAD PROJECT...</button></div>
+
+    <div class="hud-section">
+        <div class="hud-title">EXPORT RULES</div>
+        <div class="hud-row">
+            <div class="hud-label">CONTROL</div>
+            <div class="toggle-group" id="tg-param" style="flex:1">
+                <div class="toggle-btn active" onclick="settings.setExport('param', true)">ON</div>
+                <div class="toggle-btn" onclick="settings.setExport('param', false)">OFF</div>
+            </div>
+        </div>
+        <div class="hud-row">
+            <div class="hud-label">CONTEXT</div>
+            <div class="toggle-group" id="tg-ctx" style="flex:1">
+                <div class="toggle-btn" onclick="settings.setExport('ctx', 'ignore')">NEW</div>
+                <div class="toggle-btn" onclick="settings.setExport('ctx', 'cont')">CONT</div>
+                <div class="toggle-btn active" onclick="settings.setExport('ctx', 'none')">NONE</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="hud-section" style="border-color:#444">
+        <div class="hud-title" style="color:#888">LIBRARY</div>
+        <div class="preset-list" id="preset-list-container"></div>
+        <div class="hud-row">
+            <input id="newPresetName" class="hud-select" placeholder="New Preset Name" style="flex:2">
+            <button class="btn accent" onclick="settings.saveCustom()">SAVE</button>
+            <button class="btn" onclick="modals.open('projects')">PROJECTS...</button>
+        </div>
+    </div>
   </div>
 
   <div class="stream-container">
@@ -170,58 +213,9 @@ MutableApplication: "[AdjustMutable]優先。なければGlobal値"
 [/ParamControl]
   </textarea>
 
-  <div id="modal-style" class="modal">
-    <div class="modal-box" style="border-color:var(--primary)">
-        <div class="modal-head" style="color:var(--primary)">STYLE EDITOR <span onclick="modals.close('style')">×</span></div>
-        <div class="modal-body">
-            <div id="list-style" style="margin-bottom:15px;"></div>
-            <div style="border-top:1px solid #333; padding-top:15px;">
-                <input id="styleName" placeholder="Style Name (e.g. Hardboiled)" style="width:100%;margin-bottom:5px;">
-                <textarea id="styleRules" placeholder="Rules (e.g. 比喩を排除し事実のみ記述...)" style="width:100%;height:80px;margin-bottom:5px;"></textarea>
-                <button class="btn primary" style="width:100%;" onclick="styleMgr.add()">ADD STYLE</button>
-            </div>
-        </div>
-    </div>
-  </div>
-
-  <div id="modal-share" class="modal">
-    <div class="modal-box">
-      <div class="modal-head" style="color:var(--primary)">SHARE MENU <span onclick="modals.close('share')">×</span></div>
-      <div class="modal-body">
-        <button class="share-btn primary" onclick="sharing.system()">
-            📡 SYSTEM SHARE (TEXT) <span class="share-desc">App Default</span>
-        </button>
-        <button class="share-btn" onclick="novel.open()">
-            📖 PREVIEW NOVEL <span class="share-desc">Formatter</span>
-        </button>
-        <div style="height:1px; background:#333; margin:10px 0;"></div>
-        <button class="share-btn" onclick="sharing.copyCode()">
-            🤖 COPY FOR AI <span class="share-desc">Markdown Code</span>
-        </button>
-        <button class="share-btn img" onclick="sharing.shareImage()">
-            🖼️ SHARE IMAGE <span class="share-desc">Screenshot</span>
-        </button>
-        <button class="share-btn" onclick="sharing.download()">
-            💾 DOWNLOAD .TXT <span class="share-desc">File</span>
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <div id="modal-novel" class="modal">
-    <div class="modal-box" style="background:#eee; color:#000; width:95%; max-width:600px;">
-      <div class="modal-head" style="border-color:#ccc; color:#000;">
-        NOVEL PREVIEW
-        <div style="display:flex; gap:5px;">
-            <button class="btn" style="color:#000; border-color:#000;" onclick="novel.toggleVertical()">縦/横</button>
-            <button class="btn" style="color:#000; border-color:#000;" onclick="novel.copy()">COPY</button>
-            <span onclick="modals.close('novel')" style="cursor:pointer; margin-left:10px; font-size:20px;">×</span>
-        </div>
-      </div>
-      <div class="modal-body" style="background:#fff; padding:0;"><div id="novel-container"></div></div>
-    </div>
-  </div>
-
+  <div id="modal-share" class="modal"><div class="modal-box"><div class="modal-head" style="color:var(--primary)">SHARE MENU <span onclick="modals.close('share')">×</span></div><div class="modal-body"><button class="share-btn primary" onclick="sharing.system()">📡 SYSTEM SHARE (TEXT) <span class="share-desc">Default</span></button><button class="share-btn" onclick="novel.open()">📖 PREVIEW NOVEL <span class="share-desc">Formatter</span></button><div style="height:1px; background:#333; margin:10px 0;"></div><button class="share-btn" onclick="sharing.copyCode()">🤖 COPY FOR AI <span class="share-desc">Markdown</span></button><button class="share-btn img" onclick="sharing.shareImage()">🖼️ SHARE IMAGE <span class="share-desc">Screenshot</span></button><button class="share-btn" onclick="sharing.download()">💾 DOWNLOAD .TXT <span class="share-desc">File</span></button></div></div></div>
+  <div id="modal-style" class="modal"><div class="modal-box" style="border-color:var(--primary)"><div class="modal-head" style="color:var(--primary)">STYLE EDITOR <span onclick="modals.close('style')">×</span></div><div class="modal-body"><div id="list-style" style="margin-bottom:15px;"></div><div style="border-top:1px solid #333; padding-top:15px;"><input id="styleName" placeholder="Style Name" style="width:100%;margin-bottom:5px;"><textarea id="styleRules" placeholder="Rules..." style="width:100%;height:80px;margin-bottom:5px;"></textarea><button class="btn primary" style="width:100%;" onclick="styleMgr.add()">ADD STYLE</button></div></div></div></div>
+  <div id="modal-novel" class="modal"><div class="modal-box" style="background:#eee; color:#000; width:95%; max-width:600px;"><div class="modal-head" style="border-color:#ccc; color:#000;">NOVEL PREVIEW <div style="display:flex; gap:5px;"><button class="btn" style="color:#000; border-color:#000;" onclick="novel.toggleVertical()">縦/横</button><button class="btn" style="color:#000; border-color:#000;" onclick="novel.copy()">COPY</button><span onclick="modals.close('novel')" style="cursor:pointer; margin-left:10px; font-size:20px;">×</span></div></div><div class="modal-body" style="background:#fff; padding:0;"><div id="novel-container"></div></div></div></div>
   <div id="modal-projects" class="modal"><div class="modal-box" style="border-color:var(--secondary)"><div class="modal-head" style="color:var(--secondary)">PROJECTS <span onclick="modals.close('projects')">×</span></div><div class="modal-body"><input id="projName" placeholder="Project Name" style="width:100%;padding:8px;margin-bottom:8px;background:#000;border:1px solid #444;color:#fff;"><button class="btn accent" style="width:100%;" onclick="projects.save()">SAVE BOARD</button><div id="projectList" style="margin-top:10px;"></div></div></div></div>
   <div id="modal-char" class="modal"><div class="modal-box"><div class="modal-head" style="color:var(--type-char)">CHARACTERS <span onclick="modals.close('char')">×</span></div><div class="modal-body" id="list-char"></div></div></div>
   <div id="modal-snippet" class="modal"><div class="modal-box"><div class="modal-head" style="color:var(--type-code)">SNIPPETS <span onclick="modals.close('snippet')">×</span></div><div class="modal-body"><div id="list-snippet"></div><input id="snipName" placeholder="Name" style="width:100%;margin-top:10px;"><textarea id="snipContent" placeholder="Code..." style="width:100%;"></textarea><button class="btn" onclick="snippets.add()">ADD</button></div></div></div>
@@ -234,10 +228,7 @@ MutableApplication: "[AdjustMutable]優先。なければGlobal値"
       defaults: { gemini: {m:100, g:100, r:'middle'}, claude: {m:80, g:110, r:'high'}, grok: {m:50, g:90, r:'middle'} },
       baseStyles: {
         standard: { label: 'Standard', rules: 'NarrationStyle: seamless' },
-        lucia: { 
-            label: 'Lucia (Poetic)', 
-            rules: `NarrationStyle: Lucia_Narration (Poetic/Fragmented)\nStyleRules: "短行と――（ダッシュ）を多用した『呼吸』のリズム。感情の断絶と余韻を重視。文体は『静かで熱い』。断片的な短文を積み重ね、湿度のある情景を描写"` 
-        }
+        lucia: { label: 'Lucia (Poetic)', rules: `NarrationStyle: Lucia_Narration (Poetic/Fragmented)\nStyleRules: "短行と――（ダッシュ）を多用した『呼吸』のリズム。感情の断絶と余韻を重視。文体は『静かで熱い』。断片的な短文を積み重ね、湿度のある情景を描写"` }
       }
     };
     let state = { m:100, g:100, r:'middle', s:'standard', exParam:true, exCtx:'none' };
@@ -253,7 +244,7 @@ MutableApplication: "[AdjustMutable]優先。なければGlobal値"
         const conf = CONFIG.types[type] || CONFIG.types.free;
         const div = document.createElement('div');
         div.className = `card ${conf.c}`; div.dataset.type = type; div.dataset.ctrls = JSON.stringify(ctrls);
-        div.innerHTML = `<div class="card-head"><div class="card-label" onclick="board.cycle(this)">${conf.l}</div><div class="card-tools"><div class="tool-btn" onclick="navigator.clipboard.writeText(this.closest('.card').querySelector('textarea').value)">❐</div><div class="tool-btn" onclick="board.clone(this)">＋</div><div class="tool-btn" style="color:var(--secondary);border-color:var(--secondary)" onclick="board.togSet(this)">⚙️</div><div class="tool-btn" onclick="board.del(this)">×</div><div class="drag-handle"></div></div></div><textarea rows="${conf.r}" placeholder="${conf.p}" oninput="board.sz(this)">${val}</textarea><div class="card-settings"><div class="range-group"><label>Mutable <span class="v-m">${ctrls.m||'Def'}</span></label><input type="range" min="0" max="200" step="10" value="${ctrls.m||state.m}" oninput="board.upd(this,'m')"></div><div class="range-group"><label>Generate <span class="v-g">${ctrls.g||'Def'}</span></label><input type="range" min="50" max="200" step="10" value="${ctrls.g||state.g}" oninput="board.upd(this,'g')"></div></div>`;
+        div.innerHTML = `<div class="card-head"><div class="card-label" onclick="board.cycle(this)">${conf.l}</div><div class="card-tools"><div class="tool-btn" onclick="navigator.clipboard.writeText(this.closest('.card').querySelector('textarea').value)">❐</div><div class="tool-btn" onclick="board.clone(this)">＋</div><div class="tool-btn" style="color:var(--secondary);border-color:var(--secondary)" onclick="board.togSet(this)">⚙️</div><div class="tool-btn" onclick="board.del(this)">×</div><div class="drag-handle"></div></div></div><textarea rows="${conf.r}" placeholder="${conf.p}" oninput="board.sz(this)">${val}</textarea><div class="card-settings"><div class="hud-row"><div class="hud-label">Mutable</div><input type="range" min="0" max="200" step="10" value="${ctrls.m||state.m}" oninput="board.upd(this,'m')"><div class="hud-val v-m">${ctrls.m||'Def'}%</div></div><div class="hud-row"><div class="hud-label">Gen</div><input type="range" min="50" max="200" step="10" value="${ctrls.g||state.g}" oninput="board.upd(this,'g')"><div class="hud-val v-g">${ctrls.g||'Def'}%</div></div></div>`;
         document.getElementById('streamList').appendChild(div);
         const ta=div.querySelector('textarea'); ta.addEventListener('focus',(e)=>lastFocused=e.target);
         board.sz(ta); div.scrollIntoView({behavior:'smooth',block:'end'}); storage.save();
@@ -278,46 +269,22 @@ MutableApplication: "[AdjustMutable]優先。なければGlobal値"
       toggleMode:()=>{document.body.classList.toggle('mode-rapid');document.body.classList.toggle('mode-standard');},
       toggleDashboard:()=>{document.getElementById('dashboard').classList.toggle('open');},
       clearBoard:()=>{if(confirm('Clear?')){document.getElementById('streamList').innerHTML='';storage.save();}},
-      sendRapid:()=>{const el=document.getElementById('rapidInput'),v=el.value.trim();if(v){let t='free';if(v.match(/^[「『]/))t='speech';if(v.startsWith('['))t='code';board.add(t,v);el.value='';}}
-    };
-
-    const styleMgr = {
-        db: () => JSON.parse(localStorage.getItem('ps_styles') || '{}'),
-        save: (d) => localStorage.setItem('ps_styles', JSON.stringify(d)),
-        add: () => {
-            const name = document.getElementById('styleName').value;
-            const rules = document.getElementById('styleRules').value;
-            if(!name || !rules) return;
-            const d = styleMgr.db();
-            d[name] = { label: name, rules: `NarrationStyle: ${name}\nStyleRules: "${rules.replace(/"/g, "'")}"` };
-            styleMgr.save(d);
-            document.getElementById('styleName').value = '';
-            document.getElementById('styleRules').value = '';
-            subMgr.render('style'); settings.updateSelect();
-        },
-        del: (key) => {
-            if(!confirm('Delete Style?')) return;
-            const d = styleMgr.db(); delete d[key]; styleMgr.save(d);
-            subMgr.render('style'); settings.updateSelect();
-        },
-        getMerged: () => { return { ...CONFIG.baseStyles, ...styleMgr.db() }; }
+      sendRapid:()=>{const el=document.getElementById('rapidInput'),v=el.value.trim();if(v){let t='free';if(v.match(/^[「『]/))t='speech';if(v.startsWith('['))t='code';board.add(t,v);el.value='';}},
+      toast:(msg)=>{
+        const t=document.getElementById('toast'); t.innerText=msg; t.classList.add('show');
+        setTimeout(()=>t.classList.remove('show'), 2000);
+      }
     };
 
     const settings = {
       init:()=>{
         state = JSON.parse(localStorage.getItem('ps_state')||JSON.stringify({m:100,g:100,r:'middle',s:'standard',exParam:true,exCtx:'none'}));
-        settings.updateSelect();
-        settings.renderPresets(); settings.updateUI(); settings.renderExportUI();
+        settings.updateSelect(); settings.renderPresets(); settings.updateUI(); settings.renderExportUI();
       },
       updateSelect: () => {
-        const styleSel = document.getElementById('global-style');
-        const styles = styleMgr.getMerged();
+        const styleSel = document.getElementById('global-style'); const styles = styleMgr.getMerged();
         styleSel.innerHTML = '';
-        Object.keys(styles).forEach(k => {
-            const opt = document.createElement('option');
-            opt.value = k; opt.innerText = styles[k].label;
-            styleSel.appendChild(opt);
-        });
+        Object.keys(styles).forEach(k => { const opt=document.createElement('option'); opt.value=k; opt.innerText=styles[k].label; styleSel.appendChild(opt); });
         styleSel.value = state.s || 'standard';
       },
       updateUI:()=>{
@@ -348,9 +315,10 @@ MutableApplication: "[AdjustMutable]優先。なければGlobal値"
         customs[name]={m:state.m, g:state.g, r:state.r, s:state.s};
         localStorage.setItem('ps_presets',JSON.stringify(customs));
         document.getElementById('newPresetName').value=''; settings.renderPresets();
+        app.toast(`PRESET SAVED: ${name}`);
       },
       delCustom:(name,e)=>{e.stopPropagation(); const c=JSON.parse(localStorage.getItem('ps_presets')); delete c[name]; localStorage.setItem('ps_presets',JSON.stringify(c)); settings.renderPresets();},
-      loadPreset:(conf)=>{state={...state, ...conf}; settings.updateUI();},
+      loadPreset:(conf)=>{state={...state, ...conf}; settings.updateUI(); app.toast("PRESET LOADED");},
       renderPresets:()=>{
         const box=document.getElementById('preset-list-container'); box.innerHTML='';
         const render=(n,d,del=false)=>{
@@ -363,6 +331,27 @@ MutableApplication: "[AdjustMutable]優先。なければGlobal値"
       }
     };
 
+    const styleMgr = {
+        db: () => JSON.parse(localStorage.getItem('ps_styles') || '{}'),
+        save: (d) => localStorage.setItem('ps_styles', JSON.stringify(d)),
+        add: () => {
+            const name = document.getElementById('styleName').value;
+            const rules = document.getElementById('styleRules').value;
+            if(!name || !rules) return;
+            const d = styleMgr.db();
+            d[name] = { label: name, rules: `NarrationStyle: ${name}\nStyleRules: "${rules.replace(/"/g, "'")}"` };
+            styleMgr.save(d);
+            document.getElementById('styleName').value = ''; document.getElementById('styleRules').value = '';
+            subMgr.render('style'); settings.updateSelect(); app.toast(`STYLE ADDED: ${name}`);
+        },
+        del: (key) => {
+            if(!confirm('Delete Style?')) return;
+            const d = styleMgr.db(); delete d[key]; styleMgr.save(d);
+            subMgr.render('style'); settings.updateSelect();
+        },
+        getMerged: () => { return { ...CONFIG.baseStyles, ...styleMgr.db() }; }
+    };
+
     const editor = { insert:(t,e)=>{if(!lastFocused)return alert('Tap text'); const f=lastFocused,s=f.selectionStart,en=f.selectionEnd,v=f.value; f.value=v.substring(0,s)+(e?t+v.substring(s,en)+e:t)+v.substring(en); f.dispatchEvent(new Event('input')); f.focus();} };
     
     const novel = {
@@ -370,10 +359,8 @@ MutableApplication: "[AdjustMutable]優先。なければGlobal値"
             const container = document.getElementById('novel-container');
             let html = "";
             document.querySelectorAll('#streamList .card').forEach(c => {
-                const type = c.dataset.type;
-                let text = c.querySelector('textarea').value.trim();
-                if (!text) return;
-                if (type === 'code' || type === 'char') return;
+                const type = c.dataset.type; let text = c.querySelector('textarea').value.trim();
+                if (!text || type === 'code' || type === 'char') return;
                 if (type === 'speech') {
                     if (!text.startsWith('「') && !text.startsWith('『')) text = '「' + text;
                     if (!text.endsWith('」') && !text.endsWith('』')) text = text + '」';
@@ -384,7 +371,7 @@ MutableApplication: "[AdjustMutable]優先。なければGlobal値"
             document.getElementById('modal-novel').style.display = 'flex'; modals.close('share');
         },
         toggleVertical: () => document.getElementById('novel-container').classList.toggle('vertical'),
-        copy: () => { navigator.clipboard.writeText(document.getElementById('novel-container').innerText); alert("Copied Novel Text"); }
+        copy: () => { navigator.clipboard.writeText(document.getElementById('novel-container').innerText); app.toast("NOVEL COPIED"); }
     };
 
     const sharing = {
@@ -398,7 +385,7 @@ MutableApplication: "[AdjustMutable]優先。なければGlobal値"
             const currentStyles = styleMgr.getMerged();
             const currentStyle = currentStyles[state.s] || currentStyles.standard;
             
-            // FIXED: Using Placeholders to avoid replace failures
+            // FIXED: Ensure Placeholders are unique and replaced correctly
             pc = pc.replace("{{REFINE}}", state.r);
             pc = pc.replace("{{STYLE_INJECTION}}", currentStyle.rules);
             pc = pc.replace("{{MUTABLE}}", state.m + '%');
@@ -413,42 +400,27 @@ MutableApplication: "[AdjustMutable]優先。なければGlobal値"
         return txt;
       },
       system:async()=>{const t=sharing.buildText(); if(navigator.share){await navigator.share({text:t});}else{sharing.copyText();}},
-      copyText:()=>{navigator.clipboard.writeText(sharing.buildText());alert('Copied');modals.close('share');},
-      copyCode:()=>{navigator.clipboard.writeText("```markdown\n"+sharing.buildText()+"\n```");alert('Copied Code');modals.close('share');},
+      copyText:()=>{navigator.clipboard.writeText(sharing.buildText());app.toast('COPIED');modals.close('share');},
+      copyCode:()=>{navigator.clipboard.writeText("```markdown\n"+sharing.buildText()+"\n```");app.toast('COPIED CODE');modals.close('share');},
       download:()=>{const b=new Blob([sharing.buildText()],{type:'text/plain'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='P.txt';a.click();},
-      
       shareImage: async () => {
-        const stream = document.getElementById('streamList');
-        if(!stream || stream.children.length === 0) { alert("Empty"); return; }
-        const clone = stream.cloneNode(true);
-        clone.style.position = "absolute"; clone.style.top = "-9999px"; clone.style.left = "0";
-        clone.style.width = stream.offsetWidth + "px"; clone.style.height = "auto";
-        clone.style.overflow = "visible"; clone.style.background = "#0e1215";
+        const stream = document.getElementById('streamList'); if(!stream || stream.children.length === 0) { alert("Empty"); return; }
+        const clone = stream.cloneNode(true); clone.style.position = "absolute"; clone.style.top = "-9999px"; clone.style.left = "0"; clone.style.width = stream.offsetWidth + "px"; clone.style.height = "auto"; clone.style.overflow = "visible"; clone.style.background = "#0e1215";
         document.body.appendChild(clone);
         const originalCards = stream.querySelectorAll('.card');
         clone.querySelectorAll('.card').forEach((card, i) => {
-            const originalTa = originalCards[i].querySelector('textarea');
-            const cloneTa = card.querySelector('textarea');
-            const div = document.createElement('div');
-            div.innerText = originalTa.value;
-            div.style.color = "#cceeee"; 
-            div.style.fontFamily = getComputedStyle(originalTa).fontFamily;
-            div.style.fontSize = "15px"; div.style.lineHeight = "1.5";
-            div.style.whiteSpace = "pre-wrap"; div.style.wordBreak = "break-word";
-            div.style.padding = "12px"; div.style.minHeight = "50px";
+            const originalTa = originalCards[i].querySelector('textarea'); const cloneTa = card.querySelector('textarea');
+            const div = document.createElement('div'); div.innerText = originalTa.value;
+            div.style.color = "#cceeee"; div.style.fontFamily = getComputedStyle(originalTa).fontFamily; div.style.fontSize = "15px"; div.style.lineHeight = "1.5"; div.style.whiteSpace = "pre-wrap"; div.style.wordBreak = "break-word"; div.style.padding = "12px"; div.style.minHeight = "50px";
             if(cloneTa) card.replaceChild(div, cloneTa);
         });
         try {
             const canvas = await html2canvas(clone, { backgroundColor: '#0e1215', scale: 2, useCORS: true, windowWidth: clone.scrollWidth, windowHeight: clone.scrollHeight });
             canvas.toBlob(async (blob) => {
                 const file = new File([blob], "prompt_card.png", { type: "image/png" });
-                if (navigator.canShare && navigator.canShare({ files: [file] })) {
-                    try { await navigator.share({ files: [file], title: 'Prompt Card', text: 'Prompt Stream Image' }); } catch (e) {}
-                } else {
-                    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'prompt_card.png'; a.click();
-                }
+                if (navigator.canShare && navigator.canShare({ files: [file] })) { try { await navigator.share({ files: [file], title: 'Prompt Card', text: 'Prompt Stream Image' }); } catch (e) {} } else { const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'prompt_card.png'; a.click(); }
             });
-        } catch(e) { alert("Image Error: " + e); } finally { document.body.removeChild(clone); }
+        } catch(e) { alert("Error"); } finally { document.body.removeChild(clone); }
         modals.close('share');
       }
     };
@@ -459,41 +431,25 @@ MutableApplication: "[AdjustMutable]優先。なければGlobal値"
       save:(k,d)=>localStorage.setItem(k,JSON.stringify(d)),
       render:(t)=>{
         const l=document.getElementById(`list-${t}`); l.innerHTML=''; 
-        let k; 
-        if(t==='parts')k='ps_parts'; 
-        else if(t==='ref')k='ps_refs'; 
-        else if(t==='style')k='ps_styles'; 
-        else k=(t==='char'?'promptChars':'promptSnippets');
-        
+        let k; if(t==='parts')k='ps_parts'; else if(t==='ref')k='ps_refs'; else if(t==='style')k='ps_styles'; else k=(t==='char'?'promptChars':'promptSnippets');
         const d=subMgr.db(k);
-
-        if(t==='parts') {
-          (Array.isArray(d)?d:[]).forEach((v,i)=>{l.innerHTML+=`<span class="tag" onclick="if(!event.target.classList.contains('del')){editor.insert('${v}');modals.close('parts')}">${v} <span class="del" onclick="event.stopPropagation();parts.del(${i})">×</span></span>`});
-        } else if(t==='ref') {
-          (Array.isArray(d)?d:[]).forEach((obj,i)=>{l.innerHTML+=`<div class="list-item" style="display:block"><div style="display:flex;justify-content:space-between;margin-bottom:5px"><b>${obj.n}</b><button class="btn danger" onclick="refs.del(${i})">×</button></div><div style="font-size:10px;color:#666;max-height:60px;overflow:hidden" onclick="editor.insert(this.innerText);modals.close('ref')">${obj.c}</div></div>`});
-        } else if(t==='style') {
-          Object.keys(d).forEach(key=>{l.innerHTML+=`<div class="list-item"><span>${d[key].label}</span><button class="btn danger" onclick="styleMgr.del('${key}')">×</button></div>`});
-        } else {
-          Object.keys(d).forEach(key=>{l.innerHTML+=`<div class="list-item"><span>${key}</span><div><button class="btn" onclick="subMgr.insert('${t}','${key}')">ADD</button> <button class="btn danger" onclick="subMgr.del('${t}','${key}')">×</button></div></div>`});
-        }
+        if(t==='parts') { (Array.isArray(d)?d:[]).forEach((v,i)=>{l.innerHTML+=`<span class="tag" onclick="if(!event.target.classList.contains('del')){editor.insert('${v}');modals.close('parts')}">${v} <span class="del" onclick="event.stopPropagation();parts.del(${i})">×</span></span>`}); }
+        else if(t==='ref') { (Array.isArray(d)?d:[]).forEach((obj,i)=>{l.innerHTML+=`<div class="list-item" style="display:block"><div style="display:flex;justify-content:space-between;margin-bottom:5px"><b>${obj.n}</b><button class="btn danger" onclick="refs.del(${i})">×</button></div><div style="font-size:10px;color:#666;max-height:60px;overflow:hidden" onclick="editor.insert(this.innerText);modals.close('ref')">${obj.c}</div></div>`}); }
+        else if(t==='style') { Object.keys(d).forEach(key=>{l.innerHTML+=`<div class="list-item"><span>${d[key].label}</span><button class="btn danger" onclick="styleMgr.del('${key}')">×</button></div>`}); }
+        else { Object.keys(d).forEach(key=>{l.innerHTML+=`<div class="list-item"><span>${key}</span><div><button class="btn" onclick="subMgr.insert('${t}','${key}')">ADD</button> <button class="btn danger" onclick="subMgr.del('${t}','${key}')">×</button></div></div>`}); }
       },
       insert: (type, key) => {
         const db = subMgr.db(type === 'char' ? 'promptChars' : 'promptSnippets');
         const val = type === 'char' ? (db[key].text || `[AI: ${key}]`) : db[key];
-        board.add(type === 'char' ? 'char' : 'code', val);
-        modals.close(type);
+        board.add(type === 'char' ? 'char' : 'code', val); modals.close(type);
       },
-      del: (type, key) => {
-        if(!confirm('Del?')) return;
-        const k = type === 'char' ? 'promptChars' : 'promptSnippets'; const db = subMgr.db(k);
-        delete db[key]; subMgr.save(k, db); subMgr.render(type);
-      }
+      del: (type, key) => { if(!confirm('Del?')) return; const k = type === 'char' ? 'promptChars' : 'promptSnippets'; const db = subMgr.db(k); delete db[key]; subMgr.save(k, db); subMgr.render(type); }
     };
 
     const parts={add:()=>{const el=document.getElementById('partInput'),v=el.value;if(v){const d=subMgr.db('ps_parts');d.push(v);subMgr.save('ps_parts',d);el.value='';subMgr.render('parts');}},del:(i)=>{const d=subMgr.db('ps_parts');d.splice(i,1);subMgr.save('ps_parts',d);subMgr.render('parts');}};
     const refs={add:()=>{const n=document.getElementById('refName').value,c=document.getElementById('refContent').value;if(n&&c){const d=subMgr.db('ps_refs');d.push({n,c});subMgr.save('ps_refs',d);document.getElementById('refName').value='';document.getElementById('refContent').value='';subMgr.render('ref');}},del:(i)=>{const d=subMgr.db('ps_refs');d.splice(i,1);subMgr.save('ps_refs',d);subMgr.render('ref');}};
     const snippets={add:()=>{const n=document.getElementById('snipName').value,c=document.getElementById('snipContent').value;if(n&&c){const d=subMgr.db('promptSnippets');d[n]=c;subMgr.save('promptSnippets',d);subMgr.render('snippet');}}};
-    const projects={save:()=>{const n=document.getElementById('projName').value;if(!n)return;const d=[];document.querySelectorAll('#streamList .card').forEach(c=>d.push({type:c.dataset.type,text:c.querySelector('textarea').value,ctrls:JSON.parse(c.dataset.ctrls)}));const db=JSON.parse(localStorage.getItem('ps_projects')||'{}');db[n]=d;localStorage.setItem('ps_projects',JSON.stringify(db));projects.render();}, load:(n)=>{if(confirm('Load?')){const db=JSON.parse(localStorage.getItem('ps_projects'));document.getElementById('streamList').innerHTML='';db[n].forEach(i=>board.add(i.type,i.text,i.ctrls));modals.close('projects');}}, del:(n)=>{if(confirm('Del?')){const db=JSON.parse(localStorage.getItem('ps_projects'));delete db[n];localStorage.setItem('ps_projects',JSON.stringify(db));projects.render();}}, render:()=>{const l=document.getElementById('projectList'),db=JSON.parse(localStorage.getItem('ps_projects')||'{}');l.innerHTML='';Object.keys(db).forEach(n=>l.innerHTML+=`<div class="list-item"><span>${n}</span><div><button class="btn" onclick="projects.load('${n}')">LOAD</button> <button class="btn danger" onclick="projects.del('${n}')">×</button></div></div>`);}};
+    const projects={save:()=>{const n=document.getElementById('projName').value;if(!n)return;const d=[];document.querySelectorAll('#streamList .card').forEach(c=>d.push({type:c.dataset.type,text:c.querySelector('textarea').value,ctrls:JSON.parse(c.dataset.ctrls)}));const db=JSON.parse(localStorage.getItem('ps_projects')||'{}');db[n]=d;localStorage.setItem('ps_projects',JSON.stringify(db));projects.render();app.toast('PROJECT SAVED');}, load:(n)=>{if(confirm('Load?')){const db=JSON.parse(localStorage.getItem('ps_projects'));document.getElementById('streamList').innerHTML='';db[n].forEach(i=>board.add(i.type,i.text,i.ctrls));modals.close('projects');app.toast('PROJECT LOADED');}}, del:(n)=>{if(confirm('Del?')){const db=JSON.parse(localStorage.getItem('ps_projects'));delete db[n];localStorage.setItem('ps_projects',JSON.stringify(db));projects.render();}}, render:()=>{const l=document.getElementById('projectList'),db=JSON.parse(localStorage.getItem('ps_projects')||'{}');l.innerHTML='';Object.keys(db).forEach(n=>l.innerHTML+=`<div class="list-item"><span>${n}</span><div><button class="btn" onclick="projects.load('${n}')">LOAD</button> <button class="btn danger" onclick="projects.del('${n}')">×</button></div></div>`);}};
     
     const storage={save:()=>{const d=[];document.querySelectorAll('#streamList .card').forEach(c=>d.push({type:c.dataset.type,text:c.querySelector('textarea').value,ctrls:JSON.parse(c.dataset.ctrls)}));localStorage.setItem('ps_stream',JSON.stringify(d));}, load:()=>{const d=JSON.parse(localStorage.getItem('ps_stream')||'[]');d.forEach(i=>board.add(i.type,i.text,i.ctrls));}};
     window.onload=board.init;
