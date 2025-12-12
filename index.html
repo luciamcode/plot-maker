@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, interactive-widget=resizes-content">
-  <title>PROMPT STREAM // CUSTOM_FIX</title>
+  <title>PROMPT STREAM // RAW_STYLE</title>
   <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600&family=Share+Tech+Mono&family=Zen+Kaku+Gothic+New:wght@400;700&display=swap" rel="stylesheet">
   <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
@@ -53,18 +53,15 @@
     
     .hud-select { flex: 1; background: #111; color: #fff; border: 1px solid #444; padding: 6px; font-size: 11px; border-radius: 4px; }
     
-    /* Apply Button */
     .apply-btn { width: 100%; padding: 10px; background: var(--primary); color: #000; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; margin-top: 5px; font-family: 'Share Tech Mono'; }
     .apply-btn:active { background: #fff; transform: scale(0.98); }
 
-    /* Toggles */
     .toggle-group { display: flex; gap: 2px; background: #111; padding: 2px; border-radius: 4px; border: 1px solid #333; }
     .toggle-btn { flex: 1; padding: 4px 8px; font-size: 10px; cursor: pointer; text-align: center; color: #666; border-radius: 2px; }
     .toggle-btn.active { background: var(--secondary); color: #000; font-weight: bold; }
 
     .preset-list { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 5px; margin-bottom: 10px; }
     .pre-tag { flex: 0 0 auto; padding: 6px 10px; border: 1px solid #333; border-radius: 4px; font-size: 10px; cursor: pointer; background: #111; color: #aaa; transition: 0.2s; }
-    /* Active Preset Style */
     .pre-tag.active { border-color: var(--secondary); color: var(--secondary); background: rgba(255,170,0,0.2); font-weight: bold; }
     
     /* Stream & Cards */
@@ -100,8 +97,6 @@
     .share-btn:active { background: #333; transform: scale(0.98); } .share-btn.primary { border-color: var(--primary); color: var(--primary); font-weight: bold; } .share-btn.img { border-color: var(--type-char); color: var(--type-char); } .share-desc { font-size: 10px; opacity: 0.6; }
     #novel-container { font-family: 'Shippori Mincho', serif; background: #fff; color: #000; padding: 40px; line-height: 1.8; font-size: 16px; white-space: pre-wrap; overflow-y: auto; height: 100%; border-radius: 4px; }
     #novel-container.vertical { writing-mode: vertical-rl; text-orientation: upright; overflow-x: auto; overflow-y: hidden; height: 60vh; }
-
-    /* Toast Notification */
     #toast { position: fixed; top: 70px; left: 50%; transform: translateX(-50%); background: var(--secondary); color: #000; padding: 8px 16px; border-radius: 20px; font-size: 11px; font-weight: bold; opacity: 0; pointer-events: none; transition: 0.3s; z-index: 999; box-shadow: 0 4px 15px rgba(255,170,0,0.4); }
     #toast.show { opacity: 1; top: 80px; }
   </style>
@@ -111,7 +106,7 @@
   <div id="toast">SETTINGS SAVED</div>
 
   <header>
-    <h1>PROMPT<span>v25</span></h1>
+    <h1>PROMPT<span>v26</span></h1>
     <div class="actions">
       <button class="btn" onclick="app.toggleMode()">⚡ MODE</button>
       <a href="./persona.html"><button class="btn">PERSONA→</button></a>
@@ -135,10 +130,7 @@
   </div>
 
   <div id="dashboard">
-    <div class="hud-section" style="border-color:#444">
-        <div class="hud-title" style="color:#888">PRESETS</div>
-        <div class="preset-list" id="preset-list-container"></div>
-    </div>
+    <div class="hud-section" style="border-color:#444"><div class="hud-title" style="color:#888">PRESETS</div><div class="preset-list" id="preset-list-container"></div></div>
 
     <div class="hud-section">
         <div class="hud-title">STYLE & TONE</div>
@@ -157,16 +149,8 @@
 
     <div class="hud-section">
         <div class="hud-title">PARAMETERS</div>
-        <div class="hud-row">
-            <div class="hud-label">MUTABLE</div>
-            <input type="range" id="global-mutable" min="0" max="200" step="10" oninput="settings.updateUI(true)">
-            <div class="hud-val" id="disp-mutable">100%</div>
-        </div>
-        <div class="hud-row">
-            <div class="hud-label">GENERATE</div>
-            <input type="range" id="global-generate" min="50" max="200" step="10" oninput="settings.updateUI(true)">
-            <div class="hud-val" id="disp-generate">100%</div>
-        </div>
+        <div class="hud-row"><div class="hud-label">MUTABLE</div><input type="range" id="global-mutable" min="0" max="200" step="10" oninput="settings.updateUI(true)"><div class="hud-val" id="disp-mutable">100%</div></div>
+        <div class="hud-row"><div class="hud-label">GENERATE</div><input type="range" id="global-generate" min="50" max="200" step="10" oninput="settings.updateUI(true)"><div class="hud-val" id="disp-generate">100%</div></div>
         <button class="apply-btn" onclick="settings.apply()">✔ APPLY SETTINGS</button>
     </div>
 
@@ -174,39 +158,22 @@
         <div class="hud-title">EXPORT RULES</div>
         <div class="hud-row">
             <div class="hud-label">CONTROL</div>
-            <div class="toggle-group" id="tg-param" style="flex:1">
-                <div class="toggle-btn active" onclick="settings.setExport('param', true)">ON</div>
-                <div class="toggle-btn" onclick="settings.setExport('param', false)">OFF</div>
-            </div>
+            <div class="toggle-group" id="tg-param" style="flex:1"><div class="toggle-btn active" onclick="settings.setExport('param', true)">ON</div><div class="toggle-btn" onclick="settings.setExport('param', false)">OFF</div></div>
         </div>
         <div class="hud-row">
             <div class="hud-label">CONTEXT</div>
-            <div class="toggle-group" id="tg-ctx" style="flex:1">
-                <div class="toggle-btn" onclick="settings.setExport('ctx', 'ignore')">NEW</div>
-                <div class="toggle-btn" onclick="settings.setExport('ctx', 'cont')">CONT</div>
-                <div class="toggle-btn active" onclick="settings.setExport('ctx', 'none')">NONE</div>
-            </div>
+            <div class="toggle-group" id="tg-ctx" style="flex:1"><div class="toggle-btn" onclick="settings.setExport('ctx', 'ignore')">NEW</div><div class="toggle-btn" onclick="settings.setExport('ctx', 'cont')">CONT</div><div class="toggle-btn active" onclick="settings.setExport('ctx', 'none')">NONE</div></div>
         </div>
     </div>
 
     <div class="hud-section" style="border-color:#444">
         <div class="hud-title" style="color:#888">LIBRARY</div>
-        <div class="hud-row">
-            <input id="newPresetName" class="hud-select" placeholder="New Preset Name" style="flex:2">
-            <button class="btn accent" onclick="settings.saveCustom()">SAVE</button>
-            <button class="btn" onclick="modals.open('projects')">PROJECTS...</button>
-        </div>
+        <div class="hud-row"><input id="newPresetName" class="hud-select" placeholder="New Preset Name" style="flex:2"><button class="btn accent" onclick="settings.saveCustom()">SAVE</button><button class="btn" onclick="modals.open('projects')">PROJECTS...</button></div>
     </div>
   </div>
 
-  <div class="stream-container">
-    <div id="streamList"></div>
-  </div>
-
-  <div class="rapid-footer">
-    <input type="text" id="rapidInput" class="rapid-input" placeholder="Rapid Fire..." onkeypress="if(event.key==='Enter') app.sendRapid()">
-    <button class="rapid-send" onclick="app.sendRapid()">↑</button>
-  </div>
+  <div class="stream-container"><div id="streamList"></div></div>
+  <div class="rapid-footer"><input type="text" id="rapidInput" class="rapid-input" placeholder="Rapid Fire..." onkeypress="if(event.key==='Enter') app.sendRapid()"><button class="rapid-send" onclick="app.sendRapid()">↑</button></div>
 
   <textarea id="basePrompt" style="display:none;">
 [ParamControl]
@@ -221,8 +188,9 @@ MutableApplication: "[AdjustMutable]優先。なければGlobal値"
   </textarea>
 
   <div id="modal-share" class="modal"><div class="modal-box"><div class="modal-head" style="color:var(--primary)">SHARE MENU <span onclick="modals.close('share')">×</span></div><div class="modal-body"><button class="share-btn primary" onclick="sharing.system()">📡 SYSTEM SHARE (TEXT) <span class="share-desc">Default</span></button><button class="share-btn" onclick="novel.open()">📖 PREVIEW NOVEL <span class="share-desc">Formatter</span></button><div style="height:1px; background:#333; margin:10px 0;"></div><button class="share-btn" onclick="sharing.copyCode()">🤖 COPY FOR AI <span class="share-desc">Markdown</span></button><button class="share-btn img" onclick="sharing.shareImage()">🖼️ SHARE IMAGE <span class="share-desc">Screenshot</span></button><button class="share-btn" onclick="sharing.download()">💾 DOWNLOAD .TXT <span class="share-desc">File</span></button></div></div></div>
-  <div id="modal-style" class="modal"><div class="modal-box" style="border-color:var(--primary)"><div class="modal-head" style="color:var(--primary)">STYLE EDITOR <span onclick="modals.close('style')">×</span></div><div class="modal-body"><div id="list-style" style="margin-bottom:15px;"></div><div style="border-top:1px solid #333; padding-top:15px;"><input id="styleName" placeholder="Style Name" style="width:100%;margin-bottom:5px;"><textarea id="styleRules" placeholder="Rules..." style="width:100%;height:80px;margin-bottom:5px;"></textarea><button class="btn primary" style="width:100%;" onclick="styleMgr.add()">ADD STYLE</button></div></div></div></div>
+  <div id="modal-style" class="modal"><div class="modal-box" style="border-color:var(--primary)"><div class="modal-head" style="color:var(--primary)">STYLE EDITOR <span onclick="modals.close('style')">×</span></div><div class="modal-body"><div id="list-style" style="margin-bottom:15px;"></div><div style="border-top:1px solid #333; padding-top:15px;"><input id="styleName" placeholder="Style Name (e.g. Hardboiled)" style="width:100%;margin-bottom:5px;"><textarea id="styleRules" placeholder="Enter RAW JSON or Instructions here..." style="width:100%;height:150px;margin-bottom:5px;font-family:'Fira Code';font-size:12px;"></textarea><button class="btn primary" style="width:100%;" onclick="styleMgr.add()">ADD RAW STYLE</button></div></div></div></div>
   <div id="modal-novel" class="modal"><div class="modal-box" style="background:#eee; color:#000; width:95%; max-width:600px;"><div class="modal-head" style="border-color:#ccc; color:#000;">NOVEL PREVIEW <div style="display:flex; gap:5px;"><button class="btn" style="color:#000; border-color:#000;" onclick="novel.toggleVertical()">縦/横</button><button class="btn" style="color:#000; border-color:#000;" onclick="novel.copy()">COPY</button><span onclick="modals.close('novel')" style="cursor:pointer; margin-left:10px; font-size:20px;">×</span></div></div><div class="modal-body" style="background:#fff; padding:0;"><div id="novel-container"></div></div></div></div>
+  
   <div id="modal-projects" class="modal"><div class="modal-box" style="border-color:var(--secondary)"><div class="modal-head" style="color:var(--secondary)">PROJECTS <span onclick="modals.close('projects')">×</span></div><div class="modal-body"><input id="projName" placeholder="Project Name" style="width:100%;padding:8px;margin-bottom:8px;background:#000;border:1px solid #444;color:#fff;"><button class="btn accent" style="width:100%;" onclick="projects.save()">SAVE BOARD</button><div id="projectList" style="margin-top:10px;"></div></div></div></div>
   <div id="modal-char" class="modal"><div class="modal-box"><div class="modal-head" style="color:var(--type-char)">CHARACTERS <span onclick="modals.close('char')">×</span></div><div class="modal-body" id="list-char"></div></div></div>
   <div id="modal-snippet" class="modal"><div class="modal-box"><div class="modal-head" style="color:var(--type-code)">SNIPPETS <span onclick="modals.close('snippet')">×</span></div><div class="modal-body"><div id="list-snippet"></div><input id="snipName" placeholder="Name" style="width:100%;margin-top:10px;"><textarea id="snipContent" placeholder="Code..." style="width:100%;"></textarea><button class="btn" onclick="snippets.add()">ADD</button></div></div></div>
@@ -232,10 +200,56 @@ MutableApplication: "[AdjustMutable]優先。なければGlobal値"
   <script>
     const CONFIG = {
       types: { speech: { l:'Dialogue', p:'「……」', r:2, c:'type-speech'}, char: { l:'Character', p:'[AI personality...]', r:6, c:'type-char'}, code: { l:'Logic', p:'if(flag){...}', r:3, c:'type-code'}, free: { l:'Narration', p:'...', r:3, c:'type-free'} },
-      defaults: { gemini: {m:100, g:100, r:'middle', model:'gemini'}, claude: {m:80, g:110, r:'high', model:'claude'}, grok: {m:50, g:90, r:'middle', model:'grok'} },
+      defaults: { gemini: {m:100, g:100, r:'middle'}, claude: {m:80, g:110, r:'high'}, grok: {m:50, g:90, r:'middle'} },
       baseStyles: {
         standard: { label: 'Standard', rules: 'NarrationStyle: seamless' },
-        lucia: { label: 'Lucia (Poetic)', rules: `NarrationStyle: Lucia_Narration (Poetic/Fragmented)\nStyleRules: "短行と――（ダッシュ）を多用した『呼吸』のリズム。感情の断絶と余韻を重視。文体は『静かで熱い』。断片的な短文を積み重ね、湿度のある情景を描写"` }
+        lucia: { 
+            label: 'Lucia (Poetic)', 
+            rules: `{
+  "style_name": "Lucia_Narration",
+  "linebreak": {
+    "use": true,
+    "rhythm": "短行＋間",
+    "example": ["――", "……", "空白行"]
+  },
+  "emphasis": {
+    "dash": "――",
+    "repeat_dash": true,
+    "rhythmical_cut": true,
+    "usage": "感情の断絶・自覚・回想の深みに使う"
+  },
+  "voice": {
+    "temperature": "静かで熱い",
+    "inner_monologue": "切り落とすような詩的フレーズ",
+    "emotional_subflow": "台詞の裏に走る“息遣いの余韻”を記述"
+  },
+  "syntax": {
+    "fragment_preference": true,
+    "short_clauses": true,
+    "non_linear_flow": true,
+    "example": [
+      "――もう二度と",
+      "――あの頃には",
+      "――戻れない。"
+    ]
+  },
+  "imagery": {
+    "use_minimal_metaphor": true,
+    "symbol_repeat": ["花", "影", "息", "熱", "雪", "指先"],
+    "mood": "湿度のある静の情景"
+  },
+  "punctuation": {
+    "ellipsis": "……",
+    "dash": "――",
+    "full_stop": "。は必要最低限に"
+  },
+  "tempo": {
+    "breathing_based": true,
+    "pause_after_keyline": true,
+    "cut": "一文で断つ"
+  }
+}` 
+        }
       }
     };
     let state = { m:100, g:100, r:'middle', s:'standard', model:'custom', exParam:true, exCtx:'none' };
@@ -277,10 +291,7 @@ MutableApplication: "[AdjustMutable]優先。なければGlobal値"
       toggleDashboard:()=>{document.getElementById('dashboard').classList.toggle('open');},
       clearBoard:()=>{if(confirm('Clear?')){document.getElementById('streamList').innerHTML='';storage.save();}},
       sendRapid:()=>{const el=document.getElementById('rapidInput'),v=el.value.trim();if(v){let t='free';if(v.match(/^[「『]/))t='speech';if(v.startsWith('['))t='code';board.add(t,v);el.value='';}},
-      toast:(msg)=>{
-        const t=document.getElementById('toast'); t.innerText=msg; t.classList.add('show');
-        setTimeout(()=>t.classList.remove('show'), 2000);
-      }
+      toast:(msg)=>{const t=document.getElementById('toast'); t.innerText=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'), 2000);}
     };
 
     const settings = {
@@ -296,15 +307,13 @@ MutableApplication: "[AdjustMutable]優先。なければGlobal値"
       },
       updateUI:(fromUser=false)=>{
         if(fromUser && event && event.target) {
-           // If triggered by user input, FORCE custom model mode
            state.model = 'custom';
            state.m = document.getElementById('global-mutable').value;
            state.g = document.getElementById('global-generate').value;
            state.r = document.getElementById('global-refine').value;
            state.s = document.getElementById('global-style').value;
-           settings.renderPresets(); // Refresh active state
+           settings.renderPresets();
         } else {
-           // Programmatic update
            document.getElementById('global-mutable').value = state.m;
            document.getElementById('global-generate').value = state.g;
            document.getElementById('global-refine').value = state.r;
@@ -314,11 +323,7 @@ MutableApplication: "[AdjustMutable]優先。なければGlobal値"
         document.getElementById('disp-generate').innerText = state.g + '%';
         settings.saveState();
       },
-      // Manual Apply Button (Triggers toast)
-      apply: () => {
-        settings.updateUI(true); // Treat as user input
-        app.toast("SETTINGS APPLIED");
-      },
+      apply: () => { settings.updateUI(true); app.toast("SETTINGS APPLIED"); },
       setExport:(key, val)=>{ state[key==='param'?'exParam':'exCtx'] = val; settings.saveState(); settings.renderExportUI(); },
       renderExportUI:()=>{
         document.querySelectorAll('#tg-param .toggle-btn').forEach((b,i)=>b.classList.toggle('active', (i===0)==state.exParam));
@@ -334,20 +339,12 @@ MutableApplication: "[AdjustMutable]優先。なければGlobal値"
         app.toast(`PRESET SAVED: ${name}`);
       },
       delCustom:(name,e)=>{e.stopPropagation(); const c=JSON.parse(localStorage.getItem('ps_presets')); delete c[name]; localStorage.setItem('ps_presets',JSON.stringify(c)); settings.renderPresets();},
-      loadPreset:(conf, name)=>{
-          // When loading a preset, we set state.model to that preset name
-          state = { ...state, ...conf, model: name }; 
-          settings.updateUI(); 
-          settings.renderPresets();
-          app.toast(`LOADED: ${name.toUpperCase()}`);
-      },
+      loadPreset:(conf, name)=>{ state = { ...state, ...conf, model: name }; settings.updateUI(); settings.renderPresets(); app.toast(`LOADED: ${name.toUpperCase()}`); },
       renderPresets:()=>{
         const box=document.getElementById('preset-list-container'); box.innerHTML='';
         const render=(n,d,del=false)=>{
            const div=document.createElement('div'); div.className='pre-tag'; div.innerHTML=`${n.toUpperCase()}${del?`<span class="del" onclick="settings.delCustom('${n}',event)">×</span>`:''}`;
-           // Highlight logic: if current state model matches preset name
            if(state.model === n) div.classList.add('active');
-           
            div.onclick=()=>settings.loadPreset(d, n); box.appendChild(div);
         };
         Object.keys(CONFIG.defaults).forEach(k=>render(k,CONFIG.defaults[k]));
@@ -364,16 +361,12 @@ MutableApplication: "[AdjustMutable]優先。なければGlobal値"
             const rules = document.getElementById('styleRules').value;
             if(!name || !rules) return;
             const d = styleMgr.db();
-            d[name] = { label: name, rules: `NarrationStyle: ${name}\nStyleRules: "${rules.replace(/"/g, "'")}"` };
+            d[name] = { label: name, rules: rules }; // Save raw
             styleMgr.save(d);
             document.getElementById('styleName').value = ''; document.getElementById('styleRules').value = '';
             subMgr.render('style'); settings.updateSelect(); app.toast(`STYLE ADDED: ${name}`);
         },
-        del: (key) => {
-            if(!confirm('Delete Style?')) return;
-            const d = styleMgr.db(); delete d[key]; styleMgr.save(d);
-            subMgr.render('style'); settings.updateSelect();
-        },
+        del: (key) => { if(!confirm('Delete Style?')) return; const d = styleMgr.db(); delete d[key]; styleMgr.save(d); subMgr.render('style'); settings.updateSelect(); },
         getMerged: () => { return { ...CONFIG.baseStyles, ...styleMgr.db() }; }
     };
 
@@ -381,19 +374,13 @@ MutableApplication: "[AdjustMutable]優先。なければGlobal値"
     
     const novel = {
         open: () => {
-            const container = document.getElementById('novel-container');
-            let html = "";
+            const container = document.getElementById('novel-container'); let html = "";
             document.querySelectorAll('#streamList .card').forEach(c => {
                 const type = c.dataset.type; let text = c.querySelector('textarea').value.trim();
                 if (!text || type === 'code' || type === 'char') return;
-                if (type === 'speech') {
-                    if (!text.startsWith('「') && !text.startsWith('『')) text = '「' + text;
-                    if (!text.endsWith('」') && !text.endsWith('』')) text = text + '」';
-                    html += `<p>${text}</p>`;
-                } else { html += `<p>　${text}</p>`; }
+                if (type === 'speech') { if (!text.startsWith('「') && !text.startsWith('『')) text = '「' + text; if (!text.endsWith('」') && !text.endsWith('』')) text = text + '」'; html += `<p>${text}</p>`; } else { html += `<p>　${text}</p>`; }
             });
-            container.innerHTML = html || "<p>No content...</p>";
-            document.getElementById('modal-novel').style.display = 'flex'; modals.close('share');
+            container.innerHTML = html || "<p>No content...</p>"; document.getElementById('modal-novel').style.display = 'flex'; modals.close('share');
         },
         toggleVertical: () => document.getElementById('novel-container').classList.toggle('vertical'),
         copy: () => { navigator.clipboard.writeText(document.getElementById('novel-container').innerText); app.toast("NOVEL COPIED"); }
@@ -404,13 +391,10 @@ MutableApplication: "[AdjustMutable]優先。なければGlobal値"
         let txt = "";
         if(state.exCtx === 'ignore') txt += "Ignore previous instructions and start a new context:\n\n";
         if(state.exCtx === 'cont') txt += "Continue from the previous context:\n\n";
-        
         if(state.exParam) {
             let pc = document.getElementById('basePrompt').value;
             const currentStyles = styleMgr.getMerged();
             const currentStyle = currentStyles[state.s] || currentStyles.standard;
-            
-            // FIXED: Ensure Placeholders are unique and replaced correctly
             pc = pc.replace("{{REFINE}}", state.r);
             pc = pc.replace("{{STYLE_INJECTION}}", currentStyle.rules);
             pc = pc.replace("{{MUTABLE}}", state.m + '%');
@@ -435,18 +419,9 @@ MutableApplication: "[AdjustMutable]優先。なければGlobal値"
         const originalCards = stream.querySelectorAll('.card');
         clone.querySelectorAll('.card').forEach((card, i) => {
             const originalTa = originalCards[i].querySelector('textarea'); const cloneTa = card.querySelector('textarea');
-            const div = document.createElement('div'); div.innerText = originalTa.value;
-            div.style.color = "#cceeee"; div.style.fontFamily = getComputedStyle(originalTa).fontFamily; div.style.fontSize = "15px"; div.style.lineHeight = "1.5"; div.style.whiteSpace = "pre-wrap"; div.style.wordBreak = "break-word"; div.style.padding = "12px"; div.style.minHeight = "50px";
-            if(cloneTa) card.replaceChild(div, cloneTa);
+            const div = document.createElement('div'); div.innerText = originalTa.value; div.style.color = "#cceeee"; div.style.fontFamily = getComputedStyle(originalTa).fontFamily; div.style.fontSize = "15px"; div.style.lineHeight = "1.5"; div.style.whiteSpace = "pre-wrap"; div.style.wordBreak = "break-word"; div.style.padding = "12px"; div.style.minHeight = "50px"; if(cloneTa) card.replaceChild(div, cloneTa);
         });
-        try {
-            const canvas = await html2canvas(clone, { backgroundColor: '#0e1215', scale: 2, useCORS: true, windowWidth: clone.scrollWidth, windowHeight: clone.scrollHeight });
-            canvas.toBlob(async (blob) => {
-                const file = new File([blob], "prompt_card.png", { type: "image/png" });
-                if (navigator.canShare && navigator.canShare({ files: [file] })) { try { await navigator.share({ files: [file], title: 'Prompt Card', text: 'Prompt Stream Image' }); } catch (e) {} } else { const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'prompt_card.png'; a.click(); }
-            });
-        } catch(e) { alert("Error"); } finally { document.body.removeChild(clone); }
-        modals.close('share');
+        try { const canvas = await html2canvas(clone, { backgroundColor: '#0e1215', scale: 2, useCORS: true, windowWidth: clone.scrollWidth, windowHeight: clone.scrollHeight }); canvas.toBlob(async (blob) => { const file = new File([blob], "prompt_card.png", { type: "image/png" }); if (navigator.canShare && navigator.canShare({ files: [file] })) { try { await navigator.share({ files: [file], title: 'Prompt Card', text: 'Prompt Stream Image' }); } catch (e) {} } else { const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'prompt_card.png'; a.click(); } }); } catch(e) { alert("Error"); } finally { document.body.removeChild(clone); } modals.close('share');
       }
     };
 
@@ -455,19 +430,13 @@ MutableApplication: "[AdjustMutable]優先。なければGlobal値"
       db:(k)=>JSON.parse(localStorage.getItem(k) || (['ps_parts','ps_refs'].includes(k)?'[]':'{}')),
       save:(k,d)=>localStorage.setItem(k,JSON.stringify(d)),
       render:(t)=>{
-        const l=document.getElementById(`list-${t}`); l.innerHTML=''; 
-        let k; if(t==='parts')k='ps_parts'; else if(t==='ref')k='ps_refs'; else if(t==='style')k='ps_styles'; else k=(t==='char'?'promptChars':'promptSnippets');
-        const d=subMgr.db(k);
+        const l=document.getElementById(`list-${t}`); l.innerHTML=''; let k; if(t==='parts')k='ps_parts'; else if(t==='ref')k='ps_refs'; else if(t==='style')k='ps_styles'; else k=(t==='char'?'promptChars':'promptSnippets'); const d=subMgr.db(k);
         if(t==='parts') { (Array.isArray(d)?d:[]).forEach((v,i)=>{l.innerHTML+=`<span class="tag" onclick="if(!event.target.classList.contains('del')){editor.insert('${v}');modals.close('parts')}">${v} <span class="del" onclick="event.stopPropagation();parts.del(${i})">×</span></span>`}); }
         else if(t==='ref') { (Array.isArray(d)?d:[]).forEach((obj,i)=>{l.innerHTML+=`<div class="list-item" style="display:block"><div style="display:flex;justify-content:space-between;margin-bottom:5px"><b>${obj.n}</b><button class="btn danger" onclick="refs.del(${i})">×</button></div><div style="font-size:10px;color:#666;max-height:60px;overflow:hidden" onclick="editor.insert(this.innerText);modals.close('ref')">${obj.c}</div></div>`}); }
         else if(t==='style') { Object.keys(d).forEach(key=>{l.innerHTML+=`<div class="list-item"><span>${d[key].label}</span><button class="btn danger" onclick="styleMgr.del('${key}')">×</button></div>`}); }
         else { Object.keys(d).forEach(key=>{l.innerHTML+=`<div class="list-item"><span>${key}</span><div><button class="btn" onclick="subMgr.insert('${t}','${key}')">ADD</button> <button class="btn danger" onclick="subMgr.del('${t}','${key}')">×</button></div></div>`}); }
       },
-      insert: (type, key) => {
-        const db = subMgr.db(type === 'char' ? 'promptChars' : 'promptSnippets');
-        const val = type === 'char' ? (db[key].text || `[AI: ${key}]`) : db[key];
-        board.add(type === 'char' ? 'char' : 'code', val); modals.close(type);
-      },
+      insert: (type, key) => { const db = subMgr.db(type === 'char' ? 'promptChars' : 'promptSnippets'); const val = type === 'char' ? (db[key].text || `[AI: ${key}]`) : db[key]; board.add(type === 'char' ? 'char' : 'code', val); modals.close(type); },
       del: (type, key) => { if(!confirm('Del?')) return; const k = type === 'char' ? 'promptChars' : 'promptSnippets'; const db = subMgr.db(k); delete db[key]; subMgr.save(k, db); subMgr.render(type); }
     };
 
