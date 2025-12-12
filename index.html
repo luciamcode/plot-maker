@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, interactive-widget=resizes-content">
-  <title>PROMPT STREAM // STEALTH</title>
+  <title>PROMPT STREAM // LUCIA_V2</title>
   <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600&family=Share+Tech+Mono&family=Zen+Kaku+Gothic+New:wght@400;700&display=swap" rel="stylesheet">
   <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
@@ -117,7 +117,7 @@
   <div id="toast">SETTINGS SAVED</div>
 
   <header>
-    <h1>PROMPT<span>v32</span></h1>
+    <h1>PROMPT<span>v33</span></h1>
     <div class="actions">
       <button class="btn" onclick="app.toggleMode()">⚡ MODE</button>
       <a href="./persona.html"><button class="btn">PERSONA→</button></a>
@@ -133,6 +133,9 @@
     <div class="p-btn" onmousedown="editor.insert('[', ']')">[ ]<span>BRA</span></div>
     <div class="p-btn" onmousedown="editor.insert('\n---\n')">---<span>SEP</span></div>
     <div class="p-btn pb-ref" onclick="modals.open('ref')">Ref<span>MEMO</span></div>
+    
+    <div class="p-btn pb-code" onclick="jsonBuilder.open()">JSON<span>BUILD</span></div>
+
     <div class="p-btn pb-speech" onclick="board.add('speech')">Dialogue<span>会話</span></div>
     <div class="p-btn pb-char" onclick="board.add('char')">Character<span>人格</span></div>
     <div class="p-btn pb-code" onclick="board.add('code')">Code<span>ロジック</span></div>
@@ -213,10 +216,19 @@ MutableApplication: "[AdjustMutable]優先。なければGlobal値"
             label: 'Lucia (Poetic)', 
             rules: `{
   "narration_style": {
-    "line_break": "思考・衝動・観測の単位で改行する。",
-    "dash_usage": { "symbol": "――", "function": ["語り手の本音", "衝動的思考", "感情の暴露"] },
-    "tempo": { "base": "短文〜中文", "pause": "重要語の前後で改行" },
-    "description_focus": ["感情の揺れ", "衝動", "後悔・欲望・恐怖"],
+    "line_break": "思考・衝動・観測の単位で改行する。視覚的装飾ではなく、内部処理の区切りとして使用。",
+    "dash_usage": {
+      "symbol": "――",
+      "function": ["語り手の本音","衝動的思考","自己ツッコミ","感情の暴露"],
+      "rule": "説明文には使わず、内面に限定する"
+    },
+    "tempo": {
+      "base": "短文〜中文",
+      "pause": "重要語の前後で改行し、思考を一拍止める"
+    },
+    "description_focus": ["感情の揺れ","衝動","後悔・欲望・恐怖の自覚"],
+    "dialogue_ratio": "少なめ。状況説明や感情説明は地の文で行う",
+    "perspective": ["一人称","二人称","三人称"],
     "common_effect": "読者が語り手の頭の中に直接放り込まれる感覚"
   }
 }` 
