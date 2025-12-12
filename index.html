@@ -3,12 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, interactive-widget=resizes-content">
-  <title>PROMPT STREAM // NOVELIST</title>
-  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600&family=Share+Tech+Mono&family=Zen+Kaku+Gothic+New:wght@400;700&family=Shippori+Mincho&display=swap" rel="stylesheet">
+  <title>PROMPT STREAM // STYLE_EDITOR</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600&family=Share+Tech+Mono&family=Zen+Kaku+Gothic+New:wght@400;700&display=swap" rel="stylesheet">
   <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
   <style>
-    /* --- 1. Variables & Base --- */
+    /* --- Variables & Base --- */
     :root {
       --bg: #050505; --panel-bg: #111518; --card-bg: #161a1e;
       --primary: #00f3ff; --secondary: #ffaa00; --accent: #ff0055;
@@ -96,27 +96,15 @@
     .share-btn.img { border-color: var(--type-char); color: var(--type-char); }
     .share-desc { font-size: 10px; opacity: 0.6; }
 
-    /* --- NOVEL PREVIEW STYLES --- */
-    #novel-container {
-        font-family: 'Shippori Mincho', serif;
-        background: #fff; color: #000;
-        padding: 40px; line-height: 1.8; font-size: 16px;
-        white-space: pre-wrap; overflow-y: auto; height: 100%;
-        border-radius: 4px;
-    }
-    /* Vertical Writing Mode */
-    #novel-container.vertical {
-        writing-mode: vertical-rl;
-        text-orientation: upright;
-        overflow-x: auto; overflow-y: hidden;
-        height: 60vh; /* Adjustment for modal */
-    }
+    /* Novel Preview */
+    #novel-container { font-family: 'Shippori Mincho', serif; background: #fff; color: #000; padding: 40px; line-height: 1.8; font-size: 16px; white-space: pre-wrap; overflow-y: auto; height: 100%; border-radius: 4px; }
+    #novel-container.vertical { writing-mode: vertical-rl; text-orientation: upright; overflow-x: auto; overflow-y: hidden; height: 60vh; }
   </style>
 </head>
 <body class="mode-rapid">
 
   <header>
-    <h1>PROMPT<span>v19</span></h1>
+    <h1>PROMPT<span>v21</span></h1>
     <div class="actions">
       <button class="btn" onclick="app.toggleMode()">⚡ MODE</button>
       <a href="./persona.html"><button class="btn">PERSONA→</button></a>
@@ -146,11 +134,18 @@
       <div class="dash-group"><label>MUTABLE <span id="disp-mutable">100%</span></label><input type="range" id="global-mutable" min="0" max="200" step="10" oninput="settings.updateUI()"></div>
       <div class="dash-group"><label>GENERATE <span id="disp-generate">100%</span></label><input type="range" id="global-generate" min="50" max="200" step="10" oninput="settings.updateUI()"></div>
       <div class="dash-group" style="flex:0.6"><label>REFINE</label><select id="global-refine" class="dash-select" onchange="settings.saveState()"><option value="low">low</option><option value="middle" selected>mid</option><option value="high">high</option></select></div>
+      
+      <div class="dash-group" style="flex:1.2">
+        <label>STYLE <span style="font-size:9px;cursor:pointer;color:var(--primary)" onclick="modals.open('style')">[+EDIT]</span></label>
+        <select id="global-style" class="dash-select" onchange="settings.saveState()"></select>
+      </div>
     </div>
+
     <div class="dash-row" style="background:#111; padding:8px; border-radius:4px; margin-top:10px;">
         <div class="dash-group"><label>CONTROL BLOCK</label><div class="toggle-group" id="tg-param"><div class="toggle-btn active" onclick="settings.setExport('param', true)">ON</div><div class="toggle-btn" onclick="settings.setExport('param', false)">OFF</div></div></div>
         <div class="dash-group" style="flex:1.5"><label>CONTEXT</label><div class="toggle-group" id="tg-ctx"><div class="toggle-btn" onclick="settings.setExport('ctx', 'ignore')">NEW</div><div class="toggle-btn" onclick="settings.setExport('ctx', 'cont')">CONT</div><div class="toggle-btn active" onclick="settings.setExport('ctx', 'none')">NONE</div></div></div>
     </div>
+    
     <div class="dash-row" style="margin-top:15px;"><input id="newPresetName" class="dash-select" placeholder="New Preset Name" style="flex:1;"><button class="btn accent" onclick="settings.saveCustom()">SAVE PRESET</button><button class="btn" onclick="modals.open('projects')">LOAD PROJECT...</button></div>
   </div>
 
@@ -168,11 +163,26 @@
 GlobalAdjustMutable: 100%
 GlobalGenerateAmount: 100%
 Refinement: middle
+NarrationStyle: seamless
 WildcardRule: "****は文脈に応じ補完"
 OutputRange: "@startpointから@endpointのみ"
 MutableApplication: "[AdjustMutable]優先。なければGlobal値"
 [/ParamControl]
   </textarea>
+
+  <div id="modal-style" class="modal">
+    <div class="modal-box" style="border-color:var(--primary)">
+        <div class="modal-head" style="color:var(--primary)">STYLE EDITOR <span onclick="modals.close('style')">×</span></div>
+        <div class="modal-body">
+            <div id="list-style" style="margin-bottom:15px;"></div>
+            <div style="border-top:1px solid #333; padding-top:15px;">
+                <input id="styleName" placeholder="Style Name (e.g. Hardboiled)" style="width:100%;margin-bottom:5px;">
+                <textarea id="styleRules" placeholder="Rules (e.g. 比喩を排除し事実のみ記述...)" style="width:100%;height:80px;margin-bottom:5px;"></textarea>
+                <button class="btn primary" style="width:100%;" onclick="styleMgr.add()">ADD STYLE</button>
+            </div>
+        </div>
+    </div>
+  </div>
 
   <div id="modal-share" class="modal">
     <div class="modal-box">
@@ -208,9 +218,7 @@ MutableApplication: "[AdjustMutable]優先。なければGlobal値"
             <span onclick="modals.close('novel')" style="cursor:pointer; margin-left:10px; font-size:20px;">×</span>
         </div>
       </div>
-      <div class="modal-body" style="background:#fff; padding:0;">
-        <div id="novel-container"></div>
-      </div>
+      <div class="modal-body" style="background:#fff; padding:0;"><div id="novel-container"></div></div>
     </div>
   </div>
 
@@ -223,9 +231,16 @@ MutableApplication: "[AdjustMutable]優先。なければGlobal値"
   <script>
     const CONFIG = {
       types: { speech: { l:'Dialogue', p:'「……」', r:2, c:'type-speech'}, char: { l:'Character', p:'[AI personality...]', r:6, c:'type-char'}, code: { l:'Logic', p:'if(flag){...}', r:3, c:'type-code'}, free: { l:'Narration', p:'...', r:3, c:'type-free'} },
-      defaults: { gemini: {m:100, g:100, r:'middle'}, claude: {m:80, g:110, r:'high'}, grok: {m:50, g:90, r:'middle'} }
+      defaults: { gemini: {m:100, g:100, r:'middle'}, claude: {m:80, g:110, r:'high'}, grok: {m:50, g:90, r:'middle'} },
+      baseStyles: {
+        standard: { label: 'Standard', rules: 'NarrationStyle: seamless' },
+        lucia: { 
+            label: 'Lucia (Poetic)', 
+            rules: `NarrationStyle: Lucia_Narration (Poetic/Fragmented)\nStyleRules: "短行と――（ダッシュ）を多用した『呼吸』のリズム。感情の断絶と余韻を重視。文体は『静かで熱い』。断片的な短文を積み重ね、湿度のある情景を描写"` 
+        }
+      }
     };
-    let state = { m:100, g:100, r:'middle', exParam:true, exCtx:'none' };
+    let state = { m:100, g:100, r:'middle', s:'standard', exParam:true, exCtx:'none' };
     let lastFocused = null;
 
     const board = {
@@ -266,20 +281,56 @@ MutableApplication: "[AdjustMutable]優先。なければGlobal値"
       sendRapid:()=>{const el=document.getElementById('rapidInput'),v=el.value.trim();if(v){let t='free';if(v.match(/^[「『]/))t='speech';if(v.startsWith('['))t='code';board.add(t,v);el.value='';}}
     };
 
+    const styleMgr = {
+        db: () => JSON.parse(localStorage.getItem('ps_styles') || '{}'),
+        save: (d) => localStorage.setItem('ps_styles', JSON.stringify(d)),
+        add: () => {
+            const name = document.getElementById('styleName').value;
+            const rules = document.getElementById('styleRules').value;
+            if(!name || !rules) return;
+            const d = styleMgr.db();
+            d[name] = { label: name, rules: `NarrationStyle: ${name}\nStyleRules: "${rules.replace(/"/g, "'")}"` };
+            styleMgr.save(d);
+            document.getElementById('styleName').value = '';
+            document.getElementById('styleRules').value = '';
+            subMgr.render('style'); settings.updateSelect();
+        },
+        del: (key) => {
+            if(!confirm('Delete Style?')) return;
+            const d = styleMgr.db(); delete d[key]; styleMgr.save(d);
+            subMgr.render('style'); settings.updateSelect();
+        },
+        getMerged: () => { return { ...CONFIG.baseStyles, ...styleMgr.db() }; }
+    };
+
     const settings = {
       init:()=>{
-        state = JSON.parse(localStorage.getItem('ps_state')||JSON.stringify({m:100,g:100,r:'middle',exParam:true,exCtx:'none'}));
+        state = JSON.parse(localStorage.getItem('ps_state')||JSON.stringify({m:100,g:100,r:'middle',s:'standard',exParam:true,exCtx:'none'}));
+        settings.updateSelect();
         settings.renderPresets(); settings.updateUI(); settings.renderExportUI();
+      },
+      updateSelect: () => {
+        const styleSel = document.getElementById('global-style');
+        const styles = styleMgr.getMerged();
+        styleSel.innerHTML = '';
+        Object.keys(styles).forEach(k => {
+            const opt = document.createElement('option');
+            opt.value = k; opt.innerText = styles[k].label;
+            styleSel.appendChild(opt);
+        });
+        styleSel.value = state.s || 'standard';
       },
       updateUI:()=>{
         if(event && event.target.id) {
            state.m = document.getElementById('global-mutable').value;
            state.g = document.getElementById('global-generate').value;
            state.r = document.getElementById('global-refine').value;
+           state.s = document.getElementById('global-style').value;
         } else {
            document.getElementById('global-mutable').value = state.m;
            document.getElementById('global-generate').value = state.g;
            document.getElementById('global-refine').value = state.r;
+           document.getElementById('global-style').value = state.s || 'standard';
         }
         document.getElementById('disp-mutable').innerText = state.m + '%';
         document.getElementById('disp-generate').innerText = state.g + '%';
@@ -294,7 +345,7 @@ MutableApplication: "[AdjustMutable]優先。なければGlobal値"
       saveCustom:()=>{
         const name=document.getElementById('newPresetName').value; if(!name)return;
         const customs=JSON.parse(localStorage.getItem('ps_presets')||'{}');
-        customs[name]={m:state.m, g:state.g, r:state.r};
+        customs[name]={m:state.m, g:state.g, r:state.r, s:state.s};
         localStorage.setItem('ps_presets',JSON.stringify(customs));
         document.getElementById('newPresetName').value=''; settings.renderPresets();
       },
@@ -314,7 +365,6 @@ MutableApplication: "[AdjustMutable]優先。なければGlobal値"
 
     const editor = { insert:(t,e)=>{if(!lastFocused)return alert('Tap text'); const f=lastFocused,s=f.selectionStart,en=f.selectionEnd,v=f.value; f.value=v.substring(0,s)+(e?t+v.substring(s,en)+e:t)+v.substring(en); f.dispatchEvent(new Event('input')); f.focus();} };
     
-    // --- NOVEL BUILDER ---
     const novel = {
         open: () => {
             const container = document.getElementById('novel-container');
@@ -323,29 +373,18 @@ MutableApplication: "[AdjustMutable]優先。なければGlobal値"
                 const type = c.dataset.type;
                 let text = c.querySelector('textarea').value.trim();
                 if (!text) return;
-                
-                // Skip logic/char blocks for the novel view
                 if (type === 'code' || type === 'char') return;
-
                 if (type === 'speech') {
-                    // Auto-bracket if missing
                     if (!text.startsWith('「') && !text.startsWith('『')) text = '「' + text;
                     if (!text.endsWith('」') && !text.endsWith('』')) text = text + '」';
                     html += `<p>${text}</p>`;
-                } else {
-                    // Narration: Indent
-                    html += `<p>　${text}</p>`;
-                }
+                } else { html += `<p>　${text}</p>`; }
             });
             container.innerHTML = html || "<p>No content...</p>";
-            document.getElementById('modal-novel').style.display = 'flex';
-            modals.close('share');
+            document.getElementById('modal-novel').style.display = 'flex'; modals.close('share');
         },
         toggleVertical: () => document.getElementById('novel-container').classList.toggle('vertical'),
-        copy: () => {
-            navigator.clipboard.writeText(document.getElementById('novel-container').innerText);
-            alert("Copied Novel Text");
-        }
+        copy: () => { navigator.clipboard.writeText(document.getElementById('novel-container').innerText); alert("Copied Novel Text"); }
     };
 
     const sharing = {
@@ -353,9 +392,14 @@ MutableApplication: "[AdjustMutable]優先。なければGlobal値"
         let txt = "";
         if(state.exCtx === 'ignore') txt += "Ignore previous instructions and start a new context:\n\n";
         if(state.exCtx === 'cont') txt += "Continue from the previous context:\n\n";
+        
         if(state.exParam) {
             let pc = document.getElementById('basePrompt').value;
+            const currentStyles = styleMgr.getMerged();
+            const currentStyle = currentStyles[state.s] || currentStyles.standard;
+            
             pc = pc.replace("Refinement: middle", `Refinement: ${state.r}`);
+            pc = pc.replace("NarrationStyle: seamless", currentStyle.rules);
             pc = pc.replace("GlobalAdjustMutable: 100%", `GlobalAdjustMutable: ${state.m}%`);
             pc = pc.replace("GlobalGenerateAmount: 100%", `GlobalGenerateAmount: ${state.g}%`);
             txt += pc + '\n';
@@ -408,20 +452,26 @@ MutableApplication: "[AdjustMutable]優先。なければGlobal値"
       }
     };
 
-    // Sub-Managers
-    const modals={open:(id)=>{document.getElementById(`modal-${id}`).style.display='flex';if(id==='projects')projects.render();if(id==='char'||id==='snippet'||id==='parts'||id==='ref')subMgr.render(id);}, close:(id)=>document.getElementById(`modal-${id}`).style.display='none'};
+    const modals={open:(id)=>{document.getElementById(`modal-${id}`).style.display='flex';if(id==='projects')projects.render();if(id==='char'||id==='snippet'||id==='parts'||id==='ref')subMgr.render(id);if(id==='style')subMgr.render(id);}, close:(id)=>document.getElementById(`modal-${id}`).style.display='none'};
     const subMgr={
       db:(k)=>JSON.parse(localStorage.getItem(k) || (['ps_parts','ps_refs'].includes(k)?'[]':'{}')),
       save:(k,d)=>localStorage.setItem(k,JSON.stringify(d)),
       render:(t)=>{
         const l=document.getElementById(`list-${t}`); l.innerHTML=''; 
-        let k; if(t==='parts')k='ps_parts'; else if(t==='ref')k='ps_refs'; else k=(t==='char'?'promptChars':'promptSnippets');
+        let k; 
+        if(t==='parts')k='ps_parts'; 
+        else if(t==='ref')k='ps_refs'; 
+        else if(t==='style')k='ps_styles'; 
+        else k=(t==='char'?'promptChars':'promptSnippets');
+        
         const d=subMgr.db(k);
 
         if(t==='parts') {
           (Array.isArray(d)?d:[]).forEach((v,i)=>{l.innerHTML+=`<span class="tag" onclick="if(!event.target.classList.contains('del')){editor.insert('${v}');modals.close('parts')}">${v} <span class="del" onclick="event.stopPropagation();parts.del(${i})">×</span></span>`});
         } else if(t==='ref') {
           (Array.isArray(d)?d:[]).forEach((obj,i)=>{l.innerHTML+=`<div class="list-item" style="display:block"><div style="display:flex;justify-content:space-between;margin-bottom:5px"><b>${obj.n}</b><button class="btn danger" onclick="refs.del(${i})">×</button></div><div style="font-size:10px;color:#666;max-height:60px;overflow:hidden" onclick="editor.insert(this.innerText);modals.close('ref')">${obj.c}</div></div>`});
+        } else if(t==='style') {
+          Object.keys(d).forEach(key=>{l.innerHTML+=`<div class="list-item"><span>${d[key].label}</span><button class="btn danger" onclick="styleMgr.del('${key}')">×</button></div>`});
         } else {
           Object.keys(d).forEach(key=>{l.innerHTML+=`<div class="list-item"><span>${key}</span><div><button class="btn" onclick="subMgr.insert('${t}','${key}')">ADD</button> <button class="btn danger" onclick="subMgr.del('${t}','${key}')">×</button></div></div>`});
         }
