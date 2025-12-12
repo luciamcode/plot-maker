@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, interactive-widget=resizes-content">
-  <title>PROMPT STREAM // STYLE_EDITOR</title>
+  <title>PROMPT STREAM // STYLE_FIXED</title>
   <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600&family=Share+Tech+Mono&family=Zen+Kaku+Gothic+New:wght@400;700&display=swap" rel="stylesheet">
   <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
@@ -104,7 +104,7 @@
 <body class="mode-rapid">
 
   <header>
-    <h1>PROMPT<span>v21</span></h1>
+    <h1>PROMPT<span>v22</span></h1>
     <div class="actions">
       <button class="btn" onclick="app.toggleMode()">⚡ MODE</button>
       <a href="./persona.html"><button class="btn">PERSONA→</button></a>
@@ -160,10 +160,10 @@
 
   <textarea id="basePrompt" style="display:none;">
 [ParamControl]
-GlobalAdjustMutable: 100%
-GlobalGenerateAmount: 100%
-Refinement: middle
-NarrationStyle: seamless
+GlobalAdjustMutable: {{MUTABLE}}
+GlobalGenerateAmount: {{GENERATE}}
+Refinement: {{REFINE}}
+{{STYLE_INJECTION}}
 WildcardRule: "****は文脈に応じ補完"
 OutputRange: "@startpointから@endpointのみ"
 MutableApplication: "[AdjustMutable]優先。なければGlobal値"
@@ -398,10 +398,11 @@ MutableApplication: "[AdjustMutable]優先。なければGlobal値"
             const currentStyles = styleMgr.getMerged();
             const currentStyle = currentStyles[state.s] || currentStyles.standard;
             
-            pc = pc.replace("Refinement: middle", `Refinement: ${state.r}`);
-            pc = pc.replace("NarrationStyle: seamless", currentStyle.rules);
-            pc = pc.replace("GlobalAdjustMutable: 100%", `GlobalAdjustMutable: ${state.m}%`);
-            pc = pc.replace("GlobalGenerateAmount: 100%", `GlobalGenerateAmount: ${state.g}%`);
+            // FIXED: Using Placeholders to avoid replace failures
+            pc = pc.replace("{{REFINE}}", state.r);
+            pc = pc.replace("{{STYLE_INJECTION}}", currentStyle.rules);
+            pc = pc.replace("{{MUTABLE}}", state.m + '%');
+            pc = pc.replace("{{GENERATE}}", state.g + '%');
             txt += pc + '\n';
         }
         document.querySelectorAll('#streamList .card').forEach(c => {
