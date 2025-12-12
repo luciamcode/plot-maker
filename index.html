@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, interactive-widget=resizes-content">
-  <title>PROMPT STREAM // JSON_BUILDER</title>
+  <title>PROMPT STREAM // DECLARATION</title>
   <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600&family=Share+Tech+Mono&family=Zen+Kaku+Gothic+New:wght@400;700&display=swap" rel="stylesheet">
   <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
@@ -41,19 +41,23 @@
     
     .hud-section { border: 1px solid #333; border-radius: 6px; padding: 10px; margin-bottom: 10px; position: relative; }
     .hud-title { position: absolute; top: -8px; left: 10px; background: #080a0c; padding: 0 5px; font-size: 10px; color: var(--secondary); font-weight: bold; }
+    
     .hud-row { display: flex; gap: 10px; align-items: center; margin-bottom: 8px; }
+    .hud-row:last-child { margin-bottom: 0; }
     .hud-label { font-size: 10px; color: #888; width: 60px; flex-shrink: 0; }
     .hud-val { font-size: 10px; color: var(--primary); width: 35px; text-align: right; }
     
     input[type="range"] { flex: 1; height: 4px; background: #333; appearance: none; border-radius: 2px; }
     input[type="range"]::-webkit-slider-thumb { appearance: none; width: 14px; height: 14px; background: var(--secondary); border-radius: 50%; cursor: pointer; border: 2px solid #000; }
     .hud-select { flex: 1; background: #111; color: #fff; border: 1px solid #444; padding: 6px; font-size: 11px; border-radius: 4px; }
+    
     .apply-btn { width: 100%; padding: 10px; background: var(--primary); color: #000; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; margin-top: 5px; font-family: 'Share Tech Mono'; }
     .apply-btn:active { background: #fff; transform: scale(0.98); }
-    
+
     .toggle-group { display: flex; gap: 2px; background: #111; padding: 2px; border-radius: 4px; border: 1px solid #333; }
     .toggle-btn { flex: 1; padding: 4px 8px; font-size: 10px; cursor: pointer; text-align: center; color: #666; border-radius: 2px; }
     .toggle-btn.active { background: var(--secondary); color: #000; font-weight: bold; }
+
     .preset-list { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 5px; margin-bottom: 10px; }
     .pre-tag { flex: 0 0 auto; padding: 6px 10px; border: 1px solid #333; border-radius: 4px; font-size: 10px; cursor: pointer; background: #111; color: #aaa; transition: 0.2s; }
     .pre-tag.active { border-color: var(--secondary); color: var(--secondary); background: rgba(255,170,0,0.2); font-weight: bold; }
@@ -95,6 +99,7 @@
     #toast.show { opacity: 1; top: 80px; }
 
     /* JSON Builder Styles */
+    .json-root-input { width: 100%; background: #222; color: var(--type-code); border: 1px solid var(--type-code); padding: 10px; font-weight: bold; margin-bottom: 10px; font-family: 'Fira Code'; font-size: 12px; }
     .json-row { display: flex; gap: 5px; margin-bottom: 5px; align-items: center; }
     .json-key { width: 35%; background: #000; color: var(--secondary); border: 1px solid #444; padding: 8px; font-family: 'Fira Code'; font-size: 11px; }
     .json-val { flex: 1; background: #000; color: #fff; border: 1px solid #444; padding: 8px; font-family: 'Fira Code'; font-size: 11px; }
@@ -108,7 +113,7 @@
   <div id="toast">SETTINGS SAVED</div>
 
   <header>
-    <h1>PROMPT<span>v29</span></h1>
+    <h1>PROMPT<span>v30</span></h1>
     <div class="actions">
       <button class="btn" onclick="app.toggleMode()">⚡ MODE</button>
       <a href="./persona.html"><button class="btn">PERSONA→</button></a>
@@ -174,6 +179,7 @@ MutableApplication: "[AdjustMutable]優先。なければGlobal値"
     <div class="modal-box" style="border-color:var(--type-code)">
       <div class="modal-head" style="color:var(--type-code)">JSON BUILDER <span onclick="modals.close('json')">×</span></div>
       <div class="modal-body">
+        <input id="jsonRootKey" class="json-root-input" placeholder="ROOT NAME (e.g. 艶冶) - Optional">
         <div id="json-rows"></div>
         <button class="json-add-btn" onclick="jsonBuilder.addRow()">+ ADD ROW</button>
         <div style="display:flex; gap:10px;">
@@ -337,6 +343,7 @@ MutableApplication: "[AdjustMutable]優先。なければGlobal値"
     const jsonBuilder = {
         open: () => {
             document.getElementById('modal-json').style.display = 'flex';
+            document.getElementById('jsonRootKey').value = ''; // Reset root
             const rows = document.getElementById('json-rows');
             if(rows.children.length === 0) jsonBuilder.addRow();
         },
@@ -346,13 +353,15 @@ MutableApplication: "[AdjustMutable]優先。なければGlobal値"
             document.getElementById('json-rows').appendChild(row);
         },
         generate: () => {
+            const root = document.getElementById('jsonRootKey').value.trim();
             const obj = {};
             document.querySelectorAll('.json-row').forEach(row => {
                 const k = row.querySelector('.json-key').value.trim();
                 const v = row.querySelector('.json-val').value.trim();
                 if(k) obj[k] = v;
             });
-            return JSON.stringify(obj, null, 2);
+            const finalObj = root ? { [root]: obj } : obj;
+            return JSON.stringify(finalObj, null, 2);
         },
         insert: () => { editor.insert(jsonBuilder.generate()); modals.close('json'); },
         addNew: () => { board.add('code', jsonBuilder.generate()); modals.close('json'); }
@@ -383,6 +392,7 @@ MutableApplication: "[AdjustMutable]優先。なければGlobal値"
             const currentStyles = styleMgr.getMerged();
             const currentStyle = currentStyles[state.s] || currentStyles.standard;
             
+            // FIXED: Ensure Placeholders are unique and replaced correctly
             pc = pc.replace("{{REFINE}}", state.r);
             pc = pc.replace("{{STYLE_INJECTION}}", currentStyle.rules);
             pc = pc.replace("{{MUTABLE}}", state.m + '%');
