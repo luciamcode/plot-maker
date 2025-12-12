@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, interactive-widget=resizes-content">
-  <title>PROMPT STREAM // APPLY_BTN</title>
+  <title>PROMPT STREAM // CUSTOM_FIX</title>
   <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600&family=Share+Tech+Mono&family=Zen+Kaku+Gothic+New:wght@400;700&display=swap" rel="stylesheet">
   <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
@@ -63,8 +63,9 @@
     .toggle-btn.active { background: var(--secondary); color: #000; font-weight: bold; }
 
     .preset-list { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 5px; margin-bottom: 10px; }
-    .pre-tag { flex: 0 0 auto; padding: 6px 10px; border: 1px solid #333; border-radius: 4px; font-size: 10px; cursor: pointer; background: #111; color: #aaa; }
-    .pre-tag.active { border-color: var(--secondary); color: var(--secondary); background: rgba(255,170,0,0.2); }
+    .pre-tag { flex: 0 0 auto; padding: 6px 10px; border: 1px solid #333; border-radius: 4px; font-size: 10px; cursor: pointer; background: #111; color: #aaa; transition: 0.2s; }
+    /* Active Preset Style */
+    .pre-tag.active { border-color: var(--secondary); color: var(--secondary); background: rgba(255,170,0,0.2); font-weight: bold; }
     
     /* Stream & Cards */
     .stream-container { flex: 1; overflow-y: auto; padding: 15px 10px; position: relative; }
@@ -110,7 +111,7 @@
   <div id="toast">SETTINGS SAVED</div>
 
   <header>
-    <h1>PROMPT<span>v24</span></h1>
+    <h1>PROMPT<span>v25</span></h1>
     <div class="actions">
       <button class="btn" onclick="app.toggleMode()">⚡ MODE</button>
       <a href="./persona.html"><button class="btn">PERSONA→</button></a>
@@ -143,12 +144,12 @@
         <div class="hud-title">STYLE & TONE</div>
         <div class="hud-row">
             <div class="hud-label">STYLE</div>
-            <select id="global-style" class="hud-select" onchange="settings.saveState()"></select>
+            <select id="global-style" class="hud-select" onchange="settings.updateUI(true)"></select>
             <div class="hud-label" style="width:auto; margin-left:5px; cursor:pointer; color:var(--primary)" onclick="modals.open('style')">[+EDIT]</div>
         </div>
         <div class="hud-row">
             <div class="hud-label">REFINE</div>
-            <select id="global-refine" class="hud-select" onchange="settings.saveState()">
+            <select id="global-refine" class="hud-select" onchange="settings.updateUI(true)">
               <option value="low">low</option><option value="middle" selected>mid</option><option value="high">high</option>
             </select>
         </div>
@@ -158,12 +159,12 @@
         <div class="hud-title">PARAMETERS</div>
         <div class="hud-row">
             <div class="hud-label">MUTABLE</div>
-            <input type="range" id="global-mutable" min="0" max="200" step="10" oninput="settings.updateUI()">
+            <input type="range" id="global-mutable" min="0" max="200" step="10" oninput="settings.updateUI(true)">
             <div class="hud-val" id="disp-mutable">100%</div>
         </div>
         <div class="hud-row">
             <div class="hud-label">GENERATE</div>
-            <input type="range" id="global-generate" min="50" max="200" step="10" oninput="settings.updateUI()">
+            <input type="range" id="global-generate" min="50" max="200" step="10" oninput="settings.updateUI(true)">
             <div class="hud-val" id="disp-generate">100%</div>
         </div>
         <button class="apply-btn" onclick="settings.apply()">✔ APPLY SETTINGS</button>
@@ -231,13 +232,13 @@ MutableApplication: "[AdjustMutable]優先。なければGlobal値"
   <script>
     const CONFIG = {
       types: { speech: { l:'Dialogue', p:'「……」', r:2, c:'type-speech'}, char: { l:'Character', p:'[AI personality...]', r:6, c:'type-char'}, code: { l:'Logic', p:'if(flag){...}', r:3, c:'type-code'}, free: { l:'Narration', p:'...', r:3, c:'type-free'} },
-      defaults: { gemini: {m:100, g:100, r:'middle'}, claude: {m:80, g:110, r:'high'}, grok: {m:50, g:90, r:'middle'} },
+      defaults: { gemini: {m:100, g:100, r:'middle', model:'gemini'}, claude: {m:80, g:110, r:'high', model:'claude'}, grok: {m:50, g:90, r:'middle', model:'grok'} },
       baseStyles: {
         standard: { label: 'Standard', rules: 'NarrationStyle: seamless' },
         lucia: { label: 'Lucia (Poetic)', rules: `NarrationStyle: Lucia_Narration (Poetic/Fragmented)\nStyleRules: "短行と――（ダッシュ）を多用した『呼吸』のリズム。感情の断絶と余韻を重視。文体は『静かで熱い』。断片的な短文を積み重ね、湿度のある情景を描写"` }
       }
     };
-    let state = { m:100, g:100, r:'middle', s:'standard', exParam:true, exCtx:'none' };
+    let state = { m:100, g:100, r:'middle', s:'standard', model:'custom', exParam:true, exCtx:'none' };
     let lastFocused = null;
 
     const board = {
@@ -284,7 +285,7 @@ MutableApplication: "[AdjustMutable]優先。なければGlobal値"
 
     const settings = {
       init:()=>{
-        state = JSON.parse(localStorage.getItem('ps_state')||JSON.stringify({m:100,g:100,r:'middle',s:'standard',exParam:true,exCtx:'none'}));
+        state = JSON.parse(localStorage.getItem('ps_state')||JSON.stringify({m:100,g:100,r:'middle',s:'standard',model:'custom',exParam:true,exCtx:'none'}));
         settings.updateSelect(); settings.renderPresets(); settings.updateUI(); settings.renderExportUI();
       },
       updateSelect: () => {
@@ -293,13 +294,17 @@ MutableApplication: "[AdjustMutable]優先。なければGlobal値"
         Object.keys(styles).forEach(k => { const opt=document.createElement('option'); opt.value=k; opt.innerText=styles[k].label; styleSel.appendChild(opt); });
         styleSel.value = state.s || 'standard';
       },
-      updateUI:()=>{
-        if(event && event.target.id) {
+      updateUI:(fromUser=false)=>{
+        if(fromUser && event && event.target) {
+           // If triggered by user input, FORCE custom model mode
+           state.model = 'custom';
            state.m = document.getElementById('global-mutable').value;
            state.g = document.getElementById('global-generate').value;
            state.r = document.getElementById('global-refine').value;
            state.s = document.getElementById('global-style').value;
+           settings.renderPresets(); // Refresh active state
         } else {
+           // Programmatic update
            document.getElementById('global-mutable').value = state.m;
            document.getElementById('global-generate').value = state.g;
            document.getElementById('global-refine').value = state.r;
@@ -311,7 +316,7 @@ MutableApplication: "[AdjustMutable]優先。なければGlobal値"
       },
       // Manual Apply Button (Triggers toast)
       apply: () => {
-        settings.updateUI();
+        settings.updateUI(true); // Treat as user input
         app.toast("SETTINGS APPLIED");
       },
       setExport:(key, val)=>{ state[key==='param'?'exParam':'exCtx'] = val; settings.saveState(); settings.renderExportUI(); },
@@ -323,19 +328,27 @@ MutableApplication: "[AdjustMutable]優先。なければGlobal値"
       saveCustom:()=>{
         const name=document.getElementById('newPresetName').value; if(!name)return;
         const customs=JSON.parse(localStorage.getItem('ps_presets')||'{}');
-        customs[name]={m:state.m, g:state.g, r:state.r, s:state.s};
+        customs[name]={m:state.m, g:state.g, r:state.r, s:state.s, model:'custom'};
         localStorage.setItem('ps_presets',JSON.stringify(customs));
         document.getElementById('newPresetName').value=''; settings.renderPresets();
         app.toast(`PRESET SAVED: ${name}`);
       },
       delCustom:(name,e)=>{e.stopPropagation(); const c=JSON.parse(localStorage.getItem('ps_presets')); delete c[name]; localStorage.setItem('ps_presets',JSON.stringify(c)); settings.renderPresets();},
-      loadPreset:(conf)=>{state={...state, ...conf}; settings.updateUI(); app.toast("PRESET LOADED");},
+      loadPreset:(conf, name)=>{
+          // When loading a preset, we set state.model to that preset name
+          state = { ...state, ...conf, model: name }; 
+          settings.updateUI(); 
+          settings.renderPresets();
+          app.toast(`LOADED: ${name.toUpperCase()}`);
+      },
       renderPresets:()=>{
         const box=document.getElementById('preset-list-container'); box.innerHTML='';
         const render=(n,d,del=false)=>{
            const div=document.createElement('div'); div.className='pre-tag'; div.innerHTML=`${n.toUpperCase()}${del?`<span class="del" onclick="settings.delCustom('${n}',event)">×</span>`:''}`;
-           if(JSON.stringify(d).slice(1,-1) === JSON.stringify({m:state.m,g:state.g,r:state.r,s:state.s}).slice(1,-1)) div.classList.add('active'); // Highlight active
-           div.onclick=()=>settings.loadPreset(d); box.appendChild(div);
+           // Highlight logic: if current state model matches preset name
+           if(state.model === n) div.classList.add('active');
+           
+           div.onclick=()=>settings.loadPreset(d, n); box.appendChild(div);
         };
         Object.keys(CONFIG.defaults).forEach(k=>render(k,CONFIG.defaults[k]));
         const customs=JSON.parse(localStorage.getItem('ps_presets')||'{}');
@@ -397,6 +410,7 @@ MutableApplication: "[AdjustMutable]優先。なければGlobal値"
             const currentStyles = styleMgr.getMerged();
             const currentStyle = currentStyles[state.s] || currentStyles.standard;
             
+            // FIXED: Ensure Placeholders are unique and replaced correctly
             pc = pc.replace("{{REFINE}}", state.r);
             pc = pc.replace("{{STYLE_INJECTION}}", currentStyle.rules);
             pc = pc.replace("{{MUTABLE}}", state.m + '%');
