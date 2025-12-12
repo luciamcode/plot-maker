@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, interactive-widget=resizes-content">
-  <title>PROMPT STREAM // SEAMLESS</title>
+  <title>PROMPT STREAM // STEALTH</title>
   <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600&family=Share+Tech+Mono&family=Zen+Kaku+Gothic+New:wght@400;700&display=swap" rel="stylesheet">
   <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
@@ -117,7 +117,7 @@
   <div id="toast">SETTINGS SAVED</div>
 
   <header>
-    <h1>PROMPT<span>v31</span></h1>
+    <h1>PROMPT<span>v32</span></h1>
     <div class="actions">
       <button class="btn" onclick="app.toggleMode()">⚡ MODE</button>
       <a href="./persona.html"><button class="btn">PERSONA→</button></a>
@@ -133,9 +133,6 @@
     <div class="p-btn" onmousedown="editor.insert('[', ']')">[ ]<span>BRA</span></div>
     <div class="p-btn" onmousedown="editor.insert('\n---\n')">---<span>SEP</span></div>
     <div class="p-btn pb-ref" onclick="modals.open('ref')">Ref<span>MEMO</span></div>
-    
-    <div class="p-btn pb-code" onclick="jsonBuilder.open()">JSON<span>BUILD</span></div>
-
     <div class="p-btn pb-speech" onclick="board.add('speech')">Dialogue<span>会話</span></div>
     <div class="p-btn pb-char" onclick="board.add('char')">Character<span>人格</span></div>
     <div class="p-btn pb-code" onclick="board.add('code')">Code<span>ロジック</span></div>
@@ -168,17 +165,18 @@
   <div class="rapid-footer"><input type="text" id="rapidInput" class="rapid-input" placeholder="Rapid Fire..." onkeypress="if(event.key==='Enter') app.sendRapid()"><button class="rapid-send" onclick="app.sendRapid()">↑</button></div>
 
   <textarea id="basePrompt" style="display:none;">
+<system_instruction>
 [ParamControl]
 GlobalAdjustMutable: {{MUTABLE}}
 GlobalGenerateAmount: {{GENERATE}}
 Refinement: {{REFINE}}
 {{STYLE_INJECTION}}
 WildcardRule: "****は文脈に応じ補完"
-PlaceholderRule: "[****]等の指示は実行後、括弧と内部指示を最終出力から完全に除去（Seamless処理）"
-VariableHideRule: "[AdjustMutable]等の変数は内部処理用であり、出力しない"
+OutputFilter: "出力は物語の本文（テキスト）のみに限定せよ。JSON定義、制御タグ、[ParamControl]ブロック自体は『完全に不可視』とし、一切出力しないこと。"
 OutputRange: "@startpointから@endpointのみ"
 MutableApplication: "[AdjustMutable]優先。なければGlobal値"
 [/ParamControl]
+</system_instruction>
   </textarea>
 
   <div id="modal-json" class="modal">
@@ -264,7 +262,10 @@ MutableApplication: "[AdjustMutable]優先。なければGlobal値"
       toggleDashboard:()=>{document.getElementById('dashboard').classList.toggle('open');},
       clearBoard:()=>{if(confirm('Clear?')){document.getElementById('streamList').innerHTML='';storage.save();}},
       sendRapid:()=>{const el=document.getElementById('rapidInput'),v=el.value.trim();if(v){let t='free';if(v.match(/^[「『]/))t='speech';if(v.startsWith('['))t='code';board.add(t,v);el.value='';}},
-      toast:(msg)=>{const t=document.getElementById('toast'); t.innerText=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'), 2000);}
+      toast:(msg)=>{
+        const t=document.getElementById('toast'); t.innerText=msg; t.classList.add('show');
+        setTimeout(()=>t.classList.remove('show'), 2000);
+      }
     };
 
     const settings = {
