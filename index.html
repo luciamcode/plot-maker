@@ -3,12 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, interactive-widget=resizes-content">
-  <title>PROMPT STREAM // HUD_MASTER</title>
+  <title>PROMPT STREAM // APPLY_BTN</title>
   <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600&family=Share+Tech+Mono&family=Zen+Kaku+Gothic+New:wght@400;700&display=swap" rel="stylesheet">
   <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
   <style>
-    /* --- Base --- */
+    /* --- Variables & Base --- */
     :root {
       --bg: #050505; --panel-bg: #111518; --card-bg: #161a1e;
       --primary: #00f3ff; --secondary: #ffaa00; --accent: #ff0055;
@@ -48,22 +48,23 @@
     .hud-label { font-size: 10px; color: #888; width: 60px; flex-shrink: 0; }
     .hud-val { font-size: 10px; color: var(--primary); width: 35px; text-align: right; }
     
-    /* Inputs */
     input[type="range"] { flex: 1; height: 4px; background: #333; appearance: none; border-radius: 2px; }
     input[type="range"]::-webkit-slider-thumb { appearance: none; width: 14px; height: 14px; background: var(--secondary); border-radius: 50%; cursor: pointer; border: 2px solid #000; }
     
     .hud-select { flex: 1; background: #111; color: #fff; border: 1px solid #444; padding: 6px; font-size: 11px; border-radius: 4px; }
-    .hud-select:focus { border-color: var(--secondary); outline: none; }
+    
+    /* Apply Button */
+    .apply-btn { width: 100%; padding: 10px; background: var(--primary); color: #000; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; margin-top: 5px; font-family: 'Share Tech Mono'; }
+    .apply-btn:active { background: #fff; transform: scale(0.98); }
 
     /* Toggles */
     .toggle-group { display: flex; gap: 2px; background: #111; padding: 2px; border-radius: 4px; border: 1px solid #333; }
     .toggle-btn { flex: 1; padding: 4px 8px; font-size: 10px; cursor: pointer; text-align: center; color: #666; border-radius: 2px; }
     .toggle-btn.active { background: var(--secondary); color: #000; font-weight: bold; }
 
-    /* Presets */
-    .preset-list { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 5px; }
+    .preset-list { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 5px; margin-bottom: 10px; }
     .pre-tag { flex: 0 0 auto; padding: 6px 10px; border: 1px solid #333; border-radius: 4px; font-size: 10px; cursor: pointer; background: #111; color: #aaa; }
-    .pre-tag:hover { border-color: var(--secondary); color: var(--secondary); }
+    .pre-tag.active { border-color: var(--secondary); color: var(--secondary); background: rgba(255,170,0,0.2); }
     
     /* Stream & Cards */
     .stream-container { flex: 1; overflow-y: auto; padding: 15px 10px; position: relative; }
@@ -109,7 +110,7 @@
   <div id="toast">SETTINGS SAVED</div>
 
   <header>
-    <h1>PROMPT<span>v23</span></h1>
+    <h1>PROMPT<span>v24</span></h1>
     <div class="actions">
       <button class="btn" onclick="app.toggleMode()">⚡ MODE</button>
       <a href="./persona.html"><button class="btn">PERSONA→</button></a>
@@ -133,6 +134,11 @@
   </div>
 
   <div id="dashboard">
+    <div class="hud-section" style="border-color:#444">
+        <div class="hud-title" style="color:#888">PRESETS</div>
+        <div class="preset-list" id="preset-list-container"></div>
+    </div>
+
     <div class="hud-section">
         <div class="hud-title">STYLE & TONE</div>
         <div class="hud-row">
@@ -160,6 +166,7 @@
             <input type="range" id="global-generate" min="50" max="200" step="10" oninput="settings.updateUI()">
             <div class="hud-val" id="disp-generate">100%</div>
         </div>
+        <button class="apply-btn" onclick="settings.apply()">✔ APPLY SETTINGS</button>
     </div>
 
     <div class="hud-section">
@@ -183,7 +190,6 @@
 
     <div class="hud-section" style="border-color:#444">
         <div class="hud-title" style="color:#888">LIBRARY</div>
-        <div class="preset-list" id="preset-list-container"></div>
         <div class="hud-row">
             <input id="newPresetName" class="hud-select" placeholder="New Preset Name" style="flex:2">
             <button class="btn accent" onclick="settings.saveCustom()">SAVE</button>
@@ -244,7 +250,7 @@ MutableApplication: "[AdjustMutable]優先。なければGlobal値"
         const conf = CONFIG.types[type] || CONFIG.types.free;
         const div = document.createElement('div');
         div.className = `card ${conf.c}`; div.dataset.type = type; div.dataset.ctrls = JSON.stringify(ctrls);
-        div.innerHTML = `<div class="card-head"><div class="card-label" onclick="board.cycle(this)">${conf.l}</div><div class="card-tools"><div class="tool-btn" onclick="navigator.clipboard.writeText(this.closest('.card').querySelector('textarea').value)">❐</div><div class="tool-btn" onclick="board.clone(this)">＋</div><div class="tool-btn" style="color:var(--secondary);border-color:var(--secondary)" onclick="board.togSet(this)">⚙️</div><div class="tool-btn" onclick="board.del(this)">×</div><div class="drag-handle"></div></div></div><textarea rows="${conf.r}" placeholder="${conf.p}" oninput="board.sz(this)">${val}</textarea><div class="card-settings"><div class="hud-row"><div class="hud-label">Mutable</div><input type="range" min="0" max="200" step="10" value="${ctrls.m||state.m}" oninput="board.upd(this,'m')"><div class="hud-val v-m">${ctrls.m||'Def'}%</div></div><div class="hud-row"><div class="hud-label">Gen</div><input type="range" min="50" max="200" step="10" value="${ctrls.g||state.g}" oninput="board.upd(this,'g')"><div class="hud-val v-g">${ctrls.g||'Def'}%</div></div></div>`;
+        div.innerHTML = `<div class="card-head"><div class="card-label" onclick="board.cycle(this)">${conf.l}</div><div class="card-tools"><div class="tool-btn" onclick="navigator.clipboard.writeText(this.closest('.card').querySelector('textarea').value)">❐</div><div class="tool-btn" onclick="board.clone(this)">＋</div><div class="tool-btn" style="color:var(--secondary);border-color:var(--secondary)" onclick="board.togSet(this)">⚙️</div><div class="tool-btn" onclick="board.del(this)">×</div><div class="drag-handle"></div></div></div><textarea rows="${conf.r}" placeholder="${conf.p}" oninput="board.sz(this)">${val}</textarea><div class="card-settings"><div class="range-group"><label>Mutable <span class="v-m">${ctrls.m||'Def'}</span></label><input type="range" min="0" max="200" step="10" value="${ctrls.m||state.m}" oninput="board.upd(this,'m')"></div><div class="range-group"><label>Generate <span class="v-g">${ctrls.g||'Def'}</span></label><input type="range" min="50" max="200" step="10" value="${ctrls.g||state.g}" oninput="board.upd(this,'g')"></div></div>`;
         document.getElementById('streamList').appendChild(div);
         const ta=div.querySelector('textarea'); ta.addEventListener('focus',(e)=>lastFocused=e.target);
         board.sz(ta); div.scrollIntoView({behavior:'smooth',block:'end'}); storage.save();
@@ -303,6 +309,11 @@ MutableApplication: "[AdjustMutable]優先。なければGlobal値"
         document.getElementById('disp-generate').innerText = state.g + '%';
         settings.saveState();
       },
+      // Manual Apply Button (Triggers toast)
+      apply: () => {
+        settings.updateUI();
+        app.toast("SETTINGS APPLIED");
+      },
       setExport:(key, val)=>{ state[key==='param'?'exParam':'exCtx'] = val; settings.saveState(); settings.renderExportUI(); },
       renderExportUI:()=>{
         document.querySelectorAll('#tg-param .toggle-btn').forEach((b,i)=>b.classList.toggle('active', (i===0)==state.exParam));
@@ -323,6 +334,7 @@ MutableApplication: "[AdjustMutable]優先。なければGlobal値"
         const box=document.getElementById('preset-list-container'); box.innerHTML='';
         const render=(n,d,del=false)=>{
            const div=document.createElement('div'); div.className='pre-tag'; div.innerHTML=`${n.toUpperCase()}${del?`<span class="del" onclick="settings.delCustom('${n}',event)">×</span>`:''}`;
+           if(JSON.stringify(d).slice(1,-1) === JSON.stringify({m:state.m,g:state.g,r:state.r,s:state.s}).slice(1,-1)) div.classList.add('active'); // Highlight active
            div.onclick=()=>settings.loadPreset(d); box.appendChild(div);
         };
         Object.keys(CONFIG.defaults).forEach(k=>render(k,CONFIG.defaults[k]));
@@ -385,7 +397,6 @@ MutableApplication: "[AdjustMutable]優先。なければGlobal値"
             const currentStyles = styleMgr.getMerged();
             const currentStyle = currentStyles[state.s] || currentStyles.standard;
             
-            // FIXED: Ensure Placeholders are unique and replaced correctly
             pc = pc.replace("{{REFINE}}", state.r);
             pc = pc.replace("{{STYLE_INJECTION}}", currentStyle.rules);
             pc = pc.replace("{{MUTABLE}}", state.m + '%');
