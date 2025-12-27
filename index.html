@@ -3,114 +3,107 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, interactive-widget=resizes-content">
-  <title>PROMPT STREAM // GH_COMPATIBLE</title>
+  <title>PROMPT STREAM // FULL_COMPLETION</title>
   <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600&family=Share+Tech+Mono&family=Zen+Kaku+Gothic+New:wght@400;700&display=swap" rel="stylesheet">
   <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
   <style>
-    /* --- Variables & Base --- */
+    /* --- Base Variables --- */
     :root {
       --bg: #050505; --panel-bg: #111518; --card-bg: #161a1e;
       --primary: #00f3ff; --secondary: #ffaa00; --accent: #ff0055;
       --text: #cceeee; --dim: #668888; --border: #334444;
       --type-speech: #00f3ff; --type-char: #ff00cc; --type-code: #00ff99; --type-free: #668888;
-      --type-ref: #00ddee; --header-h: 50px; --footer-h: 60px;
+      --type-ref: #00ddee; --header-h: 50px; --footer-h: 65px;
     }
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
     body { font-family: 'Share Tech Mono', 'Zen Kaku Gothic New', monospace; background: var(--bg); color: var(--text); margin: 0; height: 100dvh; overflow: hidden; display: flex; flex-direction: column; }
 
-    /* UI Components */
-    header { height: var(--header-h); background: rgba(11,15,18,0.98); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 8px; z-index: 20; flex-shrink: 0; }
-    h1 { font-size: 16px; letter-spacing: 1px; margin: 0; }
-    .actions { display: flex; gap: 6px; }
-    .btn { background: transparent; border: 1px solid var(--border); color: var(--text); padding: 6px 8px; border-radius: 4px; cursor: pointer; font-size: 11px; font-family: inherit; }
-    .btn.active, .btn:active { background: var(--border); color: #fff; }
+    /* --- Header & Layout --- */
+    header { height: var(--header-h); background: rgba(11,15,18,0.98); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 8px; z-index: 100; flex-shrink: 0; }
+    h1 { font-size: 15px; letter-spacing: 1px; margin: 0; }
+    h1 span { font-size: 10px; opacity: 0.5; margin-left: 4px; }
+    .actions { display: flex; gap: 4px; }
+    .btn { background: transparent; border: 1px solid var(--border); color: var(--text); padding: 5px 7px; border-radius: 4px; cursor: pointer; font-size: 10px; font-family: inherit; text-decoration: none; display: inline-flex; align-items: center; }
+    .btn:active { background: var(--border); }
     .btn.primary { border-color: var(--primary); color: var(--primary); }
     .btn.accent { border-color: var(--secondary); color: var(--secondary); }
+    .btn.danger { border-color: var(--accent); color: var(--accent); }
+    .btn.char-list { border-color: var(--type-char); color: var(--type-char); }
 
     /* Palette */
-    .palette { background: var(--panel-bg); padding: 10px; border-bottom: 1px solid var(--border); display: flex; gap: 8px; overflow-x: auto; align-items: center; z-index: 15; flex-shrink: 0; }
-    .p-btn { flex: 0 0 auto; background: #000; border: 1px solid var(--border); border-left: 3px solid #555; color: var(--text); padding: 8px 10px; border-radius: 4px; cursor: pointer; min-width: 75px; display: flex; flex-direction: column; font-size: 12px; }
-    .p-btn span { font-size: 9px; opacity: 0.7; margin-top: 2px; }
-    .pb-speech { border-left-color: var(--type-speech); } .pb-char { border-left-color: var(--type-char); } .pb-code { border-left-color: var(--type-code); } .pb-snip { border-left-color: var(--secondary); border-style: dotted; } .pb-ref { border-left-color: var(--type-ref); border-style: double; }
+    .palette { background: var(--panel-bg); padding: 8px; border-bottom: 1px solid var(--border); display: flex; gap: 6px; overflow-x: auto; align-items: center; z-index: 80; flex-shrink: 0; }
+    .p-btn { flex: 0 0 auto; background: #000; border: 1px solid var(--border); border-left: 3px solid #555; color: var(--text); padding: 6px 8px; border-radius: 4px; cursor: pointer; min-width: 65px; display: flex; flex-direction: column; font-size: 11px; }
+    .p-btn span { font-size: 8px; opacity: 0.6; margin-top: 2px; }
+    .pb-speech { border-left-color: var(--type-speech); } .pb-char { border-left-color: var(--type-char); } .pb-code { border-left-color: var(--type-code); } .pb-snip { border-left-color: var(--secondary); } .pb-ref { border-left-color: var(--type-ref); }
 
     /* --- DASHBOARD --- */
-    #dashboard { background: #080a0c; border-bottom: 2px solid var(--secondary); padding: 15px; display: none; overflow-y: auto; max-height: 60vh; flex-shrink: 0; }
+    #dashboard { background: #080a0c; border-bottom: 2px solid var(--secondary); padding: 15px; display: none; overflow-y: auto; max-height: 60vh; z-index: 90; }
     #dashboard.open { display: block; }
     .hud-section { border: 1px solid #333; border-radius: 6px; padding: 10px; margin-bottom: 10px; position: relative; }
-    .hud-title { position: absolute; top: -8px; left: 10px; background: #080a0c; padding: 0 5px; font-size: 10px; color: var(--secondary); font-weight: bold; }
-    .hud-row { display: flex; gap: 10px; align-items: center; margin-bottom: 8px; }
-    .hud-label { font-size: 10px; color: #888; width: 60px; flex-shrink: 0; }
+    .hud-title { position: absolute; top: -8px; left: 10px; background: #080a0c; padding: 0 5px; font-size: 9px; color: var(--secondary); font-weight: bold; }
+    .hud-row { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; }
+    .hud-label { font-size: 10px; color: #888; width: 55px; }
     .hud-val { font-size: 10px; color: var(--primary); width: 35px; text-align: right; }
     input[type="range"] { flex: 1; height: 4px; background: #333; appearance: none; border-radius: 2px; }
-    input[type="range"]::-webkit-slider-thumb { appearance: none; width: 14px; height: 14px; background: var(--secondary); border-radius: 50%; cursor: pointer; border: 2px solid #000; }
-    .hud-select { flex: 1; background: #111; color: #fff; border: 1px solid #444; padding: 6px; font-size: 11px; border-radius: 4px; }
-    .apply-btn { width: 100%; padding: 10px; background: var(--primary); color: #000; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; margin-top: 5px; font-family: 'Share Tech Mono'; }
-    .toggle-group { display: flex; gap: 2px; background: #111; padding: 2px; border-radius: 4px; border: 1px solid #333; }
-    .toggle-btn { flex: 1; padding: 4px 8px; font-size: 10px; cursor: pointer; text-align: center; color: #666; border-radius: 2px; }
-    .toggle-btn.active { background: var(--secondary); color: #000; font-weight: bold; }
-    .preset-list { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 5px; margin-bottom: 10px; }
-    .pre-tag { flex: 0 0 auto; padding: 6px 10px; border: 1px solid #333; border-radius: 4px; font-size: 10px; cursor: pointer; background: #111; color: #aaa; transition: 0.2s; }
-    .pre-tag.active { border-color: var(--secondary); color: var(--secondary); background: rgba(255,170,0,0.2); font-weight: bold; }
-    
-    /* Stream & Cards */
+    input[type="range"]::-webkit-slider-thumb { appearance: none; width: 14px; height: 14px; background: var(--secondary); border-radius: 50%; border: 2px solid #000; }
+    .hud-select { flex: 1; background: #111; color: #fff; border: 1px solid #444; padding: 5px; font-size: 11px; border-radius: 4px; }
+    .apply-btn { width: 100%; padding: 10px; background: var(--primary); color: #000; border: none; border-radius: 4px; font-weight: bold; font-family: inherit; cursor: pointer; margin-bottom: 10px; }
+    .preset-list { display: flex; gap: 5px; overflow-x: auto; padding-bottom: 5px; margin-bottom: 10px; }
+    .pre-tag { flex: 0 0 auto; padding: 5px 8px; border: 1px solid #333; border-radius: 4px; font-size: 9px; cursor: pointer; background: #111; color: #aaa; }
+    .pre-tag.active { border-color: var(--secondary); color: var(--secondary); background: rgba(255,170,0,0.1); }
+
+    /* --- Stream Area --- */
     .stream-container { flex: 1; overflow-y: auto; padding: 15px 10px; position: relative; }
-    body.mode-rapid .stream-container { padding-bottom: 80px; }
-    .card { background: var(--card-bg); border: 1px solid var(--border); border-left: 3px solid var(--dim); border-radius: 4px; margin-bottom: 12px; display: flex; flex-direction: column; }
+    body.mode-rapid .stream-container { padding-bottom: 90px; } /* Ensures bottom cards are visible in rapid */
+
+    .card { background: var(--card-bg); border: 1px solid var(--border); border-left: 3px solid var(--dim); border-radius: 4px; margin-bottom: 12px; }
     .card-head { display: flex; justify-content: space-between; align-items: center; padding: 6px 10px; background: rgba(0,0,0,0.3); border-bottom: 1px solid rgba(255,255,255,0.05); }
-    .card-label { font-size: 10px; text-transform: uppercase; font-weight: bold; cursor: pointer; }
-    .card-tools { display: flex; gap: 8px; }
-    .tool-btn { width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; border: 1px solid #333; background: #000; color: #777; border-radius: 4px; cursor: pointer; font-size: 12px; }
-    .drag-handle { cursor: grab; color: var(--border); font-size: 18px; touch-action: none; } .drag-handle::after { content: '≡'; }
-    .card textarea { width: 100%; padding: 12px; background: transparent; border: none; color: var(--text); resize: none; font-family: 'Zen Kaku Gothic New', monospace; font-size: 15px; outline: none; min-height: 50px; display: block; }
-    .card-settings { padding: 10px; background: rgba(255, 170, 0, 0.1); border-top: 1px solid var(--border); display: none; }
-    .card-settings.active { display: block; }
+    .card-label { font-size: 10px; text-transform: uppercase; font-weight: bold; color: var(--dim); cursor: pointer; }
+    .card-tools { display: flex; gap: 6px; }
+    .tool-btn { width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; border: 1px solid #333; background: #000; color: #777; border-radius: 4px; font-size: 11px; cursor: pointer; }
+    .drag-handle { cursor: grab; color: #444; font-size: 16px; margin-left: 4px; } .drag-handle::after { content: '≡'; }
+    .card textarea { width: 100%; padding: 12px; background: transparent; border: none; color: var(--text); resize: none; font-family: inherit; font-size: 15px; outline: none; display: block; }
     
-    /* Modal & Robust Share Buttons */
+    .type-speech { border-left-color: var(--type-speech); } .type-speech .card-label { color: var(--type-speech); }
+    .type-char { border-left-color: var(--type-char); background: #1a0f15; } .type-char .card-label { color: var(--type-char); }
+    .type-code { border-left-color: var(--type-code); } .type-code .card-label { color: var(--type-code); } .type-code textarea { font-family: 'Fira Code', monospace; color: var(--type-code); font-size: 13px; }
+    .card-settings { padding: 10px; background: rgba(255, 170, 0, 0.05); border-top: 1px solid var(--border); display: none; }
+    .card-settings.active { display: block; }
+
+    /* --- Footer --- */
+    .rapid-footer { height: var(--footer-h); border-top: 1px solid var(--border); background: var(--panel-bg); padding: 0 10px; display: flex; align-items: center; gap: 8px; position: absolute; bottom: 0; width: 100%; transform: translateY(100%); transition: 0.3s; z-index: 100; }
+    body.mode-rapid .rapid-footer { transform: translateY(0); }
+    .rapid-input { flex: 1; background: #000; border: 1px solid #444; color: #fff; padding: 10px; border-radius: 20px; outline: none; font-size: 14px; }
+    .rapid-send { width: 42px; height: 42px; border-radius: 50%; background: var(--primary); border: none; font-weight: bold; cursor: pointer; flex-shrink: 0; }
+
+    /* --- Modals & Share --- */
     .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); backdrop-filter: blur(4px); z-index: 1000; display: none; align-items: center; justify-content: center; }
-    .modal-box { background: var(--panel-bg); border: 1px solid var(--border); width: 90%; max-width: 450px; max-height: 90vh; border-radius: 8px; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 0 30px rgba(0,0,0,0.8); }
+    .modal-box { background: var(--panel-bg); border: 1px solid var(--border); width: 92%; max-width: 450px; max-height: 85vh; border-radius: 8px; display: flex; flex-direction: column; overflow: hidden; }
     .modal-head { padding: 15px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; font-weight: bold; color: var(--primary); }
     .modal-body { padding: 15px; overflow-y: auto; }
+    .list-item { background: var(--card-bg); border: 1px solid var(--border); padding: 10px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; border-radius: 4px; }
     
-    .share-row { display: block; width: 100%; margin-bottom: 12px; }
-    .share-btn-real {
-        display: block;
-        width: 100%;
-        padding: 15px;
-        background: #1e1e26;
-        border: 1px solid #444;
-        border-radius: 8px;
-        color: #fff;
-        font-family: inherit;
-        font-size: 14px;
-        text-align: left;
-        cursor: pointer;
-        position: relative;
-    }
-    .share-btn-real:active { background: #333; transform: scale(0.98); }
-    .share-btn-real span { display: block; font-size: 10px; color: #888; margin-top: 4px; }
-    .share-btn-real b { color: var(--primary); }
-    .share-btn-real.img-mode { border-color: var(--type-char); }
-    .share-btn-real.img-mode b { color: var(--type-char); }
+    .share-row { display: block; width: 100%; margin-bottom: 10px; }
+    .share-btn-safe { display: block; width: 100%; padding: 15px; background: #1e1e26; border: 1px solid #444; border-radius: 8px; color: #fff; text-align: left; cursor: pointer; font-family: inherit; font-size: 14px; }
+    .share-btn-safe b { color: var(--primary); display: block; margin-bottom: 3px; }
+    .share-btn-safe span { font-size: 10px; color: #888; }
+    .share-btn-safe:active { background: #333; transform: scale(0.98); }
 
-    #novel-container { font-family: 'Shippori Mincho', serif; background: #fff; color: #000; padding: 40px; line-height: 1.8; font-size: 16px; white-space: pre-wrap; overflow-y: auto; height: 100%; border-radius: 4px; }
     #toast { position: fixed; top: 70px; left: 50%; transform: translateX(-50%); background: var(--secondary); color: #000; padding: 8px 16px; border-radius: 20px; font-size: 11px; font-weight: bold; opacity: 0; pointer-events: none; transition: 0.3s; z-index: 2000; }
     #toast.show { opacity: 1; top: 80px; }
-
-    /* JSON Builder Styles */
-    .json-root-input { width: 100%; background: #000; color: var(--type-code); border: 1px solid var(--type-code); padding: 10px; margin-bottom: 10px; font-family: 'Fira Code'; font-size: 12px; }
-    .json-row { display: flex; gap: 5px; margin-bottom: 5px; align-items: center; }
-    .json-key, .json-val { background: #000; color: #fff; border: 1px solid #444; padding: 8px; font-family: 'Fira Code'; font-size: 11px; }
   </style>
 </head>
 <body class="mode-rapid">
 
-  <div id="toast">SETTINGS SAVED</div>
+  <div id="toast">SYSTEM READY</div>
 
   <header>
-    <h1>PROMPT<span>v36</span></h1>
+    <h1>PROMPT<span>v38</span></h1>
     <div class="actions">
       <button class="btn" onclick="app.toggleMode()">⚡ MODE</button>
+      <a href="./persona.html" class="btn">👤 PERSONA</a>
+      <button class="btn char-list" onclick="modals.open('char')">CHARS</button>
       <button class="btn accent" onclick="app.toggleDashboard()">DATA</button>
       <button class="btn primary" onclick="modals.open('share')">SHARE</button>
     </div>
@@ -119,12 +112,13 @@
   <div class="palette">
     <div class="p-btn" onmousedown="editor.insert('****')">****<span>WILD</span></div>
     <div class="p-btn" onmousedown="editor.insert('[', ']')">[ ]<span>BRA</span></div>
+    <div class="p-btn" onmousedown="editor.insert('\n---\n')">---<span>SEP</span></div>
     <div class="p-btn pb-ref" onclick="modals.open('ref')">Ref<span>MEMO</span></div>
     <div class="p-btn pb-code" onclick="jsonBuilder.open()">JSON<span>BUILD</span></div>
-    <div class="p-btn pb-speech" onclick="board.add('speech')">Dial.</div>
-    <div class="p-btn pb-char" onclick="board.add('char')">Char.</div>
-    <div class="p-btn" onclick="board.add('free')">Text</div>
-    <div class="p-btn pb-snip" onclick="modals.open('snippet')">Snip</div>
+    <div class="p-btn pb-speech" onclick="board.add('speech')">Dial.<span>会話</span></div>
+    <div class="p-btn pb-char" onclick="board.add('char')">Char.<span>人格</span></div>
+    <div class="p-btn pb-snip" onclick="modals.open('snippet')">Snip<span>VBA</span></div>
+    <div class="p-btn pb-snip" onclick="modals.open('parts')">Parts<span>語彙</span></div>
   </div>
 
   <div id="dashboard">
@@ -141,17 +135,18 @@
         <button class="apply-btn" onclick="settings.apply()">✔ APPLY SETTINGS</button>
     </div>
     <div class="hud-section">
-        <div class="hud-title">EXPORT RULES</div>
-        <div class="hud-row">
-            <div class="hud-label">CONTEXT</div>
-            <div class="toggle-group" id="tg-ctx" style="flex:1"><div class="toggle-btn" onclick="settings.setExport('ctx', 'ignore')">NEW</div><div class="toggle-btn" onclick="settings.setExport('ctx', 'cont')">CONT</div><div class="toggle-btn active" onclick="settings.setExport('ctx', 'none')">NONE</div></div>
-        </div>
+        <div class="hud-title">LIBRARY</div>
+        <div class="hud-row"><input id="newPresetName" class="hud-select" placeholder="Preset Name"><button class="btn accent" style="padding:8px" onclick="settings.saveCustom()">SAVE</button><button class="btn" style="padding:8px" onclick="modals.open('projects')">PROJ</button></div>
     </div>
-    <div class="hud-section" style="border-color:#444"><div class="hud-title" style="color:#888">LIBRARY</div><div class="hud-row"><input id="newPresetName" class="hud-select" placeholder="Preset Name" style="flex:2"><button class="btn accent" onclick="settings.saveCustom()">SAVE</button><button class="btn" onclick="modals.open('projects')">PROJ</button></div></div>
+    <button class="btn danger" style="width:100%; padding:12px;" onclick="app.clearBoard()">CLR ALL BOARD</button>
   </div>
 
   <div class="stream-container"><div id="streamList"></div></div>
-  <div class="rapid-footer"><input type="text" id="rapidInput" class="rapid-input" placeholder="Rapid Fire..." onkeypress="if(event.key==='Enter') app.sendRapid()"><button class="rapid-send" onclick="app.sendRapid()">↑</button></div>
+
+  <div class="rapid-footer">
+    <input type="text" id="rapidInput" class="rapid-input" placeholder="Rapid Fire..." onkeypress="if(event.key==='Enter') app.sendRapid()">
+    <button class="rapid-send" onclick="app.sendRapid()">↑</button>
+  </div>
 
   <textarea id="basePrompt" style="display:none;">
 <system_instruction>
@@ -166,59 +161,16 @@ OutputFilter: "本文テキストのみ出力。タグや制御ブロックは�
 </system_instruction>
   </textarea>
 
-  <div id="modal-share" class="modal">
-    <div class="modal-box">
-      <div class="modal-head">SHARE OPTIONS <span onclick="modals.close('share')" style="cursor:pointer">×</span></div>
-      <div class="modal-body">
-        
-        <div class="share-row">
-          <button class="share-btn-real" onclick="sharing.systemShare()">
-            <b>📡 SYSTEM SHARE</b>
-            <span>ブラウザの共有メニューを開きます</span>
-          </button>
-        </div>
+  <div id="modal-share" class="modal"><div class="modal-box"><div class="modal-head">SHARE MENU <span onclick="modals.close('share')" style="cursor:pointer">×</span></div><div class="modal-body"><div class="share-row"><button class="share-btn-safe" onclick="sharing.systemShare()"><b>📡 SYSTEM SHARE</b><span>ブラウザの共有メニューを開く</span></button></div><div class="share-row"><button class="share-btn-safe" onclick="novel.open()"><b>📖 PREVIEW NOVEL</b><span>小説形式で閲覧・コピー</span></button></div><div style="height:1px; background:#333; margin:10px 0;"></div><div class="share-row"><button class="share-btn-safe" onclick="sharing.copyCode()"><b>🤖 COPY FOR AI</b><span>Markdown形式でコピー</span></button></div><div class="share-row"><button class="share-btn-safe" onclick="sharing.shareImage()" style="border-color:var(--type-char)"><b style="color:var(--type-char)">🖼️ SHARE IMAGE</b><span>画像として保存・共有</span></button></div><div class="share-row"><button class="share-btn-safe" onclick="sharing.download()"><b>💾 DOWNLOAD .TXT</b><span>テキストファイル保存</span></button></div></div></div></div>
 
-        <div class="share-row">
-          <button class="share-btn-real" onclick="novel.open()">
-            <b>📖 PREVIEW NOVEL</b>
-            <span>小説形式に整えて閲覧します</span>
-          </button>
-        </div>
-
-        <div style="height:1px; background:#333; margin:15px 0;"></div>
-
-        <div class="share-row">
-          <button class="share-btn-real" onclick="sharing.copyText()">
-            <b>📋 COPY TEXT</b>
-            <span>クリップボードにコピー</span>
-          </button>
-        </div>
-
-        <div class="share-row">
-          <button class="share-btn-real img-mode" onclick="sharing.shareImage()">
-            <b>🖼️ SHARE IMAGE</b>
-            <span>スクリーンショットを生成して共有</span>
-          </button>
-        </div>
-
-        <div class="share-row">
-          <button class="share-btn-real" onclick="sharing.download()">
-            <b>💾 DOWNLOAD .TXT</b>
-            <span>ファイルとして保存</span>
-          </button>
-        </div>
-
-      </div>
-    </div>
-  </div>
-
-  <div id="modal-json" class="modal"><div class="modal-box" style="border-color:var(--type-code)"><div class="modal-head" style="color:var(--type-code)">JSON BUILDER <span onclick="modals.close('json')">×</span></div><div class="modal-body"><input id="jsonRootKey" class="json-root-input" placeholder="ROOT NAME (Option)"><div id="json-rows"></div><button class="apply-btn" style="background:#222;color:#888;border:1px dashed #444" onclick="jsonBuilder.addRow()">+ ADD ROW</button><div style="display:flex; gap:10px; margin-top:15px;"><button class="btn accent" style="flex:1" onclick="jsonBuilder.insert()">INSERT</button><button class="btn primary" style="flex:1" onclick="jsonBuilder.addNew()">ADD CARD</button></div></div></div></div>
-  <div id="modal-style" class="modal"><div class="modal-box" style="border-color:var(--primary)"><div class="modal-head" style="color:var(--primary)">STYLE EDITOR <span onclick="modals.close('style')">×</span></div><div class="modal-body"><div id="list-style" style="margin-bottom:15px;"></div><div style="border-top:1px solid #333; padding-top:15px;"><input id="styleName" placeholder="Style Name" style="width:100%;margin-bottom:5px;background:#000;color:#fff;border:1px solid #444;padding:8px;"><textarea id="styleRules" placeholder="JSON Rules..." style="width:100%;height:80px;background:#000;color:#fff;border:1px solid #444;padding:8px;"></textarea><button class="btn primary" style="width:100%;margin-top:5px" onclick="styleMgr.add()">ADD STYLE</button></div></div></div></div>
-  <div id="modal-projects" class="modal"><div class="modal-box" style="border-color:var(--secondary)"><div class="modal-head" style="color:var(--secondary)">PROJECTS <span onclick="modals.close('projects')">×</span></div><div class="modal-body"><input id="projName" placeholder="Project Name" style="width:100%;padding:8px;margin-bottom:8px;background:#000;border:1px solid #444;color:#fff;"><button class="btn accent" style="width:100%;" onclick="projects.save()">SAVE BOARD</button><div id="projectList" style="margin-top:10px;"></div></div></div></div>
-  <div id="modal-novel" class="modal"><div class="modal-box" style="background:#eee; color:#000; width:95%; max-width:600px;"><div class="modal-head" style="border-color:#ccc; color:#000;">NOVEL PREVIEW <div style="display:flex; gap:5px;"><button class="btn" style="color:#000; border-color:#000;" onclick="novel.copy()">COPY</button><span onclick="modals.close('novel')" style="cursor:pointer; margin-left:10px; font-size:20px;">×</span></div></div><div class="modal-body" style="background:#fff; padding:0;"><div id="novel-container"></div></div></div></div>
-  <div id="modal-char" class="modal"><div class="modal-box"><div class="modal-head" style="color:var(--type-char)">CHARACTERS <span onclick="modals.close('char')">×</span></div><div class="modal-body" id="list-char"></div></div></div>
-  <div id="modal-snippet" class="modal"><div class="modal-box"><div class="modal-head" style="color:var(--type-code)">SNIPPETS <span onclick="modals.close('snippet')">×</span></div><div class="modal-body"><div id="list-snippet"></div><input id="snipName" placeholder="Name" style="width:100%;margin-top:10px;"><textarea id="snipContent" placeholder="Code..." style="width:100%;"></textarea><button class="btn" onclick="snippets.add()">ADD</button></div></div></div>
-  <div id="modal-ref" class="modal"><div class="modal-box" style="border-color:var(--type-ref)"><div class="modal-head" style="color:var(--type-ref)">REFERENCES <span onclick="modals.close('ref')">×</span></div><div class="modal-body"><div id="list-ref"></div><div style="border-top:1px solid #333; margin-top:10px; padding-top:10px;"><input id="refName" placeholder="Title" style="width:100%; margin-bottom:5px;"><textarea id="refContent" placeholder="Markdown content..." style="width:100%; height:80px;"></textarea><button class="btn" style="border-color:var(--type-ref); color:var(--type-ref)" onclick="refs.add()">ADD</button></div></div></div></div>
+  <div id="modal-style" class="modal"><div class="modal-box"><div class="modal-head">STYLE EDITOR <span onclick="modals.close('style')">×</span></div><div class="modal-body"><div id="list-style"></div><div style="border-top:1px solid #333; padding-top:10px; margin-top:10px;"><input id="styleName" placeholder="Name" style="width:100%;margin-bottom:5px;background:#000;color:#fff;border:1px solid #444;padding:8px;"><textarea id="styleRules" placeholder="Rules..." style="width:100%;height:80px;background:#000;color:#fff;border:1px solid #444;padding:8px;"></textarea><button class="btn primary" style="width:100%;margin-top:5px;" onclick="styleMgr.add()">ADD</button></div></div></div></div>
+  <div id="modal-json" class="modal"><div class="modal-box" style="border-color:var(--type-code)"><div class="modal-head">JSON BUILDER <span onclick="modals.close('json')">×</span></div><div class="modal-body"><input id="jsonRootKey" style="width:100%;background:#000;color:var(--type-code);border:1px solid var(--type-code);padding:8px;margin-bottom:10px;" placeholder="ROOT NAME"><div id="json-rows"></div><button class="btn" style="width:100%;margin:10px 0;" onclick="jsonBuilder.addRow()">+ ROW</button><div style="display:flex;gap:10px;"><button class="btn accent" style="flex:1" onclick="jsonBuilder.insert()">INSERT</button><button class="btn primary" style="flex:1" onclick="jsonBuilder.addNew()">ADD CARD</button></div></div></div></div>
+  <div id="modal-projects" class="modal"><div class="modal-box"><div class="modal-head">PROJECTS <span onclick="modals.close('projects')">×</span></div><div class="modal-body"><input id="projName" placeholder="Proj Name" style="width:100%;margin-bottom:10px;background:#000;color:#fff;border:1px solid #444;padding:8px;"><button class="btn accent" style="width:100%;" onclick="projects.save()">SAVE BOARD</button><div id="projectList" style="margin-top:10px;"></div></div></div></div>
+  <div id="modal-char" class="modal"><div class="modal-box"><div class="modal-head">CHARACTERS <span onclick="modals.close('char')">×</span></div><div class="modal-body" id="list-char"></div></div></div>
+  <div id="modal-snippet" class="modal"><div class="modal-box"><div class="modal-head">SNIPPETS <span onclick="modals.close('snippet')">×</span></div><div class="modal-body"><div id="list-snippet"></div><input id="snipName" placeholder="Name" style="width:100%;margin-top:10px;background:#000;color:#fff;border:1px solid #444;padding:8px;"><textarea id="snipContent" placeholder="Code..." style="width:100%;background:#000;color:#fff;border:1px solid #444;padding:8px;"></textarea><button class="btn" onclick="snippets.add()">ADD</button></div></div></div>
+  <div id="modal-parts" class="modal"><div class="modal-box"><div class="modal-head">INLINE PARTS <span onclick="modals.close('parts')">×</span></div><div class="modal-body"><div id="list-parts"></div><div style="display:flex;gap:5px;margin-top:10px;"><input id="partInput" placeholder="Word" style="flex:1;background:#000;color:#fff;border:1px solid #444;padding:8px;"><button class="btn" onclick="parts.add()">ADD</button></div></div></div></div>
+  <div id="modal-ref" class="modal"><div class="modal-box"><div class="modal-head">REFS <span onclick="modals.close('ref')">×</span></div><div class="modal-body"><div id="list-ref"></div><div style="margin-top:10px;border-top:1px solid #333;padding-top:10px;"><input id="refName" placeholder="Title" style="width:100%;margin-bottom:5px;background:#000;color:#fff;border:1px solid #444;padding:8px;"><textarea id="refContent" style="width:100%;height:60px;background:#000;color:#fff;border:1px solid #444;padding:8px;"></textarea><button class="btn" onclick="refs.add()">ADD</button></div></div></div></div>
+  <div id="modal-novel" class="modal"><div class="modal-box" style="background:#eee;color:#000;width:95%;"><div class="modal-head">PREVIEW <div style="display:flex;gap:4px;"><button class="btn" onclick="novel.toggleVertical()" style="color:#000;border-color:#000">TATE/YOKO</button><button class="btn" onclick="novel.copy()" style="color:#000;border-color:#000">COPY</button><span onclick="modals.close('novel')" style="cursor:pointer;color:#000">×</span></div></div><div class="modal-body" style="background:#fff;"><div id="novel-container"></div></div></div></div>
 
   <script>
     const CONFIG = {
@@ -229,7 +181,7 @@ OutputFilter: "本文テキストのみ出力。タグや制御ブロックは�
         lucia: { label: 'Lucia (Poetic)', rules: `{ "narration_style": { "line_break": "思考・衝動・観測の単位で改行。", "dash_usage": { "symbol": "――", "function": ["本音","衝動","感情暴露"] }, "tempo": { "base": "短文〜中文", "pause": "重要語で改行" } } }` }
       }
     };
-    let state = { m:100, g:100, r:'middle', s:'standard', model:'custom', exParam:true, exCtx:'none' };
+    let state = { m:100, g:100, r:'middle', s:'standard', model:'custom' };
     let lastFocused = null;
 
     const board = {
@@ -240,14 +192,13 @@ OutputFilter: "本文テキストのみ出力。タグや制御ブロックは�
       },
       add: function(type, val='', ctrls={m:null, g:null}) {
         const conf = CONFIG.types[type] || CONFIG.types.free;
-        const div = document.createElement('div');
-        div.className = `card ${conf.c}`; div.dataset.type = type; div.dataset.ctrls = JSON.stringify(ctrls);
-        div.innerHTML = `<div class="card-head"><div class="card-label" onclick="board.cycle(this)">${conf.l}</div><div class="card-tools"><div class="tool-btn" onclick="navigator.clipboard.writeText(this.closest('.card').querySelector('textarea').value)">❐</div><div class="tool-btn" onclick="board.clone(this)">＋</div><div class="tool-btn" style="color:var(--secondary);border-color:var(--secondary)" onclick="board.togSet(this)">⚙️</div><div class="tool-btn" onclick="board.del(this)">×</div><div class="drag-handle"></div></div></div><textarea rows="${conf.r}" placeholder="${conf.p}" oninput="board.sz(this)">${val}</textarea><div class="card-settings"><div class="hud-row"><div class="hud-label">Mutable</div><input type="range" min="0" max="200" step="10" value="${ctrls.m||state.m}" oninput="board.upd(this,'m')"><div class="hud-val v-m">${ctrls.m||'Def'}%</div></div><div class="hud-row"><div class="hud-label">Gen</div><input type="range" min="50" max="200" step="10" value="${ctrls.g||state.g}" oninput="board.upd(this,'g')"><div class="hud-val v-g">${ctrls.g||'Def'}%</div></div></div>`;
+        const div = document.createElement('div'); div.className = `card ${conf.c}`; div.dataset.type = type; div.dataset.ctrls = JSON.stringify(ctrls);
+        div.innerHTML = `<div class="card-head"><div class="card-label" onclick="board.cycle(this)">${conf.l}</div><div class="card-tools"><div class="tool-btn" onclick="navigator.clipboard.writeText(this.closest('.card').querySelector('textarea').value)">❐</div><div class="tool-btn" onclick="board.clone(this)">＋</div><div class="tool-btn" style="color:var(--secondary)" onclick="board.togSet(this)">⚙️</div><div class="tool-btn" onclick="board.del(this)">×</div><div class="drag-handle"></div></div></div><textarea rows="${conf.r}" placeholder="${conf.p}" oninput="board.sz(this)">${val}</textarea><div class="card-settings"><div class="hud-row"><div class="hud-label">Mutable</div><input type="range" min="0" max="200" step="10" value="${ctrls.m||state.m}" oninput="board.upd(this,'m')"><div class="hud-val v-m">${ctrls.m||'Def'}%</div></div><div class="hud-row"><div class="hud-label">Gen</div><input type="range" min="50" max="200" step="10" value="${ctrls.g||state.g}" oninput="board.upd(this,'g')"><div class="hud-val v-g">${ctrls.g||'Def'}%</div></div></div>`;
         document.getElementById('streamList').appendChild(div);
         const ta=div.querySelector('textarea'); ta.addEventListener('focus', function(e){ lastFocused=e.target; });
         board.sz(ta); div.scrollIntoView({behavior:'smooth',block:'end'}); storage.save();
       },
-      del: function(b){ if(confirm('Delete?')){ b.closest('.card').remove(); storage.save(); }},
+      del: function(b){ if(confirm('Delete Card?')){ b.closest('.card').remove(); storage.save(); }},
       clone: function(b){ const c=b.closest('.card'); board.add(c.dataset.type, c.querySelector('textarea').value); },
       sz: function(t){ t.style.height='auto'; t.style.height=t.scrollHeight+'px'; storage.save(); },
       togSet: function(b){ b.closest('.card').querySelector('.card-settings').classList.toggle('active'); },
@@ -255,62 +206,44 @@ OutputFilter: "本文テキストのみ出力。タグや制御ブロックは�
       cycle: function(el){
         const c=el.closest('.card'); const keys=Object.keys(CONFIG.types);
         const nxt=keys[(keys.indexOf(c.dataset.type)+1)%4]; const conf=CONFIG.types[nxt];
-        c.className=`card ${conf.c}`; c.dataset.type=nxt; el.innerText=conf.l;
-        storage.save();
+        c.className=`card ${conf.c}`; c.dataset.type=nxt; el.innerText=conf.l; storage.save();
       }
     };
 
     const app = {
       toggleMode: function(){ document.body.classList.toggle('mode-rapid'); },
       toggleDashboard: function(){ document.getElementById('dashboard').classList.toggle('open'); },
+      clearBoard: function(){ if(confirm('Clear All Board?')){ document.getElementById('streamList').innerHTML=''; storage.save(); }},
       sendRapid: function(){ const el=document.getElementById('rapidInput'),v=el.value.trim(); if(v){ let t='free'; if(v.match(/^[「『]/)) t='speech'; board.add(t,v); el.value=''; }},
       toast: function(msg){ const t=document.getElementById('toast'); t.innerText=msg; t.classList.add('show'); setTimeout(function(){ t.classList.remove('show'); }, 2000); }
     };
 
     const settings = {
       init: function(){
-        state = JSON.parse(localStorage.getItem('ps_state')||JSON.stringify({m:100,g:100,r:'middle',s:'standard',model:'custom',exParam:true,exCtx:'none'}));
-        settings.updateSelect(); settings.renderPresets(); settings.updateUI(); settings.renderExportUI();
+        state = JSON.parse(localStorage.getItem('ps_state')||JSON.stringify({m:100,g:100,r:'middle',s:'standard',model:'custom'}));
+        settings.updateSelect(); settings.renderPresets(); settings.updateUI();
       },
       updateSelect: function() {
-        const styleSel = document.getElementById('global-style'); const styles = styleMgr.getMerged();
-        styleSel.innerHTML = '';
+        const styleSel = document.getElementById('global-style'); const styles = styleMgr.getMerged(); styleSel.innerHTML = '';
         Object.keys(styles).forEach(function(k){ const opt=document.createElement('option'); opt.value=k; opt.innerText=styles[k].label; styleSel.appendChild(opt); });
         styleSel.value = state.s || 'standard';
       },
       updateUI: function(fromUser=false){
-        if(fromUser){
-           state.model = 'custom';
-           state.m = document.getElementById('global-mutable').value;
-           state.g = document.getElementById('global-generate').value;
-           state.r = document.getElementById('global-refine').value;
-           state.s = document.getElementById('global-style').value;
-           settings.renderPresets();
-        } else {
-           document.getElementById('global-mutable').value = state.m;
-           document.getElementById('global-generate').value = state.g;
-           document.getElementById('global-refine').value = state.r;
-           document.getElementById('global-style').value = state.s || 'standard';
-        }
-        document.getElementById('disp-mutable').innerText = state.m + '%';
-        document.getElementById('disp-generate').innerText = state.g + '%';
+        if(fromUser){ state.model = 'custom'; state.m = document.getElementById('global-mutable').value; state.g = document.getElementById('global-generate').value; state.r = document.getElementById('global-refine').value; state.s = document.getElementById('global-style').value; settings.renderPresets(); }
+        else { document.getElementById('global-mutable').value = state.m; document.getElementById('global-generate').value = state.g; document.getElementById('global-refine').value = state.r; document.getElementById('global-style').value = state.s; }
+        document.getElementById('disp-mutable').innerText = state.m + '%'; document.getElementById('disp-generate').innerText = state.g + '%';
         settings.saveState();
       },
       apply: function(){ settings.updateUI(true); app.toast("SETTINGS APPLIED"); },
-      setExport: function(key, val){ state[key==='param'?'exParam':'exCtx'] = val; settings.saveState(); settings.renderExportUI(); },
-      renderExportUI: function(){
-        document.querySelectorAll('#tg-ctx .toggle-btn').forEach(function(b){ b.classList.toggle('active', b.innerText.toLowerCase().startsWith(state.exCtx.substring(0,3))); });
-      },
       saveState: function(){ localStorage.setItem('ps_state', JSON.stringify(state)); },
       saveCustom: function(){
         const name=document.getElementById('newPresetName').value; if(!name) return;
         const customs=JSON.parse(localStorage.getItem('ps_presets')||'{}');
         customs[name]={m:state.m, g:state.g, r:state.r, s:state.s, model:'custom'};
         localStorage.setItem('ps_presets',JSON.stringify(customs));
-        document.getElementById('newPresetName').value=''; settings.renderPresets();
-        app.toast("PRESET SAVED");
+        document.getElementById('newPresetName').value=''; settings.renderPresets(); app.toast("PRESET SAVED");
       },
-      delCustom:function(n,e){e.stopPropagation(); const c=JSON.parse(localStorage.getItem('ps_presets')); delete c[n]; localStorage.setItem('ps_presets',JSON.stringify(c)); settings.renderPresets();},
+      delCustom:function(n,e){e.stopPropagation(); if(confirm('Del Preset?')){ const c=JSON.parse(localStorage.getItem('ps_presets')); delete c[n]; localStorage.setItem('ps_presets',JSON.stringify(c)); settings.renderPresets(); }},
       loadPreset: function(conf, name){ state = { ...state, ...conf, model: name }; settings.updateUI(); settings.renderPresets(); app.toast(`LOADED: ${name.toUpperCase()}`); },
       renderPresets: function(){
         const box=document.getElementById('preset-list-container'); box.innerHTML='';
@@ -327,38 +260,15 @@ OutputFilter: "本文テキストのみ出力。タグや制御ブロックは�
 
     const sharing = {
       buildText: function(){
-        let txt = ""; if(state.exCtx === 'ignore') txt += "Ignore previous context:\n\n"; if(state.exCtx === 'cont') txt += "Continue context:\n\n";
-        if(state.exParam) {
-            let pc = document.getElementById('basePrompt').value; const styles = styleMgr.getMerged(); const s = styles[state.s] || styles.standard;
-            pc = pc.replace("{{REFINE}}", state.r).replace("{{STYLE_INJECTION}}", s.rules).replace("{{MUTABLE}}", state.m+'%').replace("{{GENERATE}}", state.g+'%');
-            txt += pc + '\n';
-        }
+        let txt = ""; let pc = document.getElementById('basePrompt').value; const styles = styleMgr.getMerged(); const s = styles[state.s] || styles.standard;
+        pc = pc.replace("{{REFINE}}", state.r).replace("{{STYLE_INJECTION}}", s.rules).replace("{{MUTABLE}}", state.m+'%').replace("{{GENERATE}}", state.g+'%');
+        txt += pc + '\n';
         document.querySelectorAll('#streamList .card textarea').forEach(function(ta){ txt += ta.value + '\n'; });
         return txt;
       },
-      systemShare: function() {
-        const t = this.buildText();
-        if (navigator.share) {
-          navigator.share({ text: t }).catch(function(){ sharing.copyText(); });
-        } else {
-          this.copyText();
-        }
-        modals.close('share');
-      },
-      copyText: function(){
-        const t = this.buildText();
-        if (navigator.clipboard) {
-          navigator.clipboard.writeText(t).then(function(){ app.toast('COPIED'); });
-        } else {
-          const ta = document.createElement("textarea"); ta.value = t; document.body.appendChild(ta); ta.select(); document.execCommand("copy"); document.body.removeChild(ta); app.toast('COPIED');
-        }
-        modals.close('share');
-      },
-      copyCode: function(){ 
-          const t = "```markdown\n" + this.buildText() + "\n```";
-          navigator.clipboard.writeText(t).then(function(){ app.toast('COPIED CODE'); });
-          modals.close('share');
-      },
+      systemShare: function() { const t=this.buildText(); if(navigator.share){ navigator.share({text:t}).catch(function(){ sharing.copyText(); }); } else { this.copyText(); } modals.close('share'); },
+      copyText: function(){ const t=this.buildText(); navigator.clipboard.writeText(t).then(function(){ app.toast('COPIED'); }); modals.close('share'); },
+      copyCode: function(){ const t="```markdown\n"+this.buildText()+"\n```"; navigator.clipboard.writeText(t).then(function(){ app.toast('COPIED CODE'); }); modals.close('share'); },
       download: function(){ const b=new Blob([this.buildText()],{type:'text/plain'}); const a=document.createElement('a'); a.href=URL.createObjectURL(b); a.download='P.txt'; a.click(); },
       shareImage: async function() {
         const stream = document.getElementById('streamList'); if(!stream.children.length) return;
@@ -376,8 +286,7 @@ OutputFilter: "本文テキストのみ出力。タグや制御ブロックは�
                 if(navigator.canShare && navigator.canShare({files:[file]})) await navigator.share({files:[file]});
                 else { const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='prompt.png'; a.click(); }
             });
-        } catch(e){ alert("Image Error"); } finally { document.body.removeChild(clone); }
-        modals.close('share');
+        } catch(e){ alert("Image Error"); } finally { document.body.removeChild(clone); } modals.close('share');
       }
     };
 
@@ -385,9 +294,8 @@ OutputFilter: "本文テキストのみ出力。タグや制御ブロックは�
         db: function(){ return JSON.parse(localStorage.getItem('ps_styles') || '{}'); },
         save: function(d){ localStorage.setItem('ps_styles', JSON.stringify(d)); },
         add: function(){
-            const name = document.getElementById('styleName').value; const rules = document.getElementById('styleRules').value;
-            if(!name || !rules) return;
-            const d = styleMgr.db(); d[name] = { label: name, rules: rules }; styleMgr.save(d);
+            const name=document.getElementById('styleName').value, rules=document.getElementById('styleRules').value; if(!name || !rules) return;
+            const d=styleMgr.db(); d[name]={label:name, rules:rules}; styleMgr.save(d);
             document.getElementById('styleName').value = ''; document.getElementById('styleRules').value = '';
             subMgr.render('style'); settings.updateSelect(); app.toast("STYLE ADDED");
         },
@@ -395,14 +303,12 @@ OutputFilter: "本文テキストのみ出力。タグや制御ブロックは�
         getMerged: function(){ return { ...CONFIG.baseStyles, ...styleMgr.db() }; }
     };
 
-    const editor = { insert: function(t,e){ if(!lastFocused) { alert('Select Textbox'); return; } const f=lastFocused,s=f.selectionStart,en=f.selectionEnd,v=f.value; f.value=v.substring(0,s)+(e?t+v.substring(s,en)+e:t)+v.substring(en); f.dispatchEvent(new Event('input')); f.focus();} };
-    
     const jsonBuilder = {
         open: function(){ document.getElementById('modal-json').style.display='flex'; document.getElementById('json-rows').innerHTML=''; jsonBuilder.addRow(); },
-        addRow: function(){ const row=document.createElement('div'); row.className='json-row'; row.innerHTML=`<input class="json-key" style="flex:1" placeholder="Key">:<input class="json-val" style="flex:2" placeholder="Value"><span onclick="this.parentElement.remove()" style="color:red;padding:5px">×</span>`; document.getElementById('json-rows').appendChild(row); },
+        addRow: function(){ const row=document.createElement('div'); row.className='json-row'; row.innerHTML=`<input class="json-key" style="flex:1;background:#000;color:orange;border:1px solid #444;padding:8px" placeholder="Key">:<input class="json-val" style="flex:2;background:#000;color:#fff;border:1px solid #444;padding:8px" placeholder="Value"><span onclick="this.parentElement.remove()" style="color:red;padding:5px">×</span>`; document.getElementById('json-rows').appendChild(row); },
         generate: function(){
-            const root = document.getElementById('jsonRootKey').value.trim(); const obj = {};
-            document.querySelectorAll('.json-row').forEach(function(row){ const k=row.querySelector('.json-key').value.trim(),v=row.querySelector('.json-val').value.trim(); if(k) obj[k]=v; });
+            const root=document.getElementById('jsonRootKey').value.trim(), obj={};
+            document.querySelectorAll('.json-row').forEach(function(row){ const k=row.querySelector('.json-key').value.trim(), v=row.querySelector('.json-val').value.trim(); if(k) obj[k]=v; });
             return JSON.stringify(root?{[root]:obj}:obj, null, 2);
         },
         insert: function(){ editor.insert(jsonBuilder.generate()); modals.close('json'); },
@@ -417,27 +323,42 @@ OutputFilter: "本文テキストのみ出力。タグや制御ブロックは�
                 if (!text || type === 'code' || type === 'char') return;
                 if (type === 'speech') { if (!text.startsWith('「')) text = '「' + text; if (!text.endsWith('」')) text = text + '」'; html += `<p>${text}</p>`; } else { html += `<p>　${text}</p>`; }
             });
-            container.innerHTML = html || "<p>No content...</p>"; document.getElementById('modal-novel').style.display = 'flex'; modals.close('share');
+            container.innerHTML = html || "<p>Empty</p>"; document.getElementById('modal-novel').style.display = 'flex'; modals.close('share');
         },
-        copy: function(){ navigator.clipboard.writeText(document.getElementById('novel-container').innerText); app.toast("NOVEL COPIED"); }
+        copy: function(){ navigator.clipboard.writeText(document.getElementById('novel-container').innerText); app.toast("COPIED"); },
+        toggleVertical: function(){ const n=document.getElementById('novel-container'); n.style.writingMode = (n.style.writingMode === 'vertical-rl') ? 'horizontal-tb' : 'vertical-rl'; }
     };
 
-    const modals={open:function(id){document.getElementById(`modal-${id}`).style.display='flex'; if(id==='projects')projects.render(); if(['char','snippet','ref','style'].includes(id))subMgr.render(id);}, close:function(id){document.getElementById(`modal-${id}`).style.display='none';}};
-    const subMgr={
-      db: function(k){ return JSON.parse(localStorage.getItem(k) || (['ps_refs'].includes(k)?'[]':'{}')); },
-      render: function(t){
-        const l=document.getElementById(`list-${t}`); l.innerHTML=''; 
-        let k = t==='style'?'ps_styles':t==='char'?'promptChars':'promptSnippets';
-        const d=subMgr.db(k);
-        Object.keys(d).forEach(function(key){
-          l.innerHTML += `<div class="list-item"><span>${d[key].label||key}</span><button class="btn" onclick="subMgr.insert('${t}','${key}')">ADD</button></div>`;
-        });
-      },
-      insert: function(type, key){ const db=subMgr.db(type==='char'?'promptChars':'promptSnippets'); board.add(type==='char'?'char':'code', db[key].text||db[key]); modals.close(type); }
+    const editor = { insert: function(t,e){ if(!lastFocused) { alert('Focus a textbox'); return; } const f=lastFocused,s=f.selectionStart,en=f.selectionEnd,v=f.value; f.value=v.substring(0,s)+(e?t+v.substring(s,en)+e:t)+v.substring(en); f.dispatchEvent(new Event('input')); f.focus();} };
+    
+    const modals = {
+        open: function(id){ document.getElementById(`modal-${id}`).style.display='flex'; if(id==='projects') projects.render(); if(['char','snippet','parts','ref','style'].includes(id)) subMgr.render(id); },
+        close: function(id){ document.getElementById(`modal-${id}`).style.display='none'; }
     };
+
+    const subMgr = {
+        db: function(k){ return JSON.parse(localStorage.getItem(k) || (['ps_parts','ps_refs'].includes(k)?'[]':'{}')); },
+        save: function(k, d){ localStorage.setItem(k, JSON.stringify(d)); },
+        render: function(t){
+            const l=document.getElementById(`list-${t}`); l.innerHTML=''; 
+            let k=t==='parts'?'ps_parts':t==='ref'?'ps_refs':t==='style'?'ps_styles':t==='char'?'promptChars':'promptSnippets';
+            const d=subMgr.db(k);
+            if(Array.isArray(d)){
+                d.forEach((v,i)=>{ l.innerHTML+=`<div class="list-item"><span>${v.n||v}</span><button class="btn" onclick="subMgr.insertVal('${t}',${i})">ADD</button></div>`; });
+            } else {
+                Object.keys(d).forEach(key=>{ l.innerHTML+=`<div class="list-item"><span>${d[key].label||key}</span><button class="btn" onclick="subMgr.insertKey('${t}','${key}')">ADD</button></div>`; });
+            }
+        },
+        insertVal: function(t, i){ const d=subMgr.db(t==='parts'?'ps_parts':'ps_refs'); const v=d[i]; editor.insert(v.c||v); modals.close(t); },
+        insertKey: function(t, k){ const db=subMgr.db(t==='char'?'promptChars':'promptSnippets'); const val=db[k].text||db[k]; board.add(t==='char'?'char':'code', val); modals.close(t); }
+    };
+
+    const snippets={ add: function(){ const n=document.getElementById('snipName').value, c=document.getElementById('snipContent').value; if(n&&c){ const d=subMgr.db('promptSnippets'); d[n]=c; subMgr.save('promptSnippets',d); subMgr.render('snippet'); }} };
+    const parts={ add: function(){ const v=document.getElementById('partInput').value; if(v){ const d=subMgr.db('ps_parts'); d.push(v); subMgr.save('ps_parts',d); subMgr.render('parts'); document.getElementById('partInput').value=''; }} };
+    const refs={ add: function(){ const n=document.getElementById('refName').value, c=document.getElementById('refContent').value; if(n&&c){ const d=subMgr.db('ps_refs'); d.push({n,c}); subMgr.save('ps_refs',d); subMgr.render('ref'); document.getElementById('refName').value=''; document.getElementById('refContent').value=''; }} };
 
     const projects={
-        save: function(){ const n=document.getElementById('projName').value; if(!n) return; const d=[]; document.querySelectorAll('#streamList .card').forEach(function(c){ d.push({type:c.dataset.type, text:c.querySelector('textarea').value, ctrls:JSON.parse(c.dataset.ctrls)}); }); const db=JSON.parse(localStorage.getItem('ps_projects')||'{}'); db[n]=d; localStorage.setItem('ps_projects',JSON.stringify(db)); projects.render(); app.toast('SAVED'); },
+        save: function(){ const n=document.getElementById('projName').value; if(!n) return; const d=[]; document.querySelectorAll('#streamList .card').forEach(function(c){ d.push({type:c.dataset.type, text:c.querySelector('textarea').value, ctrls:JSON.parse(c.dataset.ctrls)}); }); const db=JSON.parse(localStorage.getItem('ps_projects')||'{}'); db[n]=d; localStorage.setItem('ps_projects',JSON.stringify(db)); projects.render(); app.toast('PROJECT SAVED'); },
         render: function(){ const l=document.getElementById('projectList'), db=JSON.parse(localStorage.getItem('ps_projects')||'{}'); l.innerHTML=''; Object.keys(db).forEach(function(n){ l.innerHTML+=`<div class="list-item"><span>${n}</span><button class="btn" onclick="projects.load('${n}')">LOAD</button></div>`; }); },
         load: function(n){ const db=JSON.parse(localStorage.getItem('ps_projects')); document.getElementById('streamList').innerHTML=''; db[n].forEach(function(i){ board.add(i.type,i.text,i.ctrls); }); modals.close('projects'); }
     };
