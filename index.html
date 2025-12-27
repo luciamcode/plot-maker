@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, interactive-widget=resizes-content">
-  <title>PROMPT STREAM // LUCIA_V2</title>
+  <title>PROMPT STREAM // RECOVER</title>
   <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600&family=Share+Tech+Mono&family=Zen+Kaku+Gothic+New:wght@400;700&display=swap" rel="stylesheet">
   <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
@@ -41,27 +41,20 @@
     
     .hud-section { border: 1px solid #333; border-radius: 6px; padding: 10px; margin-bottom: 10px; position: relative; }
     .hud-title { position: absolute; top: -8px; left: 10px; background: #080a0c; padding: 0 5px; font-size: 10px; color: var(--secondary); font-weight: bold; }
-    
     .hud-row { display: flex; gap: 10px; align-items: center; margin-bottom: 8px; }
     .hud-row:last-child { margin-bottom: 0; }
-    
     .hud-label { font-size: 10px; color: #888; width: 60px; flex-shrink: 0; }
     .hud-val { font-size: 10px; color: var(--primary); width: 35px; text-align: right; }
     
     input[type="range"] { flex: 1; height: 4px; background: #333; appearance: none; border-radius: 2px; }
     input[type="range"]::-webkit-slider-thumb { appearance: none; width: 14px; height: 14px; background: var(--secondary); border-radius: 50%; cursor: pointer; border: 2px solid #000; }
-    
     .hud-select { flex: 1; background: #111; color: #fff; border: 1px solid #444; padding: 6px; font-size: 11px; border-radius: 4px; }
-    
-    /* Apply Button */
     .apply-btn { width: 100%; padding: 10px; background: var(--primary); color: #000; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; margin-top: 5px; font-family: 'Share Tech Mono'; }
     .apply-btn:active { background: #fff; transform: scale(0.98); }
-
-    /* Toggles */
+    
     .toggle-group { display: flex; gap: 2px; background: #111; padding: 2px; border-radius: 4px; border: 1px solid #333; }
     .toggle-btn { flex: 1; padding: 4px 8px; font-size: 10px; cursor: pointer; text-align: center; color: #666; border-radius: 2px; }
     .toggle-btn.active { background: var(--secondary); color: #000; font-weight: bold; }
-
     .preset-list { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 5px; margin-bottom: 10px; }
     .pre-tag { flex: 0 0 auto; padding: 6px 10px; border: 1px solid #333; border-radius: 4px; font-size: 10px; cursor: pointer; background: #111; color: #aaa; transition: 0.2s; }
     .pre-tag.active { border-color: var(--secondary); color: var(--secondary); background: rgba(255,170,0,0.2); font-weight: bold; }
@@ -93,10 +86,31 @@
     .modal-box { background: var(--panel-bg); border: 1px solid var(--border); width: 90%; max-width: 450px; max-height: 85vh; border-radius: 8px; display: flex; flex-direction: column; box-shadow: 0 0 30px rgba(0,0,0,0.5); }
     .modal-head { padding: 15px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; font-weight: bold; }
     .modal-body { padding: 15px; overflow-y: auto; }
+    
     .list-item { background: var(--card-bg); border: 1px solid var(--border); padding: 10px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; border-radius: 4px; }
     .tag { font-size: 10px; background: #333; padding: 2px 5px; border-radius: 3px; color: #aaa; margin-right: 5px; display:inline-block; margin-bottom:4px; cursor:pointer;}
-    .share-btn { width: 100%; padding: 15px; margin-bottom: 10px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; background: #1e1e24; border: 1px solid var(--border); color: var(--text); cursor: pointer; }
-    .share-btn:active { background: #333; transform: scale(0.98); } .share-btn.primary { border-color: var(--primary); color: var(--primary); font-weight: bold; } .share-btn.img { border-color: var(--type-char); color: var(--type-char); } .share-desc { font-size: 10px; opacity: 0.6; }
+    
+    /* Fixed Share Button Styles */
+    .share-btn {
+        width: 100%;
+        padding: 15px;
+        margin-bottom: 10px;
+        border-radius: 8px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: #25252e; /* Slightly lighter for visibility */
+        border: 1px solid var(--border);
+        color: var(--text);
+        cursor: pointer;
+        transition: 0.2s;
+    }
+    .share-btn:active { background: #333; transform: scale(0.98); }
+    .share-btn:hover { border-color: var(--text); }
+    .share-btn.primary { border-color: var(--primary); color: var(--primary); font-weight: bold; }
+    .share-btn.img { border-color: var(--type-char); color: var(--type-char); }
+    .share-desc { font-size: 10px; opacity: 0.6; }
+
     #novel-container { font-family: 'Shippori Mincho', serif; background: #fff; color: #000; padding: 40px; line-height: 1.8; font-size: 16px; white-space: pre-wrap; overflow-y: auto; height: 100%; border-radius: 4px; }
     #novel-container.vertical { writing-mode: vertical-rl; text-orientation: upright; overflow-x: auto; overflow-y: hidden; height: 60vh; }
     #toast { position: fixed; top: 70px; left: 50%; transform: translateX(-50%); background: var(--secondary); color: #000; padding: 8px 16px; border-radius: 20px; font-size: 11px; font-weight: bold; opacity: 0; pointer-events: none; transition: 0.3s; z-index: 999; box-shadow: 0 4px 15px rgba(255,170,0,0.4); }
@@ -117,7 +131,7 @@
   <div id="toast">SETTINGS SAVED</div>
 
   <header>
-    <h1>PROMPT<span>v33</span></h1>
+    <h1>PROMPT<span>v34</span></h1>
     <div class="actions">
       <button class="btn" onclick="app.toggleMode()">⚡ MODE</button>
       <a href="./persona.html"><button class="btn">PERSONA→</button></a>
@@ -182,22 +196,31 @@ MutableApplication: "[AdjustMutable]優先。なければGlobal値"
 </system_instruction>
   </textarea>
 
-  <div id="modal-json" class="modal">
-    <div class="modal-box" style="border-color:var(--type-code)">
-      <div class="modal-head" style="color:var(--type-code)">JSON BUILDER <span onclick="modals.close('json')">×</span></div>
+  <div id="modal-share" class="modal">
+    <div class="modal-box">
+      <div class="modal-head" style="color:var(--primary)">SHARE MENU <span onclick="modals.close('share')">×</span></div>
       <div class="modal-body">
-        <input id="jsonRootKey" class="json-root-input" placeholder="ROOT NAME (e.g. 艶冶) - Optional">
-        <div id="json-rows"></div>
-        <button class="json-add-btn" onclick="jsonBuilder.addRow()">+ ADD ROW</button>
-        <div style="display:flex; gap:10px;">
-            <button class="btn accent" style="flex:1" onclick="jsonBuilder.insert()">INSERT TO CURRENT</button>
-            <button class="btn primary" style="flex:1" onclick="jsonBuilder.addNew()">ADD AS CARD</button>
-        </div>
+        <button class="share-btn primary" onclick="sharing.system()">
+            📡 SYSTEM SHARE (TEXT) <span class="share-desc">Default</span>
+        </button>
+        <button class="share-btn" onclick="novel.open()">
+            📖 PREVIEW NOVEL <span class="share-desc">Formatter</span>
+        </button>
+        <div style="height:1px; background:#333; margin:10px 0;"></div>
+        <button class="share-btn" onclick="sharing.copyCode()">
+            🤖 COPY FOR AI <span class="share-desc">Markdown</span>
+        </button>
+        <button class="share-btn img" onclick="sharing.shareImage()">
+            🖼️ SHARE IMAGE <span class="share-desc">Screenshot</span>
+        </button>
+        <button class="share-btn" onclick="sharing.download()">
+            💾 DOWNLOAD .TXT <span class="share-desc">File</span>
+        </button>
       </div>
     </div>
   </div>
 
-  <div id="modal-share" class="modal"><div class="modal-box"><div class="modal-head" style="color:var(--primary)">SHARE MENU <span onclick="modals.close('share')">×</span></div><div class="modal-body"><button class="share-btn primary" onclick="sharing.system()">📡 SYSTEM SHARE (TEXT) <span class="share-desc">Default</span></button><button class="share-btn" onclick="novel.open()">📖 PREVIEW NOVEL <span class="share-desc">Formatter</span></button><div style="height:1px; background:#333; margin:10px 0;"></div><button class="share-btn" onclick="sharing.copyCode()">🤖 COPY FOR AI <span class="share-desc">Markdown</span></button><button class="share-btn img" onclick="sharing.shareImage()">🖼️ SHARE IMAGE <span class="share-desc">Screenshot</span></button><button class="share-btn" onclick="sharing.download()">💾 DOWNLOAD .TXT <span class="share-desc">File</span></button></div></div></div>
+  <div id="modal-json" class="modal"><div class="modal-box" style="border-color:var(--type-code)"><div class="modal-head" style="color:var(--type-code)">JSON BUILDER <span onclick="modals.close('json')">×</span></div><div class="modal-body"><input id="jsonRootKey" class="json-root-input" placeholder="ROOT NAME (e.g. 艶冶) - Optional"><div id="json-rows"></div><button class="json-add-btn" onclick="jsonBuilder.addRow()">+ ADD ROW</button><div style="display:flex; gap:10px;"><button class="btn accent" style="flex:1" onclick="jsonBuilder.insert()">INSERT TO CURRENT</button><button class="btn primary" style="flex:1" onclick="jsonBuilder.addNew()">ADD AS CARD</button></div></div></div></div>
   <div id="modal-style" class="modal"><div class="modal-box" style="border-color:var(--primary)"><div class="modal-head" style="color:var(--primary)">STYLE EDITOR <span onclick="modals.close('style')">×</span></div><div class="modal-body"><div id="list-style" style="margin-bottom:15px;"></div><div style="border-top:1px solid #333; padding-top:15px;"><input id="styleName" placeholder="Style Name" style="width:100%;margin-bottom:5px;"><textarea id="styleRules" placeholder="Rules..." style="width:100%;height:80px;margin-bottom:5px;"></textarea><button class="btn primary" style="width:100%;" onclick="styleMgr.add()">ADD STYLE</button></div></div></div></div>
   <div id="modal-novel" class="modal"><div class="modal-box" style="background:#eee; color:#000; width:95%; max-width:600px;"><div class="modal-head" style="border-color:#ccc; color:#000;">NOVEL PREVIEW <div style="display:flex; gap:5px;"><button class="btn" style="color:#000; border-color:#000;" onclick="novel.toggleVertical()">縦/横</button><button class="btn" style="color:#000; border-color:#000;" onclick="novel.copy()">COPY</button><span onclick="modals.close('novel')" style="cursor:pointer; margin-left:10px; font-size:20px;">×</span></div></div><div class="modal-body" style="background:#fff; padding:0;"><div id="novel-container"></div></div></div></div>
   <div id="modal-projects" class="modal"><div class="modal-box" style="border-color:var(--secondary)"><div class="modal-head" style="color:var(--secondary)">PROJECTS <span onclick="modals.close('projects')">×</span></div><div class="modal-body"><input id="projName" placeholder="Project Name" style="width:100%;padding:8px;margin-bottom:8px;background:#000;border:1px solid #444;color:#fff;"><button class="btn accent" style="width:100%;" onclick="projects.save()">SAVE BOARD</button><div id="projectList" style="margin-top:10px;"></div></div></div></div>
@@ -274,10 +297,7 @@ MutableApplication: "[AdjustMutable]優先。なければGlobal値"
       toggleDashboard:()=>{document.getElementById('dashboard').classList.toggle('open');},
       clearBoard:()=>{if(confirm('Clear?')){document.getElementById('streamList').innerHTML='';storage.save();}},
       sendRapid:()=>{const el=document.getElementById('rapidInput'),v=el.value.trim();if(v){let t='free';if(v.match(/^[「『]/))t='speech';if(v.startsWith('['))t='code';board.add(t,v);el.value='';}},
-      toast:(msg)=>{
-        const t=document.getElementById('toast'); t.innerText=msg; t.classList.add('show');
-        setTimeout(()=>t.classList.remove('show'), 2000);
-      }
+      toast:(msg)=>{const t=document.getElementById('toast'); t.innerText=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'), 2000);}
     };
 
     const settings = {
@@ -411,7 +431,6 @@ MutableApplication: "[AdjustMutable]優先。なければGlobal値"
             const currentStyles = styleMgr.getMerged();
             const currentStyle = currentStyles[state.s] || currentStyles.standard;
             
-            // FIXED: Ensure Placeholders are unique and replaced correctly
             pc = pc.replace("{{REFINE}}", state.r);
             pc = pc.replace("{{STYLE_INJECTION}}", currentStyle.rules);
             pc = pc.replace("{{MUTABLE}}", state.m + '%');
