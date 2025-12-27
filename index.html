@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, interactive-widget=resizes-content">
-  <title>PROMPT STREAM // FINAL_RECOVERY</title>
+  <title>PROMPT STREAM // GH_COMPATIBLE</title>
   <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600&family=Share+Tech+Mono&family=Zen+Kaku+Gothic+New:wght@400;700&display=swap" rel="stylesheet">
   <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
@@ -27,7 +27,6 @@
     .btn.active, .btn:active { background: var(--border); color: #fff; }
     .btn.primary { border-color: var(--primary); color: var(--primary); }
     .btn.accent { border-color: var(--secondary); color: var(--secondary); }
-    .btn.danger { border-color: var(--accent); color: var(--accent); }
 
     /* Palette */
     .palette { background: var(--panel-bg); padding: 10px; border-bottom: 1px solid var(--border); display: flex; gap: 8px; overflow-x: auto; align-items: center; z-index: 15; flex-shrink: 0; }
@@ -59,7 +58,7 @@
     body.mode-rapid .stream-container { padding-bottom: 80px; }
     .card { background: var(--card-bg); border: 1px solid var(--border); border-left: 3px solid var(--dim); border-radius: 4px; margin-bottom: 12px; display: flex; flex-direction: column; }
     .card-head { display: flex; justify-content: space-between; align-items: center; padding: 6px 10px; background: rgba(0,0,0,0.3); border-bottom: 1px solid rgba(255,255,255,0.05); }
-    .card-label { font-size: 10px; text-transform: uppercase; font-weight: bold; cursor: pointer; user-select: none; }
+    .card-label { font-size: 10px; text-transform: uppercase; font-weight: bold; cursor: pointer; }
     .card-tools { display: flex; gap: 8px; }
     .tool-btn { width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; border: 1px solid #333; background: #000; color: #777; border-radius: 4px; cursor: pointer; font-size: 12px; }
     .drag-handle { cursor: grab; color: var(--border); font-size: 18px; touch-action: none; } .drag-handle::after { content: '≡'; }
@@ -67,35 +66,35 @@
     .card-settings { padding: 10px; background: rgba(255, 170, 0, 0.1); border-top: 1px solid var(--border); display: none; }
     .card-settings.active { display: block; }
     
-    /* Modal & Share Menu (DIV Based Recovery) */
-    .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); backdrop-filter: blur(4px); z-index: 100; display: none; align-items: center; justify-content: center; }
-    .modal-box { background: var(--panel-bg); border: 1px solid var(--border); width: 90%; max-width: 450px; max-height: 85vh; border-radius: 8px; display: flex; flex-direction: column; }
-    .modal-head { padding: 15px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; font-weight: bold; }
+    /* Modal & Robust Share Buttons */
+    .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); backdrop-filter: blur(4px); z-index: 1000; display: none; align-items: center; justify-content: center; }
+    .modal-box { background: var(--panel-bg); border: 1px solid var(--border); width: 90%; max-width: 450px; max-height: 90vh; border-radius: 8px; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 0 30px rgba(0,0,0,0.8); }
+    .modal-head { padding: 15px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; font-weight: bold; color: var(--primary); }
     .modal-body { padding: 15px; overflow-y: auto; }
     
-    /* NEW: DIV-based share buttons to fix WebView invisible issues */
-    .share-btn {
+    .share-row { display: block; width: 100%; margin-bottom: 12px; }
+    .share-btn-real {
+        display: block;
         width: 100%;
-        min-height: 50px;
-        padding: 12px 15px;
-        margin-bottom: 12px;
-        border-radius: 8px;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
+        padding: 15px;
         background: #1e1e26;
         border: 1px solid #444;
-        color: var(--text);
+        border-radius: 8px;
+        color: #fff;
+        font-family: inherit;
+        font-size: 14px;
+        text-align: left;
         cursor: pointer;
-        font-size: 13px;
+        position: relative;
     }
-    .share-btn:active { background: #333; transform: scale(0.98); }
-    .share-btn.primary { border-color: var(--primary); color: var(--primary); }
-    .share-btn.img { border-color: var(--type-char); color: var(--type-char); }
-    .share-desc { font-size: 9px; opacity: 0.5; text-align: right; }
+    .share-btn-real:active { background: #333; transform: scale(0.98); }
+    .share-btn-real span { display: block; font-size: 10px; color: #888; margin-top: 4px; }
+    .share-btn-real b { color: var(--primary); }
+    .share-btn-real.img-mode { border-color: var(--type-char); }
+    .share-btn-real.img-mode b { color: var(--type-char); }
 
     #novel-container { font-family: 'Shippori Mincho', serif; background: #fff; color: #000; padding: 40px; line-height: 1.8; font-size: 16px; white-space: pre-wrap; overflow-y: auto; height: 100%; border-radius: 4px; }
-    #toast { position: fixed; top: 70px; left: 50%; transform: translateX(-50%); background: var(--secondary); color: #000; padding: 8px 16px; border-radius: 20px; font-size: 11px; font-weight: bold; opacity: 0; pointer-events: none; transition: 0.3s; z-index: 999; }
+    #toast { position: fixed; top: 70px; left: 50%; transform: translateX(-50%); background: var(--secondary); color: #000; padding: 8px 16px; border-radius: 20px; font-size: 11px; font-weight: bold; opacity: 0; pointer-events: none; transition: 0.3s; z-index: 2000; }
     #toast.show { opacity: 1; top: 80px; }
 
     /* JSON Builder Styles */
@@ -109,12 +108,9 @@
   <div id="toast">SETTINGS SAVED</div>
 
   <header>
-    <h1>PROMPT<span>v35</span></h1>
+    <h1>PROMPT<span>v36</span></h1>
     <div class="actions">
       <button class="btn" onclick="app.toggleMode()">⚡ MODE</button>
-      <a href="./persona.html"><button class="btn">PERSONA→</button></a>
-      <button class="btn danger" onclick="app.clearBoard()">CLR</button>
-      <button class="btn" style="color:var(--type-char); border-color:var(--type-char)" onclick="modals.open('char')">CHARS</button>
       <button class="btn accent" onclick="app.toggleDashboard()">DATA</button>
       <button class="btn primary" onclick="modals.open('share')">SHARE</button>
     </div>
@@ -123,14 +119,12 @@
   <div class="palette">
     <div class="p-btn" onmousedown="editor.insert('****')">****<span>WILD</span></div>
     <div class="p-btn" onmousedown="editor.insert('[', ']')">[ ]<span>BRA</span></div>
-    <div class="p-btn" onmousedown="editor.insert('\n---\n')">---<span>SEP</span></div>
     <div class="p-btn pb-ref" onclick="modals.open('ref')">Ref<span>MEMO</span></div>
     <div class="p-btn pb-code" onclick="jsonBuilder.open()">JSON<span>BUILD</span></div>
-    <div class="p-btn pb-speech" onclick="board.add('speech')">Dialogue<span>会話</span></div>
-    <div class="p-btn pb-char" onclick="board.add('char')">Character<span>人格</span></div>
-    <div class="p-btn pb-code" onclick="board.add('code')">Code<span>ロジック</span></div>
-    <div class="p-btn" onclick="board.add('free')">Text<span>地文</span></div>
-    <div class="p-btn pb-snip" onclick="modals.open('snippet')">Snippet<span>VBA</span></div>
+    <div class="p-btn pb-speech" onclick="board.add('speech')">Dial.</div>
+    <div class="p-btn pb-char" onclick="board.add('char')">Char.</div>
+    <div class="p-btn" onclick="board.add('free')">Text</div>
+    <div class="p-btn pb-snip" onclick="modals.open('snippet')">Snip</div>
   </div>
 
   <div id="dashboard">
@@ -148,10 +142,12 @@
     </div>
     <div class="hud-section">
         <div class="hud-title">EXPORT RULES</div>
-        <div class="hud-row"><div class="hud-label">CONTROL</div><div class="toggle-group" id="tg-param" style="flex:1"><div class="toggle-btn active" onclick="settings.setExport('param', true)">ON</div><div class="toggle-btn" onclick="settings.setExport('param', false)">OFF</div></div></div>
-        <div class="hud-row"><div class="hud-label">CONTEXT</div><div class="toggle-group" id="tg-ctx" style="flex:1"><div class="toggle-btn" onclick="settings.setExport('ctx', 'ignore')">NEW</div><div class="toggle-btn" onclick="settings.setExport('ctx', 'cont')">CONT</div><div class="toggle-btn active" onclick="settings.setExport('ctx', 'none')">NONE</div></div></div>
+        <div class="hud-row">
+            <div class="hud-label">CONTEXT</div>
+            <div class="toggle-group" id="tg-ctx" style="flex:1"><div class="toggle-btn" onclick="settings.setExport('ctx', 'ignore')">NEW</div><div class="toggle-btn" onclick="settings.setExport('ctx', 'cont')">CONT</div><div class="toggle-btn active" onclick="settings.setExport('ctx', 'none')">NONE</div></div>
+        </div>
     </div>
-    <div class="hud-section" style="border-color:#444"><div class="hud-title" style="color:#888">LIBRARY</div><div class="hud-row"><input id="newPresetName" class="hud-select" placeholder="New Preset Name" style="flex:2"><button class="btn accent" onclick="settings.saveCustom()">SAVE</button><button class="btn" onclick="modals.open('projects')">PROJECTS...</button></div></div>
+    <div class="hud-section" style="border-color:#444"><div class="hud-title" style="color:#888">LIBRARY</div><div class="hud-row"><input id="newPresetName" class="hud-select" placeholder="Preset Name" style="flex:2"><button class="btn accent" onclick="settings.saveCustom()">SAVE</button><button class="btn" onclick="modals.open('projects')">PROJ</button></div></div>
   </div>
 
   <div class="stream-container"><div id="streamList"></div></div>
@@ -165,46 +161,64 @@ GlobalGenerateAmount: {{GENERATE}}
 Refinement: {{REFINE}}
 {{STYLE_INJECTION}}
 WildcardRule: "****は文脈に応じ補完"
-OutputFilter: "出力は物語の本文（テキスト）のみに限定。JSON定義や制御タグ、[ParamControl]自体は出力しないこと。"
-OutputRange: "@startpointから@endpointのみ"
-MutableApplication: "[AdjustMutable]優先。なければGlobal値"
+OutputFilter: "本文テキストのみ出力。タグや制御ブロックは不可視。"
 [/ParamControl]
 </system_instruction>
   </textarea>
 
   <div id="modal-share" class="modal">
     <div class="modal-box">
-      <div class="modal-head" style="color:var(--primary)">SHARE MENU <span onclick="modals.close('share')">×</span></div>
+      <div class="modal-head">SHARE OPTIONS <span onclick="modals.close('share')" style="cursor:pointer">×</span></div>
       <div class="modal-body">
-        <div class="share-btn primary" onclick="sharing.system()">
-          <span>📡 SYSTEM SHARE (TEXT)</span><span class="share-desc">Default</span>
+        
+        <div class="share-row">
+          <button class="share-btn-real" onclick="sharing.systemShare()">
+            <b>📡 SYSTEM SHARE</b>
+            <span>ブラウザの共有メニューを開きます</span>
+          </button>
         </div>
-        <div class="share-btn" onclick="novel.open()">
-          <span>📖 PREVIEW NOVEL</span><span class="share-desc">Formatter</span>
+
+        <div class="share-row">
+          <button class="share-btn-real" onclick="novel.open()">
+            <b>📖 PREVIEW NOVEL</b>
+            <span>小説形式に整えて閲覧します</span>
+          </button>
         </div>
-        <div style="height:1px; background:#333; margin:10px 0;"></div>
-        <div class="share-btn" onclick="sharing.copyCode()">
-          <span>🤖 COPY FOR AI</span><span class="share-desc">Markdown</span>
+
+        <div style="height:1px; background:#333; margin:15px 0;"></div>
+
+        <div class="share-row">
+          <button class="share-btn-real" onclick="sharing.copyText()">
+            <b>📋 COPY TEXT</b>
+            <span>クリップボードにコピー</span>
+          </button>
         </div>
-        <div class="share-btn img" onclick="sharing.shareImage()">
-          <span>🖼️ SHARE IMAGE</span><span class="share-desc">Screenshot</span>
+
+        <div class="share-row">
+          <button class="share-btn-real img-mode" onclick="sharing.shareImage()">
+            <b>🖼️ SHARE IMAGE</b>
+            <span>スクリーンショットを生成して共有</span>
+          </button>
         </div>
-        <div class="share-btn" onclick="sharing.download()">
-          <span>💾 DOWNLOAD .TXT</span><span class="share-desc">File</span>
+
+        <div class="share-row">
+          <button class="share-btn-real" onclick="sharing.download()">
+            <b>💾 DOWNLOAD .TXT</b>
+            <span>ファイルとして保存</span>
+          </button>
         </div>
+
       </div>
     </div>
   </div>
 
-  <div id="modal-novel" class="modal"><div class="modal-box" style="background:#eee; color:#000; width:95%; max-width:600px;"><div class="modal-head" style="border-color:#ccc; color:#000;">NOVEL PREVIEW <div style="display:flex; gap:5px;"><button class="btn" style="color:#000; border-color:#000;" onclick="novel.toggleVertical()">縦/横</button><button class="btn" style="color:#000; border-color:#000;" onclick="novel.copy()">COPY</button><span onclick="modals.close('novel')" style="cursor:pointer; margin-left:10px; font-size:20px;">×</span></div></div><div class="modal-body" style="background:#fff; padding:0;"><div id="novel-container"></div></div></div></div>
-
-  <div id="modal-json" class="modal"><div class="modal-box" style="border-color:var(--type-code)"><div class="modal-head" style="color:var(--type-code)">JSON BUILDER <span onclick="modals.close('json')">×</span></div><div class="modal-body"><input id="jsonRootKey" class="json-root-input" placeholder="ROOT NAME"><div id="json-rows"></div><button class="apply-btn" style="background:#222;color:#888;border:1px dashed #444" onclick="jsonBuilder.addRow()">+ ADD ROW</button><div style="display:flex; gap:10px; margin-top:15px;"><button class="btn accent" style="flex:1" onclick="jsonBuilder.insert()">INSERT</button><button class="btn primary" style="flex:1" onclick="jsonBuilder.addNew()">ADD CARD</button></div></div></div></div>
+  <div id="modal-json" class="modal"><div class="modal-box" style="border-color:var(--type-code)"><div class="modal-head" style="color:var(--type-code)">JSON BUILDER <span onclick="modals.close('json')">×</span></div><div class="modal-body"><input id="jsonRootKey" class="json-root-input" placeholder="ROOT NAME (Option)"><div id="json-rows"></div><button class="apply-btn" style="background:#222;color:#888;border:1px dashed #444" onclick="jsonBuilder.addRow()">+ ADD ROW</button><div style="display:flex; gap:10px; margin-top:15px;"><button class="btn accent" style="flex:1" onclick="jsonBuilder.insert()">INSERT</button><button class="btn primary" style="flex:1" onclick="jsonBuilder.addNew()">ADD CARD</button></div></div></div></div>
   <div id="modal-style" class="modal"><div class="modal-box" style="border-color:var(--primary)"><div class="modal-head" style="color:var(--primary)">STYLE EDITOR <span onclick="modals.close('style')">×</span></div><div class="modal-body"><div id="list-style" style="margin-bottom:15px;"></div><div style="border-top:1px solid #333; padding-top:15px;"><input id="styleName" placeholder="Style Name" style="width:100%;margin-bottom:5px;background:#000;color:#fff;border:1px solid #444;padding:8px;"><textarea id="styleRules" placeholder="JSON Rules..." style="width:100%;height:80px;background:#000;color:#fff;border:1px solid #444;padding:8px;"></textarea><button class="btn primary" style="width:100%;margin-top:5px" onclick="styleMgr.add()">ADD STYLE</button></div></div></div></div>
   <div id="modal-projects" class="modal"><div class="modal-box" style="border-color:var(--secondary)"><div class="modal-head" style="color:var(--secondary)">PROJECTS <span onclick="modals.close('projects')">×</span></div><div class="modal-body"><input id="projName" placeholder="Project Name" style="width:100%;padding:8px;margin-bottom:8px;background:#000;border:1px solid #444;color:#fff;"><button class="btn accent" style="width:100%;" onclick="projects.save()">SAVE BOARD</button><div id="projectList" style="margin-top:10px;"></div></div></div></div>
+  <div id="modal-novel" class="modal"><div class="modal-box" style="background:#eee; color:#000; width:95%; max-width:600px;"><div class="modal-head" style="border-color:#ccc; color:#000;">NOVEL PREVIEW <div style="display:flex; gap:5px;"><button class="btn" style="color:#000; border-color:#000;" onclick="novel.copy()">COPY</button><span onclick="modals.close('novel')" style="cursor:pointer; margin-left:10px; font-size:20px;">×</span></div></div><div class="modal-body" style="background:#fff; padding:0;"><div id="novel-container"></div></div></div></div>
   <div id="modal-char" class="modal"><div class="modal-box"><div class="modal-head" style="color:var(--type-char)">CHARACTERS <span onclick="modals.close('char')">×</span></div><div class="modal-body" id="list-char"></div></div></div>
   <div id="modal-snippet" class="modal"><div class="modal-box"><div class="modal-head" style="color:var(--type-code)">SNIPPETS <span onclick="modals.close('snippet')">×</span></div><div class="modal-body"><div id="list-snippet"></div><input id="snipName" placeholder="Name" style="width:100%;margin-top:10px;"><textarea id="snipContent" placeholder="Code..." style="width:100%;"></textarea><button class="btn" onclick="snippets.add()">ADD</button></div></div></div>
-  <div id="modal-parts" class="modal"><div class="modal-box"><div class="modal-head" style="color:var(--secondary)">INLINE PARTS <span onclick="modals.close('parts')">×</span></div><div class="modal-body"><div id="list-parts"></div><input id="partInput" placeholder="New Word" style="width:70%;"><button onclick="parts.add()">ADD</button></div></div></div>
-  <div id="modal-ref" class="modal"><div class="modal-box" style="border-color:var(--type-ref)"><div class="modal-head" style="color:var(--type-ref)">REFERENCES <span onclick="modals.close('ref')">×</span></div><div class="modal-body"><div id="list-ref"></div><div style="border-top:1px solid #333; margin-top:10px; padding-top:10px;"><input id="refName" placeholder="Title" style="width:100%; margin-bottom:5px;"><textarea id="refContent" placeholder="Markdown content..." style="width:100%; height:80px;"></textarea><button class="btn" style="border-color:var(--type-ref); color:var(--type-ref)" onclick="refs.add()">ADD REFERENCE</button></div></div></div></div>
+  <div id="modal-ref" class="modal"><div class="modal-box" style="border-color:var(--type-ref)"><div class="modal-head" style="color:var(--type-ref)">REFERENCES <span onclick="modals.close('ref')">×</span></div><div class="modal-body"><div id="list-ref"></div><div style="border-top:1px solid #333; margin-top:10px; padding-top:10px;"><input id="refName" placeholder="Title" style="width:100%; margin-bottom:5px;"><textarea id="refContent" placeholder="Markdown content..." style="width:100%; height:80px;"></textarea><button class="btn" style="border-color:var(--type-ref); color:var(--type-ref)" onclick="refs.add()">ADD</button></div></div></div></div>
 
   <script>
     const CONFIG = {
@@ -212,10 +226,7 @@ MutableApplication: "[AdjustMutable]優先。なければGlobal値"
       defaults: { gemini: {m:100, g:100, r:'middle', model:'gemini'}, claude: {m:80, g:110, r:'high', model:'claude'}, grok: {m:50, g:90, r:'middle', model:'grok'} },
       baseStyles: {
         standard: { label: 'Standard', rules: 'NarrationStyle: seamless' },
-        lucia: { 
-            label: 'Lucia (Poetic)', 
-            rules: `{ "narration_style": { "line_break": "思考・衝動・観測の単位で改行。", "dash_usage": { "symbol": "――", "function": ["本音","衝動","感情暴露"] }, "tempo": { "base": "短文〜中文", "pause": "重要語で改行" }, "common_effect": "読者が語り手の頭の中に放り込まれる感覚" } }` 
-        }
+        lucia: { label: 'Lucia (Poetic)', rules: `{ "narration_style": { "line_break": "思考・衝動・観測の単位で改行。", "dash_usage": { "symbol": "――", "function": ["本音","衝動","感情暴露"] }, "tempo": { "base": "短文〜中文", "pause": "重要語で改行" } } }` }
       }
     };
     let state = { m:100, g:100, r:'middle', s:'standard', model:'custom', exParam:true, exCtx:'none' };
@@ -225,9 +236,7 @@ MutableApplication: "[AdjustMutable]優先。なければGlobal値"
       init: function() {
         new Sortable(document.getElementById('streamList'), { handle:'.drag-handle', animation:150, onEnd:storage.save });
         storage.load(); settings.init();
-        if(window.visualViewport) {
-          window.visualViewport.addEventListener('resize', function(){ document.body.style.height=window.visualViewport.height+'px'; });
-        }
+        if(window.visualViewport) window.visualViewport.addEventListener('resize', function(){ document.body.style.height=window.visualViewport.height+'px'; });
       },
       add: function(type, val='', ctrls={m:null, g:null}) {
         const conf = CONFIG.types[type] || CONFIG.types.free;
@@ -237,7 +246,6 @@ MutableApplication: "[AdjustMutable]優先。なければGlobal値"
         document.getElementById('streamList').appendChild(div);
         const ta=div.querySelector('textarea'); ta.addEventListener('focus', function(e){ lastFocused=e.target; });
         board.sz(ta); div.scrollIntoView({behavior:'smooth',block:'end'}); storage.save();
-        if(!document.activeElement.classList.contains('rapid-input')) ta.focus();
       },
       del: function(b){ if(confirm('Delete?')){ b.closest('.card').remove(); storage.save(); }},
       clone: function(b){ const c=b.closest('.card'); board.add(c.dataset.type, c.querySelector('textarea').value); },
@@ -255,7 +263,6 @@ MutableApplication: "[AdjustMutable]優先。なければGlobal値"
     const app = {
       toggleMode: function(){ document.body.classList.toggle('mode-rapid'); },
       toggleDashboard: function(){ document.getElementById('dashboard').classList.toggle('open'); },
-      clearBoard: function(){ if(confirm('Clear?')){ document.getElementById('streamList').innerHTML=''; storage.save(); }},
       sendRapid: function(){ const el=document.getElementById('rapidInput'),v=el.value.trim(); if(v){ let t='free'; if(v.match(/^[「『]/)) t='speech'; board.add(t,v); el.value=''; }},
       toast: function(msg){ const t=document.getElementById('toast'); t.innerText=msg; t.classList.add('show'); setTimeout(function(){ t.classList.remove('show'); }, 2000); }
     };
@@ -292,7 +299,6 @@ MutableApplication: "[AdjustMutable]優先。なければGlobal値"
       apply: function(){ settings.updateUI(true); app.toast("SETTINGS APPLIED"); },
       setExport: function(key, val){ state[key==='param'?'exParam':'exCtx'] = val; settings.saveState(); settings.renderExportUI(); },
       renderExportUI: function(){
-        document.querySelectorAll('#tg-param .toggle-btn').forEach(function(b,i){ b.classList.toggle('active', (i===0)==state.exParam); });
         document.querySelectorAll('#tg-ctx .toggle-btn').forEach(function(b){ b.classList.toggle('active', b.innerText.toLowerCase().startsWith(state.exCtx.substring(0,3))); });
       },
       saveState: function(){ localStorage.setItem('ps_state', JSON.stringify(state)); },
@@ -304,6 +310,7 @@ MutableApplication: "[AdjustMutable]優先。なければGlobal値"
         document.getElementById('newPresetName').value=''; settings.renderPresets();
         app.toast("PRESET SAVED");
       },
+      delCustom:function(n,e){e.stopPropagation(); const c=JSON.parse(localStorage.getItem('ps_presets')); delete c[n]; localStorage.setItem('ps_presets',JSON.stringify(c)); settings.renderPresets();},
       loadPreset: function(conf, name){ state = { ...state, ...conf, model: name }; settings.updateUI(); settings.renderPresets(); app.toast(`LOADED: ${name.toUpperCase()}`); },
       renderPresets: function(){
         const box=document.getElementById('preset-list-container'); box.innerHTML='';
@@ -318,6 +325,62 @@ MutableApplication: "[AdjustMutable]優先。なければGlobal値"
       }
     };
 
+    const sharing = {
+      buildText: function(){
+        let txt = ""; if(state.exCtx === 'ignore') txt += "Ignore previous context:\n\n"; if(state.exCtx === 'cont') txt += "Continue context:\n\n";
+        if(state.exParam) {
+            let pc = document.getElementById('basePrompt').value; const styles = styleMgr.getMerged(); const s = styles[state.s] || styles.standard;
+            pc = pc.replace("{{REFINE}}", state.r).replace("{{STYLE_INJECTION}}", s.rules).replace("{{MUTABLE}}", state.m+'%').replace("{{GENERATE}}", state.g+'%');
+            txt += pc + '\n';
+        }
+        document.querySelectorAll('#streamList .card textarea').forEach(function(ta){ txt += ta.value + '\n'; });
+        return txt;
+      },
+      systemShare: function() {
+        const t = this.buildText();
+        if (navigator.share) {
+          navigator.share({ text: t }).catch(function(){ sharing.copyText(); });
+        } else {
+          this.copyText();
+        }
+        modals.close('share');
+      },
+      copyText: function(){
+        const t = this.buildText();
+        if (navigator.clipboard) {
+          navigator.clipboard.writeText(t).then(function(){ app.toast('COPIED'); });
+        } else {
+          const ta = document.createElement("textarea"); ta.value = t; document.body.appendChild(ta); ta.select(); document.execCommand("copy"); document.body.removeChild(ta); app.toast('COPIED');
+        }
+        modals.close('share');
+      },
+      copyCode: function(){ 
+          const t = "```markdown\n" + this.buildText() + "\n```";
+          navigator.clipboard.writeText(t).then(function(){ app.toast('COPIED CODE'); });
+          modals.close('share');
+      },
+      download: function(){ const b=new Blob([this.buildText()],{type:'text/plain'}); const a=document.createElement('a'); a.href=URL.createObjectURL(b); a.download='P.txt'; a.click(); },
+      shareImage: async function() {
+        const stream = document.getElementById('streamList'); if(!stream.children.length) return;
+        const clone = stream.cloneNode(true); clone.style.position="absolute"; clone.style.top="-9999px"; clone.style.background="#0e1215"; clone.style.width=stream.offsetWidth+"px";
+        document.body.appendChild(clone);
+        clone.querySelectorAll('textarea').forEach(function(ta, i){
+            const div = document.createElement('div'); div.innerText = stream.querySelectorAll('textarea')[i].value;
+            div.style.cssText = "color:#cceeee; font-size:15px; padding:12px; white-space:pre-wrap; word-break:break-word;";
+            ta.parentElement.replaceChild(div, ta);
+        });
+        try {
+            const canvas = await html2canvas(clone, { backgroundColor:'#0e1215', scale:2 });
+            canvas.toBlob(async function(blob){
+                const file = new File([blob], "prompt.png", {type:"image/png"});
+                if(navigator.canShare && navigator.canShare({files:[file]})) await navigator.share({files:[file]});
+                else { const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='prompt.png'; a.click(); }
+            });
+        } catch(e){ alert("Image Error"); } finally { document.body.removeChild(clone); }
+        modals.close('share');
+      }
+    };
+
     const styleMgr = {
         db: function(){ return JSON.parse(localStorage.getItem('ps_styles') || '{}'); },
         save: function(d){ localStorage.setItem('ps_styles', JSON.stringify(d)); },
@@ -328,14 +391,15 @@ MutableApplication: "[AdjustMutable]優先。なければGlobal値"
             document.getElementById('styleName').value = ''; document.getElementById('styleRules').value = '';
             subMgr.render('style'); settings.updateSelect(); app.toast("STYLE ADDED");
         },
+        del: function(key){ if(confirm('Del?')){ const d=styleMgr.db(); delete d[key]; styleMgr.save(d); subMgr.render('style'); settings.updateSelect(); } },
         getMerged: function(){ return { ...CONFIG.baseStyles, ...styleMgr.db() }; }
     };
 
-    const editor = { insert: function(t,e){ if(!lastFocused) return; const f=lastFocused,s=f.selectionStart,en=f.selectionEnd,v=f.value; f.value=v.substring(0,s)+(e?t+v.substring(s,en)+e:t)+v.substring(en); f.dispatchEvent(new Event('input')); f.focus();} };
+    const editor = { insert: function(t,e){ if(!lastFocused) { alert('Select Textbox'); return; } const f=lastFocused,s=f.selectionStart,en=f.selectionEnd,v=f.value; f.value=v.substring(0,s)+(e?t+v.substring(s,en)+e:t)+v.substring(en); f.dispatchEvent(new Event('input')); f.focus();} };
     
     const jsonBuilder = {
-        open: function(){ document.getElementById('modal-json').style.display='flex'; document.getElementById('jsonRootKey').value=''; document.getElementById('json-rows').innerHTML=''; jsonBuilder.addRow(); },
-        addRow: function(){ const row=document.createElement('div'); row.className='json-row'; row.innerHTML=`<input class="json-key" style="flex:1;background:#000;color:#ffaa00;border:1px solid #444;padding:8px" placeholder="Key">:<input class="json-val" style="flex:2;background:#000;color:#fff;border:1px solid #444;padding:8px" placeholder="Value"><span onclick="this.parentElement.remove()" style="color:red;padding:5px">×</span>`; document.getElementById('json-rows').appendChild(row); },
+        open: function(){ document.getElementById('modal-json').style.display='flex'; document.getElementById('json-rows').innerHTML=''; jsonBuilder.addRow(); },
+        addRow: function(){ const row=document.createElement('div'); row.className='json-row'; row.innerHTML=`<input class="json-key" style="flex:1" placeholder="Key">:<input class="json-val" style="flex:2" placeholder="Value"><span onclick="this.parentElement.remove()" style="color:red;padding:5px">×</span>`; document.getElementById('json-rows').appendChild(row); },
         generate: function(){
             const root = document.getElementById('jsonRootKey').value.trim(); const obj = {};
             document.querySelectorAll('.json-row').forEach(function(row){ const k=row.querySelector('.json-key').value.trim(),v=row.querySelector('.json-val').value.trim(); if(k) obj[k]=v; });
@@ -355,60 +419,19 @@ MutableApplication: "[AdjustMutable]優先。なければGlobal値"
             });
             container.innerHTML = html || "<p>No content...</p>"; document.getElementById('modal-novel').style.display = 'flex'; modals.close('share');
         },
-        toggleVertical: function(){ document.getElementById('novel-container').classList.toggle('vertical'); },
         copy: function(){ navigator.clipboard.writeText(document.getElementById('novel-container').innerText); app.toast("NOVEL COPIED"); }
     };
 
-    const sharing = {
-      buildText: function(){
-        let txt = ""; if(state.exCtx === 'ignore') txt += "Ignore previous context:\n\n"; if(state.exCtx === 'cont') txt += "Continue context:\n\n";
-        if(state.exParam) {
-            let pc = document.getElementById('basePrompt').value; const styles = styleMgr.getMerged(); const s = styles[state.s] || styles.standard;
-            pc = pc.replace("{{REFINE}}", state.r).replace("{{STYLE_INJECTION}}", s.rules).replace("{{MUTABLE}}", state.m+'%').replace("{{GENERATE}}", state.g+'%');
-            txt += pc + '\n';
-        }
-        document.querySelectorAll('#streamList .card').forEach(function(c){ txt += c.querySelector('textarea').value + '\n'; });
-        return txt;
-      },
-      system: async function(){
-          const t = sharing.buildText();
-          if(navigator.share){ try { await navigator.share({text:t}); } catch(e){ sharing.copyText(); } } 
-          else { sharing.copyText(); }
-          modals.close('share');
-      },
-      copyText: function(){ navigator.clipboard.writeText(sharing.buildText()); app.toast('COPIED'); modals.close('share'); },
-      copyCode: function(){ navigator.clipboard.writeText("```markdown\n"+sharing.buildText()+"\n```"); app.toast('COPIED CODE'); modals.close('share'); },
-      download: function(){ const b=new Blob([sharing.buildText()],{type:'text/plain'}); const a=document.createElement('a'); a.href=URL.createObjectURL(b); a.download='P.txt'; a.click(); },
-      shareImage: async function() {
-        const stream = document.getElementById('streamList'); if(!stream.children.length) return;
-        const clone = stream.cloneNode(true); clone.style.position="absolute"; clone.style.top="-9999px"; clone.style.background="#0e1215"; clone.style.width=stream.offsetWidth+"px";
-        document.body.appendChild(clone);
-        clone.querySelectorAll('textarea').forEach(function(ta, i){
-            const div = document.createElement('div'); div.innerText = stream.querySelectorAll('textarea')[i].value;
-            div.style.cssText = "color:#cceeee; font-size:15px; padding:12px; white-space:pre-wrap; word-break:break-word;";
-            ta.parentElement.replaceChild(div, ta);
-        });
-        try {
-            const canvas = await html2canvas(clone, { backgroundColor:'#0e1215', scale:2 });
-            canvas.toBlob(async function(blob){
-                const file = new File([blob], "prompt.png", {type:"image/png"});
-                if(navigator.canShare && navigator.canShare({files:[file]})) await navigator.share({files:[file]});
-                else { const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='prompt.png'; a.click(); }
-            });
-        } catch(e){ alert("Error"); } finally { document.body.removeChild(clone); }
-        modals.close('share');
-      }
-    };
-
-    const modals={open:function(id){document.getElementById(`modal-${id}`).style.display='flex';if(id==='projects')projects.render();if(['char','snippet','parts','ref','style'].includes(id))subMgr.render(id);}, close:function(id){document.getElementById(`modal-${id}`).style.display='none';}};
+    const modals={open:function(id){document.getElementById(`modal-${id}`).style.display='flex'; if(id==='projects')projects.render(); if(['char','snippet','ref','style'].includes(id))subMgr.render(id);}, close:function(id){document.getElementById(`modal-${id}`).style.display='none';}};
     const subMgr={
-      db: function(k){ return JSON.parse(localStorage.getItem(k) || (['ps_parts','ps_refs'].includes(k)?'[]':'{}')); },
+      db: function(k){ return JSON.parse(localStorage.getItem(k) || (['ps_refs'].includes(k)?'[]':'{}')); },
       render: function(t){
         const l=document.getElementById(`list-${t}`); l.innerHTML=''; 
-        let k = t==='parts'?'ps_parts':t==='ref'?'ps_refs':t==='style'?'ps_styles':t==='char'?'promptChars':'promptSnippets';
+        let k = t==='style'?'ps_styles':t==='char'?'promptChars':'promptSnippets';
         const d=subMgr.db(k);
-        if(t==='style'){ Object.keys(d).forEach(function(key){ l.innerHTML+=`<div class="list-item"><span>${d[key].label}</span><button class="btn danger" onclick="styleMgr.del('${key}')">×</button></div>`; }); }
-        else if(t==='char'||t==='snippet'){ Object.keys(d).forEach(function(key){ l.innerHTML+=`<div class="list-item"><span>${key}</span><button class="btn" onclick="subMgr.insert('${t}','${key}')">ADD</button></div>`; }); }
+        Object.keys(d).forEach(function(key){
+          l.innerHTML += `<div class="list-item"><span>${d[key].label||key}</span><button class="btn" onclick="subMgr.insert('${t}','${key}')">ADD</button></div>`;
+        });
       },
       insert: function(type, key){ const db=subMgr.db(type==='char'?'promptChars':'promptSnippets'); board.add(type==='char'?'char':'code', db[key].text||db[key]); modals.close(type); }
     };
