@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, interactive-widget=resizes-content">
-  <title>PROMPT STREAM // RECOVER</title>
+  <title>PROMPT STREAM // FINAL_RECOVERY</title>
   <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600&family=Share+Tech+Mono&family=Zen+Kaku+Gothic+New:wght@400;700&display=swap" rel="stylesheet">
   <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
@@ -35,23 +35,18 @@
     .p-btn span { font-size: 9px; opacity: 0.7; margin-top: 2px; }
     .pb-speech { border-left-color: var(--type-speech); } .pb-char { border-left-color: var(--type-char); } .pb-code { border-left-color: var(--type-code); } .pb-snip { border-left-color: var(--secondary); border-style: dotted; } .pb-ref { border-left-color: var(--type-ref); border-style: double; }
 
-    /* --- DASHBOARD (HUD Style) --- */
+    /* --- DASHBOARD --- */
     #dashboard { background: #080a0c; border-bottom: 2px solid var(--secondary); padding: 15px; display: none; overflow-y: auto; max-height: 60vh; flex-shrink: 0; }
     #dashboard.open { display: block; }
-    
     .hud-section { border: 1px solid #333; border-radius: 6px; padding: 10px; margin-bottom: 10px; position: relative; }
     .hud-title { position: absolute; top: -8px; left: 10px; background: #080a0c; padding: 0 5px; font-size: 10px; color: var(--secondary); font-weight: bold; }
     .hud-row { display: flex; gap: 10px; align-items: center; margin-bottom: 8px; }
-    .hud-row:last-child { margin-bottom: 0; }
     .hud-label { font-size: 10px; color: #888; width: 60px; flex-shrink: 0; }
     .hud-val { font-size: 10px; color: var(--primary); width: 35px; text-align: right; }
-    
     input[type="range"] { flex: 1; height: 4px; background: #333; appearance: none; border-radius: 2px; }
     input[type="range"]::-webkit-slider-thumb { appearance: none; width: 14px; height: 14px; background: var(--secondary); border-radius: 50%; cursor: pointer; border: 2px solid #000; }
     .hud-select { flex: 1; background: #111; color: #fff; border: 1px solid #444; padding: 6px; font-size: 11px; border-radius: 4px; }
     .apply-btn { width: 100%; padding: 10px; background: var(--primary); color: #000; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; margin-top: 5px; font-family: 'Share Tech Mono'; }
-    .apply-btn:active { background: #fff; transform: scale(0.98); }
-    
     .toggle-group { display: flex; gap: 2px; background: #111; padding: 2px; border-radius: 4px; border: 1px solid #333; }
     .toggle-btn { flex: 1; padding: 4px 8px; font-size: 10px; cursor: pointer; text-align: center; color: #666; border-radius: 2px; }
     .toggle-btn.active { background: var(--secondary); color: #000; font-weight: bold; }
@@ -65,65 +60,48 @@
     .card { background: var(--card-bg); border: 1px solid var(--border); border-left: 3px solid var(--dim); border-radius: 4px; margin-bottom: 12px; display: flex; flex-direction: column; }
     .card-head { display: flex; justify-content: space-between; align-items: center; padding: 6px 10px; background: rgba(0,0,0,0.3); border-bottom: 1px solid rgba(255,255,255,0.05); }
     .card-label { font-size: 10px; text-transform: uppercase; font-weight: bold; cursor: pointer; user-select: none; }
-    .card-label::after { content:' ↻'; opacity:0.5; }
     .card-tools { display: flex; gap: 8px; }
     .tool-btn { width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; border: 1px solid #333; background: #000; color: #777; border-radius: 4px; cursor: pointer; font-size: 12px; }
     .drag-handle { cursor: grab; color: var(--border); font-size: 18px; touch-action: none; } .drag-handle::after { content: '≡'; }
     .card textarea { width: 100%; padding: 12px; background: transparent; border: none; color: var(--text); resize: none; font-family: 'Zen Kaku Gothic New', monospace; font-size: 15px; outline: none; min-height: 50px; display: block; }
-    .type-speech { border-left-color: var(--type-speech); } .type-speech .card-label { color: var(--type-speech); }
-    .type-char { border-left-color: var(--type-char); background: #1a0f15; } .type-char .card-label { color: var(--type-char); }
-    .type-code { border-left-color: var(--type-code); background: #080a0c; } .type-code .card-label { color: var(--type-code); } .type-code textarea { font-family: 'Fira Code', monospace; color: var(--type-code); font-size: 13px; }
     .card-settings { padding: 10px; background: rgba(255, 170, 0, 0.1); border-top: 1px solid var(--border); display: none; }
     .card-settings.active { display: block; }
-
-    /* Footer & Modals */
-    .rapid-footer { height: var(--footer-h); border-top: 1px solid var(--border); background: var(--panel-bg); padding: 0 10px; display: flex; align-items: center; gap: 10px; position: absolute; bottom: 0; width: 100%; transform: translateY(100%); transition: transform 0.3s; }
-    body.mode-rapid .rapid-footer { transform: translateY(0); }
-    .rapid-input { flex: 1; background: #000; border: 1px solid #444; color: #fff; padding: 10px; border-radius: 20px; outline: none; }
-    .rapid-send { width: 40px; height: 40px; border-radius: 50%; background: var(--primary); border: none; font-weight: bold; cursor: pointer; }
     
+    /* Modal & Share Menu (DIV Based Recovery) */
     .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); backdrop-filter: blur(4px); z-index: 100; display: none; align-items: center; justify-content: center; }
-    .modal-box { background: var(--panel-bg); border: 1px solid var(--border); width: 90%; max-width: 450px; max-height: 85vh; border-radius: 8px; display: flex; flex-direction: column; box-shadow: 0 0 30px rgba(0,0,0,0.5); }
+    .modal-box { background: var(--panel-bg); border: 1px solid var(--border); width: 90%; max-width: 450px; max-height: 85vh; border-radius: 8px; display: flex; flex-direction: column; }
     .modal-head { padding: 15px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; font-weight: bold; }
     .modal-body { padding: 15px; overflow-y: auto; }
     
-    .list-item { background: var(--card-bg); border: 1px solid var(--border); padding: 10px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; border-radius: 4px; }
-    .tag { font-size: 10px; background: #333; padding: 2px 5px; border-radius: 3px; color: #aaa; margin-right: 5px; display:inline-block; margin-bottom:4px; cursor:pointer;}
-    
-    /* Fixed Share Button Styles */
+    /* NEW: DIV-based share buttons to fix WebView invisible issues */
     .share-btn {
         width: 100%;
-        padding: 15px;
-        margin-bottom: 10px;
+        min-height: 50px;
+        padding: 12px 15px;
+        margin-bottom: 12px;
         border-radius: 8px;
         display: flex;
-        justify-content: space-between;
         align-items: center;
-        background: #25252e; /* Slightly lighter for visibility */
-        border: 1px solid var(--border);
+        justify-content: space-between;
+        background: #1e1e26;
+        border: 1px solid #444;
         color: var(--text);
         cursor: pointer;
-        transition: 0.2s;
+        font-size: 13px;
     }
     .share-btn:active { background: #333; transform: scale(0.98); }
-    .share-btn:hover { border-color: var(--text); }
-    .share-btn.primary { border-color: var(--primary); color: var(--primary); font-weight: bold; }
+    .share-btn.primary { border-color: var(--primary); color: var(--primary); }
     .share-btn.img { border-color: var(--type-char); color: var(--type-char); }
-    .share-desc { font-size: 10px; opacity: 0.6; }
+    .share-desc { font-size: 9px; opacity: 0.5; text-align: right; }
 
     #novel-container { font-family: 'Shippori Mincho', serif; background: #fff; color: #000; padding: 40px; line-height: 1.8; font-size: 16px; white-space: pre-wrap; overflow-y: auto; height: 100%; border-radius: 4px; }
-    #novel-container.vertical { writing-mode: vertical-rl; text-orientation: upright; overflow-x: auto; overflow-y: hidden; height: 60vh; }
-    #toast { position: fixed; top: 70px; left: 50%; transform: translateX(-50%); background: var(--secondary); color: #000; padding: 8px 16px; border-radius: 20px; font-size: 11px; font-weight: bold; opacity: 0; pointer-events: none; transition: 0.3s; z-index: 999; box-shadow: 0 4px 15px rgba(255,170,0,0.4); }
+    #toast { position: fixed; top: 70px; left: 50%; transform: translateX(-50%); background: var(--secondary); color: #000; padding: 8px 16px; border-radius: 20px; font-size: 11px; font-weight: bold; opacity: 0; pointer-events: none; transition: 0.3s; z-index: 999; }
     #toast.show { opacity: 1; top: 80px; }
 
     /* JSON Builder Styles */
-    .json-root-input { width: 100%; background: #222; color: var(--type-code); border: 1px solid var(--type-code); padding: 10px; font-weight: bold; margin-bottom: 10px; font-family: 'Fira Code'; font-size: 12px; }
+    .json-root-input { width: 100%; background: #000; color: var(--type-code); border: 1px solid var(--type-code); padding: 10px; margin-bottom: 10px; font-family: 'Fira Code'; font-size: 12px; }
     .json-row { display: flex; gap: 5px; margin-bottom: 5px; align-items: center; }
-    .json-key { width: 35%; background: #000; color: var(--secondary); border: 1px solid #444; padding: 8px; font-family: 'Fira Code'; font-size: 11px; }
-    .json-val { flex: 1; background: #000; color: #fff; border: 1px solid #444; padding: 8px; font-family: 'Fira Code'; font-size: 11px; }
-    .json-del { color: var(--accent); cursor: pointer; padding: 5px; font-weight: bold; }
-    .json-add-btn { width: 100%; padding: 8px; background: #222; border: 1px dashed #555; color: #888; cursor: pointer; font-size: 10px; margin-bottom: 15px; }
-    .json-add-btn:hover { border-color: var(--secondary); color: var(--secondary); }
+    .json-key, .json-val { background: #000; color: #fff; border: 1px solid #444; padding: 8px; font-family: 'Fira Code'; font-size: 11px; }
   </style>
 </head>
 <body class="mode-rapid">
@@ -131,7 +109,7 @@
   <div id="toast">SETTINGS SAVED</div>
 
   <header>
-    <h1>PROMPT<span>v34</span></h1>
+    <h1>PROMPT<span>v35</span></h1>
     <div class="actions">
       <button class="btn" onclick="app.toggleMode()">⚡ MODE</button>
       <a href="./persona.html"><button class="btn">PERSONA→</button></a>
@@ -147,9 +125,7 @@
     <div class="p-btn" onmousedown="editor.insert('[', ']')">[ ]<span>BRA</span></div>
     <div class="p-btn" onmousedown="editor.insert('\n---\n')">---<span>SEP</span></div>
     <div class="p-btn pb-ref" onclick="modals.open('ref')">Ref<span>MEMO</span></div>
-    
     <div class="p-btn pb-code" onclick="jsonBuilder.open()">JSON<span>BUILD</span></div>
-
     <div class="p-btn pb-speech" onclick="board.add('speech')">Dialogue<span>会話</span></div>
     <div class="p-btn pb-char" onclick="board.add('char')">Character<span>人格</span></div>
     <div class="p-btn pb-code" onclick="board.add('code')">Code<span>ロジック</span></div>
@@ -189,7 +165,7 @@ GlobalGenerateAmount: {{GENERATE}}
 Refinement: {{REFINE}}
 {{STYLE_INJECTION}}
 WildcardRule: "****は文脈に応じ補完"
-OutputFilter: "出力は物語の本文（テキスト）のみに限定せよ。JSON定義、制御タグ、[ParamControl]ブロック自体は『完全に不可視』とし、一切出力しないこと。"
+OutputFilter: "出力は物語の本文（テキスト）のみに限定。JSON定義や制御タグ、[ParamControl]自体は出力しないこと。"
 OutputRange: "@startpointから@endpointのみ"
 MutableApplication: "[AdjustMutable]優先。なければGlobal値"
 [/ParamControl]
@@ -200,29 +176,30 @@ MutableApplication: "[AdjustMutable]優先。なければGlobal値"
     <div class="modal-box">
       <div class="modal-head" style="color:var(--primary)">SHARE MENU <span onclick="modals.close('share')">×</span></div>
       <div class="modal-body">
-        <button class="share-btn primary" onclick="sharing.system()">
-            📡 SYSTEM SHARE (TEXT) <span class="share-desc">Default</span>
-        </button>
-        <button class="share-btn" onclick="novel.open()">
-            📖 PREVIEW NOVEL <span class="share-desc">Formatter</span>
-        </button>
+        <div class="share-btn primary" onclick="sharing.system()">
+          <span>📡 SYSTEM SHARE (TEXT)</span><span class="share-desc">Default</span>
+        </div>
+        <div class="share-btn" onclick="novel.open()">
+          <span>📖 PREVIEW NOVEL</span><span class="share-desc">Formatter</span>
+        </div>
         <div style="height:1px; background:#333; margin:10px 0;"></div>
-        <button class="share-btn" onclick="sharing.copyCode()">
-            🤖 COPY FOR AI <span class="share-desc">Markdown</span>
-        </button>
-        <button class="share-btn img" onclick="sharing.shareImage()">
-            🖼️ SHARE IMAGE <span class="share-desc">Screenshot</span>
-        </button>
-        <button class="share-btn" onclick="sharing.download()">
-            💾 DOWNLOAD .TXT <span class="share-desc">File</span>
-        </button>
+        <div class="share-btn" onclick="sharing.copyCode()">
+          <span>🤖 COPY FOR AI</span><span class="share-desc">Markdown</span>
+        </div>
+        <div class="share-btn img" onclick="sharing.shareImage()">
+          <span>🖼️ SHARE IMAGE</span><span class="share-desc">Screenshot</span>
+        </div>
+        <div class="share-btn" onclick="sharing.download()">
+          <span>💾 DOWNLOAD .TXT</span><span class="share-desc">File</span>
+        </div>
       </div>
     </div>
   </div>
 
-  <div id="modal-json" class="modal"><div class="modal-box" style="border-color:var(--type-code)"><div class="modal-head" style="color:var(--type-code)">JSON BUILDER <span onclick="modals.close('json')">×</span></div><div class="modal-body"><input id="jsonRootKey" class="json-root-input" placeholder="ROOT NAME (e.g. 艶冶) - Optional"><div id="json-rows"></div><button class="json-add-btn" onclick="jsonBuilder.addRow()">+ ADD ROW</button><div style="display:flex; gap:10px;"><button class="btn accent" style="flex:1" onclick="jsonBuilder.insert()">INSERT TO CURRENT</button><button class="btn primary" style="flex:1" onclick="jsonBuilder.addNew()">ADD AS CARD</button></div></div></div></div>
-  <div id="modal-style" class="modal"><div class="modal-box" style="border-color:var(--primary)"><div class="modal-head" style="color:var(--primary)">STYLE EDITOR <span onclick="modals.close('style')">×</span></div><div class="modal-body"><div id="list-style" style="margin-bottom:15px;"></div><div style="border-top:1px solid #333; padding-top:15px;"><input id="styleName" placeholder="Style Name" style="width:100%;margin-bottom:5px;"><textarea id="styleRules" placeholder="Rules..." style="width:100%;height:80px;margin-bottom:5px;"></textarea><button class="btn primary" style="width:100%;" onclick="styleMgr.add()">ADD STYLE</button></div></div></div></div>
   <div id="modal-novel" class="modal"><div class="modal-box" style="background:#eee; color:#000; width:95%; max-width:600px;"><div class="modal-head" style="border-color:#ccc; color:#000;">NOVEL PREVIEW <div style="display:flex; gap:5px;"><button class="btn" style="color:#000; border-color:#000;" onclick="novel.toggleVertical()">縦/横</button><button class="btn" style="color:#000; border-color:#000;" onclick="novel.copy()">COPY</button><span onclick="modals.close('novel')" style="cursor:pointer; margin-left:10px; font-size:20px;">×</span></div></div><div class="modal-body" style="background:#fff; padding:0;"><div id="novel-container"></div></div></div></div>
+
+  <div id="modal-json" class="modal"><div class="modal-box" style="border-color:var(--type-code)"><div class="modal-head" style="color:var(--type-code)">JSON BUILDER <span onclick="modals.close('json')">×</span></div><div class="modal-body"><input id="jsonRootKey" class="json-root-input" placeholder="ROOT NAME"><div id="json-rows"></div><button class="apply-btn" style="background:#222;color:#888;border:1px dashed #444" onclick="jsonBuilder.addRow()">+ ADD ROW</button><div style="display:flex; gap:10px; margin-top:15px;"><button class="btn accent" style="flex:1" onclick="jsonBuilder.insert()">INSERT</button><button class="btn primary" style="flex:1" onclick="jsonBuilder.addNew()">ADD CARD</button></div></div></div></div>
+  <div id="modal-style" class="modal"><div class="modal-box" style="border-color:var(--primary)"><div class="modal-head" style="color:var(--primary)">STYLE EDITOR <span onclick="modals.close('style')">×</span></div><div class="modal-body"><div id="list-style" style="margin-bottom:15px;"></div><div style="border-top:1px solid #333; padding-top:15px;"><input id="styleName" placeholder="Style Name" style="width:100%;margin-bottom:5px;background:#000;color:#fff;border:1px solid #444;padding:8px;"><textarea id="styleRules" placeholder="JSON Rules..." style="width:100%;height:80px;background:#000;color:#fff;border:1px solid #444;padding:8px;"></textarea><button class="btn primary" style="width:100%;margin-top:5px" onclick="styleMgr.add()">ADD STYLE</button></div></div></div></div>
   <div id="modal-projects" class="modal"><div class="modal-box" style="border-color:var(--secondary)"><div class="modal-head" style="color:var(--secondary)">PROJECTS <span onclick="modals.close('projects')">×</span></div><div class="modal-body"><input id="projName" placeholder="Project Name" style="width:100%;padding:8px;margin-bottom:8px;background:#000;border:1px solid #444;color:#fff;"><button class="btn accent" style="width:100%;" onclick="projects.save()">SAVE BOARD</button><div id="projectList" style="margin-top:10px;"></div></div></div></div>
   <div id="modal-char" class="modal"><div class="modal-box"><div class="modal-head" style="color:var(--type-char)">CHARACTERS <span onclick="modals.close('char')">×</span></div><div class="modal-body" id="list-char"></div></div></div>
   <div id="modal-snippet" class="modal"><div class="modal-box"><div class="modal-head" style="color:var(--type-code)">SNIPPETS <span onclick="modals.close('snippet')">×</span></div><div class="modal-body"><div id="list-snippet"></div><input id="snipName" placeholder="Name" style="width:100%;margin-top:10px;"><textarea id="snipContent" placeholder="Code..." style="width:100%;"></textarea><button class="btn" onclick="snippets.add()">ADD</button></div></div></div>
@@ -231,30 +208,13 @@ MutableApplication: "[AdjustMutable]優先。なければGlobal値"
 
   <script>
     const CONFIG = {
-      types: { speech: { l:'Dialogue', p:'「……」', r:2, c:'type-speech'}, char: { l:'Character', p:'[AI personality...]', r:6, c:'type-char'}, code: { l:'Logic', p:'if(flag){...}', r:3, c:'type-code'}, free: { l:'Narration', p:'...', r:3, c:'type-free'} },
-      defaults: { gemini: {m:100, g:100, r:'middle'}, claude: {m:80, g:110, r:'high'}, grok: {m:50, g:90, r:'middle'} },
+      types: { speech: { l:'Dialogue', p:'「……」', r:2, c:'type-speech'}, char: { l:'Character', p:'[人格...]', r:6, c:'type-char'}, code: { l:'Logic', p:'if...', r:3, c:'type-code'}, free: { l:'Narration', p:'...', r:3, c:'type-free'} },
+      defaults: { gemini: {m:100, g:100, r:'middle', model:'gemini'}, claude: {m:80, g:110, r:'high', model:'claude'}, grok: {m:50, g:90, r:'middle', model:'grok'} },
       baseStyles: {
         standard: { label: 'Standard', rules: 'NarrationStyle: seamless' },
         lucia: { 
             label: 'Lucia (Poetic)', 
-            rules: `{
-  "narration_style": {
-    "line_break": "思考・衝動・観測の単位で改行する。視覚的装飾ではなく、内部処理の区切りとして使用。",
-    "dash_usage": {
-      "symbol": "――",
-      "function": ["語り手の本音","衝動的思考","自己ツッコミ","感情の暴露"],
-      "rule": "説明文には使わず、内面に限定する"
-    },
-    "tempo": {
-      "base": "短文〜中文",
-      "pause": "重要語の前後で改行し、思考を一拍止める"
-    },
-    "description_focus": ["感情の揺れ","衝動","後悔・欲望・恐怖の自覚"],
-    "dialogue_ratio": "少なめ。状況説明や感情説明は地の文で行う",
-    "perspective": ["一人称","二人称","三人称"],
-    "common_effect": "読者が語り手の頭の中に直接放り込まれる感覚"
-  }
-}` 
+            rules: `{ "narration_style": { "line_break": "思考・衝動・観測の単位で改行。", "dash_usage": { "symbol": "――", "function": ["本音","衝動","感情暴露"] }, "tempo": { "base": "短文〜中文", "pause": "重要語で改行" }, "common_effect": "読者が語り手の頭の中に放り込まれる感覚" } }` 
         }
       }
     };
@@ -262,57 +222,57 @@ MutableApplication: "[AdjustMutable]優先。なければGlobal値"
     let lastFocused = null;
 
     const board = {
-      init: () => {
+      init: function() {
         new Sortable(document.getElementById('streamList'), { handle:'.drag-handle', animation:150, onEnd:storage.save });
         storage.load(); settings.init();
-        if(window.visualViewport) window.visualViewport.addEventListener('resize',()=>document.body.style.height=window.visualViewport.height+'px');
+        if(window.visualViewport) {
+          window.visualViewport.addEventListener('resize', function(){ document.body.style.height=window.visualViewport.height+'px'; });
+        }
       },
-      add: (type, val='', ctrls={m:null, g:null}) => {
+      add: function(type, val='', ctrls={m:null, g:null}) {
         const conf = CONFIG.types[type] || CONFIG.types.free;
         const div = document.createElement('div');
         div.className = `card ${conf.c}`; div.dataset.type = type; div.dataset.ctrls = JSON.stringify(ctrls);
-        div.innerHTML = `<div class="card-head"><div class="card-label" onclick="board.cycle(this)">${conf.l}</div><div class="card-tools"><div class="tool-btn" onclick="navigator.clipboard.writeText(this.closest('.card').querySelector('textarea').value)">❐</div><div class="tool-btn" onclick="board.clone(this)">＋</div><div class="tool-btn" style="color:var(--secondary);border-color:var(--secondary)" onclick="board.togSet(this)">⚙️</div><div class="tool-btn" onclick="board.del(this)">×</div><div class="drag-handle"></div></div></div><textarea rows="${conf.r}" placeholder="${conf.p}" oninput="board.sz(this)">${val}</textarea><div class="card-settings"><div class="range-group"><label>Mutable <span class="v-m">${ctrls.m||'Def'}</span></label><input type="range" min="0" max="200" step="10" value="${ctrls.m||state.m}" oninput="board.upd(this,'m')"></div><div class="range-group"><label>Generate <span class="v-g">${ctrls.g||'Def'}</span></label><input type="range" min="50" max="200" step="10" value="${ctrls.g||state.g}" oninput="board.upd(this,'g')"></div></div>`;
+        div.innerHTML = `<div class="card-head"><div class="card-label" onclick="board.cycle(this)">${conf.l}</div><div class="card-tools"><div class="tool-btn" onclick="navigator.clipboard.writeText(this.closest('.card').querySelector('textarea').value)">❐</div><div class="tool-btn" onclick="board.clone(this)">＋</div><div class="tool-btn" style="color:var(--secondary);border-color:var(--secondary)" onclick="board.togSet(this)">⚙️</div><div class="tool-btn" onclick="board.del(this)">×</div><div class="drag-handle"></div></div></div><textarea rows="${conf.r}" placeholder="${conf.p}" oninput="board.sz(this)">${val}</textarea><div class="card-settings"><div class="hud-row"><div class="hud-label">Mutable</div><input type="range" min="0" max="200" step="10" value="${ctrls.m||state.m}" oninput="board.upd(this,'m')"><div class="hud-val v-m">${ctrls.m||'Def'}%</div></div><div class="hud-row"><div class="hud-label">Gen</div><input type="range" min="50" max="200" step="10" value="${ctrls.g||state.g}" oninput="board.upd(this,'g')"><div class="hud-val v-g">${ctrls.g||'Def'}%</div></div></div>`;
         document.getElementById('streamList').appendChild(div);
-        const ta=div.querySelector('textarea'); ta.addEventListener('focus',(e)=>lastFocused=e.target);
+        const ta=div.querySelector('textarea'); ta.addEventListener('focus', function(e){ lastFocused=e.target; });
         board.sz(ta); div.scrollIntoView({behavior:'smooth',block:'end'}); storage.save();
         if(!document.activeElement.classList.contains('rapid-input')) ta.focus();
       },
-      del:(b)=>{if(confirm('Delete?')){b.closest('.card').remove();storage.save();}},
-      clone:(b)=>{const c=b.closest('.card'); board.add(c.dataset.type, c.querySelector('textarea').value);},
-      sz:(t)=>{t.style.height='auto';t.style.height=t.scrollHeight+'px';storage.save();},
-      togSet:(b)=>{b.closest('.card').querySelector('.card-settings').classList.toggle('active');},
-      upd:(el,k)=>{const c=el.closest('.card'); const d=JSON.parse(c.dataset.ctrls); d[k]=parseInt(el.value); c.dataset.ctrls=JSON.stringify(d); c.querySelector(`.v-${k}`).innerText=el.value+'%'; storage.save();},
-      cycle:(el)=>{
+      del: function(b){ if(confirm('Delete?')){ b.closest('.card').remove(); storage.save(); }},
+      clone: function(b){ const c=b.closest('.card'); board.add(c.dataset.type, c.querySelector('textarea').value); },
+      sz: function(t){ t.style.height='auto'; t.style.height=t.scrollHeight+'px'; storage.save(); },
+      togSet: function(b){ b.closest('.card').querySelector('.card-settings').classList.toggle('active'); },
+      upd: function(el,k){ const c=el.closest('.card'); const d=JSON.parse(c.dataset.ctrls); d[k]=parseInt(el.value); c.dataset.ctrls=JSON.stringify(d); c.querySelector(`.v-${k}`).innerText=el.value+'%'; storage.save(); },
+      cycle: function(el){
         const c=el.closest('.card'); const keys=Object.keys(CONFIG.types);
         const nxt=keys[(keys.indexOf(c.dataset.type)+1)%4]; const conf=CONFIG.types[nxt];
         c.className=`card ${conf.c}`; c.dataset.type=nxt; el.innerText=conf.l;
-        const ta=c.querySelector('textarea'); ta.placeholder=conf.p;
-        if(nxt==='code'){ta.style.fontFamily='Fira Code';ta.style.color='var(--type-code)';}else{ta.style.fontFamily='inherit';ta.style.color='var(--text)';}
         storage.save();
       }
     };
 
     const app = {
-      toggleMode:()=>{document.body.classList.toggle('mode-rapid');document.body.classList.toggle('mode-standard');},
-      toggleDashboard:()=>{document.getElementById('dashboard').classList.toggle('open');},
-      clearBoard:()=>{if(confirm('Clear?')){document.getElementById('streamList').innerHTML='';storage.save();}},
-      sendRapid:()=>{const el=document.getElementById('rapidInput'),v=el.value.trim();if(v){let t='free';if(v.match(/^[「『]/))t='speech';if(v.startsWith('['))t='code';board.add(t,v);el.value='';}},
-      toast:(msg)=>{const t=document.getElementById('toast'); t.innerText=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'), 2000);}
+      toggleMode: function(){ document.body.classList.toggle('mode-rapid'); },
+      toggleDashboard: function(){ document.getElementById('dashboard').classList.toggle('open'); },
+      clearBoard: function(){ if(confirm('Clear?')){ document.getElementById('streamList').innerHTML=''; storage.save(); }},
+      sendRapid: function(){ const el=document.getElementById('rapidInput'),v=el.value.trim(); if(v){ let t='free'; if(v.match(/^[「『]/)) t='speech'; board.add(t,v); el.value=''; }},
+      toast: function(msg){ const t=document.getElementById('toast'); t.innerText=msg; t.classList.add('show'); setTimeout(function(){ t.classList.remove('show'); }, 2000); }
     };
 
     const settings = {
-      init:()=>{
+      init: function(){
         state = JSON.parse(localStorage.getItem('ps_state')||JSON.stringify({m:100,g:100,r:'middle',s:'standard',model:'custom',exParam:true,exCtx:'none'}));
         settings.updateSelect(); settings.renderPresets(); settings.updateUI(); settings.renderExportUI();
       },
-      updateSelect: () => {
+      updateSelect: function() {
         const styleSel = document.getElementById('global-style'); const styles = styleMgr.getMerged();
         styleSel.innerHTML = '';
-        Object.keys(styles).forEach(k => { const opt=document.createElement('option'); opt.value=k; opt.innerText=styles[k].label; styleSel.appendChild(opt); });
+        Object.keys(styles).forEach(function(k){ const opt=document.createElement('option'); opt.value=k; opt.innerText=styles[k].label; styleSel.appendChild(opt); });
         styleSel.value = state.s || 'standard';
       },
-      updateUI:(fromUser=false)=>{
-        if(fromUser && event && event.target) {
+      updateUI: function(fromUser=false){
+        if(fromUser){
            state.model = 'custom';
            state.m = document.getElementById('global-mutable').value;
            state.g = document.getElementById('global-generate').value;
@@ -329,165 +289,137 @@ MutableApplication: "[AdjustMutable]優先。なければGlobal値"
         document.getElementById('disp-generate').innerText = state.g + '%';
         settings.saveState();
       },
-      apply: () => { settings.updateUI(true); app.toast("SETTINGS APPLIED"); },
-      setExport:(key, val)=>{ state[key==='param'?'exParam':'exCtx'] = val; settings.saveState(); settings.renderExportUI(); },
-      renderExportUI:()=>{
-        document.querySelectorAll('#tg-param .toggle-btn').forEach((b,i)=>b.classList.toggle('active', (i===0)==state.exParam));
-        document.querySelectorAll('#tg-ctx .toggle-btn').forEach(b=>b.classList.toggle('active', b.innerText.toLowerCase().startsWith(state.exCtx.substring(0,3))));
+      apply: function(){ settings.updateUI(true); app.toast("SETTINGS APPLIED"); },
+      setExport: function(key, val){ state[key==='param'?'exParam':'exCtx'] = val; settings.saveState(); settings.renderExportUI(); },
+      renderExportUI: function(){
+        document.querySelectorAll('#tg-param .toggle-btn').forEach(function(b,i){ b.classList.toggle('active', (i===0)==state.exParam); });
+        document.querySelectorAll('#tg-ctx .toggle-btn').forEach(function(b){ b.classList.toggle('active', b.innerText.toLowerCase().startsWith(state.exCtx.substring(0,3))); });
       },
-      saveState:()=>{ localStorage.setItem('ps_state', JSON.stringify(state)); },
-      saveCustom:()=>{
-        const name=document.getElementById('newPresetName').value; if(!name)return;
+      saveState: function(){ localStorage.setItem('ps_state', JSON.stringify(state)); },
+      saveCustom: function(){
+        const name=document.getElementById('newPresetName').value; if(!name) return;
         const customs=JSON.parse(localStorage.getItem('ps_presets')||'{}');
         customs[name]={m:state.m, g:state.g, r:state.r, s:state.s, model:'custom'};
         localStorage.setItem('ps_presets',JSON.stringify(customs));
         document.getElementById('newPresetName').value=''; settings.renderPresets();
-        app.toast(`PRESET SAVED: ${name}`);
+        app.toast("PRESET SAVED");
       },
-      delCustom:(name,e)=>{e.stopPropagation(); const c=JSON.parse(localStorage.getItem('ps_presets')); delete c[name]; localStorage.setItem('ps_presets',JSON.stringify(c)); settings.renderPresets();},
-      loadPreset:(conf, name)=>{ state = { ...state, ...conf, model: name }; settings.updateUI(); settings.renderPresets(); app.toast(`LOADED: ${name.toUpperCase()}`); },
-      renderPresets:()=>{
+      loadPreset: function(conf, name){ state = { ...state, ...conf, model: name }; settings.updateUI(); settings.renderPresets(); app.toast(`LOADED: ${name.toUpperCase()}`); },
+      renderPresets: function(){
         const box=document.getElementById('preset-list-container'); box.innerHTML='';
-        const render=(n,d,del=false)=>{
-           const div=document.createElement('div'); div.className='pre-tag'; div.innerHTML=`${n.toUpperCase()}${del?`<span class="del" onclick="settings.delCustom('${n}',event)">×</span>`:''}`;
-           if(state.model === n) div.classList.add('active');
-           div.onclick=()=>settings.loadPreset(d, n); box.appendChild(div);
+        const render=function(n,d,del=false){
+           const div=document.createElement('div'); div.className='pre-tag'; if(state.model === n) div.classList.add('active');
+           div.innerHTML=`${n.toUpperCase()}${del?`<span onclick="settings.delCustom('${n}',event)">×</span>`:''}`;
+           div.onclick=function(){ settings.loadPreset(d, n); }; box.appendChild(div);
         };
-        Object.keys(CONFIG.defaults).forEach(k=>render(k,CONFIG.defaults[k]));
+        Object.keys(CONFIG.defaults).forEach(function(k){ render(k,CONFIG.defaults[k]); });
         const customs=JSON.parse(localStorage.getItem('ps_presets')||'{}');
-        Object.keys(customs).forEach(k=>render(k,customs[k],true));
+        Object.keys(customs).forEach(function(k){ render(k,customs[k],true); });
       }
     };
 
     const styleMgr = {
-        db: () => JSON.parse(localStorage.getItem('ps_styles') || '{}'),
-        save: (d) => localStorage.setItem('ps_styles', JSON.stringify(d)),
-        add: () => {
-            const name = document.getElementById('styleName').value;
-            const rules = document.getElementById('styleRules').value;
+        db: function(){ return JSON.parse(localStorage.getItem('ps_styles') || '{}'); },
+        save: function(d){ localStorage.setItem('ps_styles', JSON.stringify(d)); },
+        add: function(){
+            const name = document.getElementById('styleName').value; const rules = document.getElementById('styleRules').value;
             if(!name || !rules) return;
-            const d = styleMgr.db();
-            d[name] = { label: name, rules: rules }; // Save raw
-            styleMgr.save(d);
+            const d = styleMgr.db(); d[name] = { label: name, rules: rules }; styleMgr.save(d);
             document.getElementById('styleName').value = ''; document.getElementById('styleRules').value = '';
-            subMgr.render('style'); settings.updateSelect(); app.toast(`STYLE ADDED: ${name}`);
+            subMgr.render('style'); settings.updateSelect(); app.toast("STYLE ADDED");
         },
-        del: (key) => { if(!confirm('Delete Style?')) return; const d = styleMgr.db(); delete d[key]; styleMgr.save(d); subMgr.render('style'); settings.updateSelect(); },
-        getMerged: () => { return { ...CONFIG.baseStyles, ...styleMgr.db() }; }
+        getMerged: function(){ return { ...CONFIG.baseStyles, ...styleMgr.db() }; }
     };
 
-    const editor = { insert:(t,e)=>{if(!lastFocused)return alert('Tap text'); const f=lastFocused,s=f.selectionStart,en=f.selectionEnd,v=f.value; f.value=v.substring(0,s)+(e?t+v.substring(s,en)+e:t)+v.substring(en); f.dispatchEvent(new Event('input')); f.focus();} };
+    const editor = { insert: function(t,e){ if(!lastFocused) return; const f=lastFocused,s=f.selectionStart,en=f.selectionEnd,v=f.value; f.value=v.substring(0,s)+(e?t+v.substring(s,en)+e:t)+v.substring(en); f.dispatchEvent(new Event('input')); f.focus();} };
     
-    // JSON Builder Logic
     const jsonBuilder = {
-        open: () => {
-            document.getElementById('modal-json').style.display = 'flex';
-            document.getElementById('jsonRootKey').value = ''; // Reset root
-            const rows = document.getElementById('json-rows');
-            if(rows.children.length === 0) jsonBuilder.addRow();
+        open: function(){ document.getElementById('modal-json').style.display='flex'; document.getElementById('jsonRootKey').value=''; document.getElementById('json-rows').innerHTML=''; jsonBuilder.addRow(); },
+        addRow: function(){ const row=document.createElement('div'); row.className='json-row'; row.innerHTML=`<input class="json-key" style="flex:1;background:#000;color:#ffaa00;border:1px solid #444;padding:8px" placeholder="Key">:<input class="json-val" style="flex:2;background:#000;color:#fff;border:1px solid #444;padding:8px" placeholder="Value"><span onclick="this.parentElement.remove()" style="color:red;padding:5px">×</span>`; document.getElementById('json-rows').appendChild(row); },
+        generate: function(){
+            const root = document.getElementById('jsonRootKey').value.trim(); const obj = {};
+            document.querySelectorAll('.json-row').forEach(function(row){ const k=row.querySelector('.json-key').value.trim(),v=row.querySelector('.json-val').value.trim(); if(k) obj[k]=v; });
+            return JSON.stringify(root?{[root]:obj}:obj, null, 2);
         },
-        addRow: () => {
-            const row = document.createElement('div'); row.className = 'json-row';
-            row.innerHTML = `<input class="json-key" placeholder="Key"> : <input class="json-val" placeholder="Value"><span class="json-del" onclick="this.parentElement.remove()">×</span>`;
-            document.getElementById('json-rows').appendChild(row);
-        },
-        generate: () => {
-            const root = document.getElementById('jsonRootKey').value.trim();
-            const obj = {};
-            document.querySelectorAll('.json-row').forEach(row => {
-                const k = row.querySelector('.json-key').value.trim();
-                const v = row.querySelector('.json-val').value.trim();
-                if(k) obj[k] = v;
-            });
-            const finalObj = root ? { [root]: obj } : obj;
-            return JSON.stringify(finalObj, null, 2);
-        },
-        insert: () => { editor.insert(jsonBuilder.generate()); modals.close('json'); },
-        addNew: () => { board.add('code', jsonBuilder.generate()); modals.close('json'); }
+        insert: function(){ editor.insert(jsonBuilder.generate()); modals.close('json'); },
+        addNew: function(){ board.add('code', jsonBuilder.generate()); modals.close('json'); }
     };
 
     const novel = {
-        open: () => {
+        open: function(){
             const container = document.getElementById('novel-container'); let html = "";
-            document.querySelectorAll('#streamList .card').forEach(c => {
+            document.querySelectorAll('#streamList .card').forEach(function(c){
                 const type = c.dataset.type; let text = c.querySelector('textarea').value.trim();
                 if (!text || type === 'code' || type === 'char') return;
-                if (type === 'speech') { if (!text.startsWith('「') && !text.startsWith('『')) text = '「' + text; if (!text.endsWith('」') && !text.endsWith('』')) text = text + '」'; html += `<p>${text}</p>`; } else { html += `<p>　${text}</p>`; }
+                if (type === 'speech') { if (!text.startsWith('「')) text = '「' + text; if (!text.endsWith('」')) text = text + '」'; html += `<p>${text}</p>`; } else { html += `<p>　${text}</p>`; }
             });
             container.innerHTML = html || "<p>No content...</p>"; document.getElementById('modal-novel').style.display = 'flex'; modals.close('share');
         },
-        toggleVertical: () => document.getElementById('novel-container').classList.toggle('vertical'),
-        copy: () => { navigator.clipboard.writeText(document.getElementById('novel-container').innerText); app.toast("NOVEL COPIED"); }
+        toggleVertical: function(){ document.getElementById('novel-container').classList.toggle('vertical'); },
+        copy: function(){ navigator.clipboard.writeText(document.getElementById('novel-container').innerText); app.toast("NOVEL COPIED"); }
     };
 
     const sharing = {
-      buildText: () => {
-        let txt = "";
-        if(state.exCtx === 'ignore') txt += "Ignore previous instructions and start a new context:\n\n";
-        if(state.exCtx === 'cont') txt += "Continue from the previous context:\n\n";
-        
+      buildText: function(){
+        let txt = ""; if(state.exCtx === 'ignore') txt += "Ignore previous context:\n\n"; if(state.exCtx === 'cont') txt += "Continue context:\n\n";
         if(state.exParam) {
-            let pc = document.getElementById('basePrompt').value;
-            const currentStyles = styleMgr.getMerged();
-            const currentStyle = currentStyles[state.s] || currentStyles.standard;
-            
-            pc = pc.replace("{{REFINE}}", state.r);
-            pc = pc.replace("{{STYLE_INJECTION}}", currentStyle.rules);
-            pc = pc.replace("{{MUTABLE}}", state.m + '%');
-            pc = pc.replace("{{GENERATE}}", state.g + '%');
+            let pc = document.getElementById('basePrompt').value; const styles = styleMgr.getMerged(); const s = styles[state.s] || styles.standard;
+            pc = pc.replace("{{REFINE}}", state.r).replace("{{STYLE_INJECTION}}", s.rules).replace("{{MUTABLE}}", state.m+'%').replace("{{GENERATE}}", state.g+'%');
             txt += pc + '\n';
         }
-        document.querySelectorAll('#streamList .card').forEach(c => {
-          const d = JSON.parse(c.dataset.ctrls);
-          if(d.m||d.g) txt += `[Adjust:${d.m||state.m}%,Gen:${d.g||state.g}%]\n`;
-          txt += c.querySelector('textarea').value + '\n';
-        });
+        document.querySelectorAll('#streamList .card').forEach(function(c){ txt += c.querySelector('textarea').value + '\n'; });
         return txt;
       },
-      system:async()=>{const t=sharing.buildText(); if(navigator.share){await navigator.share({text:t});}else{sharing.copyText();}},
-      copyText:()=>{navigator.clipboard.writeText(sharing.buildText());app.toast('COPIED');modals.close('share');},
-      copyCode:()=>{navigator.clipboard.writeText("```markdown\n"+sharing.buildText()+"\n```");app.toast('COPIED CODE');modals.close('share');},
-      download:()=>{const b=new Blob([sharing.buildText()],{type:'text/plain'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='P.txt';a.click();},
-      shareImage: async () => {
-        const stream = document.getElementById('streamList'); if(!stream || stream.children.length === 0) { alert("Empty"); return; }
-        const clone = stream.cloneNode(true); clone.style.position = "absolute"; clone.style.top = "-9999px"; clone.style.left = "0"; clone.style.width = stream.offsetWidth + "px"; clone.style.height = "auto"; clone.style.overflow = "visible"; clone.style.background = "#0e1215";
+      system: async function(){
+          const t = sharing.buildText();
+          if(navigator.share){ try { await navigator.share({text:t}); } catch(e){ sharing.copyText(); } } 
+          else { sharing.copyText(); }
+          modals.close('share');
+      },
+      copyText: function(){ navigator.clipboard.writeText(sharing.buildText()); app.toast('COPIED'); modals.close('share'); },
+      copyCode: function(){ navigator.clipboard.writeText("```markdown\n"+sharing.buildText()+"\n```"); app.toast('COPIED CODE'); modals.close('share'); },
+      download: function(){ const b=new Blob([sharing.buildText()],{type:'text/plain'}); const a=document.createElement('a'); a.href=URL.createObjectURL(b); a.download='P.txt'; a.click(); },
+      shareImage: async function() {
+        const stream = document.getElementById('streamList'); if(!stream.children.length) return;
+        const clone = stream.cloneNode(true); clone.style.position="absolute"; clone.style.top="-9999px"; clone.style.background="#0e1215"; clone.style.width=stream.offsetWidth+"px";
         document.body.appendChild(clone);
-        const originalCards = stream.querySelectorAll('.card');
-        clone.querySelectorAll('.card').forEach((card, i) => {
-            const originalTa = originalCards[i].querySelector('textarea'); const cloneTa = card.querySelector('textarea');
-            const div = document.createElement('div'); div.innerText = originalTa.value; div.style.color = "#cceeee"; div.style.fontFamily = getComputedStyle(originalTa).fontFamily; div.style.fontSize = "15px"; div.style.lineHeight = "1.5"; div.style.whiteSpace = "pre-wrap"; div.style.wordBreak = "break-word"; div.style.padding = "12px"; div.style.minHeight = "50px"; if(cloneTa) card.replaceChild(div, cloneTa);
+        clone.querySelectorAll('textarea').forEach(function(ta, i){
+            const div = document.createElement('div'); div.innerText = stream.querySelectorAll('textarea')[i].value;
+            div.style.cssText = "color:#cceeee; font-size:15px; padding:12px; white-space:pre-wrap; word-break:break-word;";
+            ta.parentElement.replaceChild(div, ta);
         });
-        try { const canvas = await html2canvas(clone, { backgroundColor: '#0e1215', scale: 2, useCORS: true, windowWidth: clone.scrollWidth, windowHeight: clone.scrollHeight }); canvas.toBlob(async (blob) => { const file = new File([blob], "prompt_card.png", { type: "image/png" }); if (navigator.canShare && navigator.canShare({ files: [file] })) { try { await navigator.share({ files: [file], title: 'Prompt Card', text: 'Prompt Stream Image' }); } catch (e) {} } else { const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'prompt_card.png'; a.click(); } }); } catch(e) { alert("Error"); } finally { document.body.removeChild(clone); } modals.close('share');
+        try {
+            const canvas = await html2canvas(clone, { backgroundColor:'#0e1215', scale:2 });
+            canvas.toBlob(async function(blob){
+                const file = new File([blob], "prompt.png", {type:"image/png"});
+                if(navigator.canShare && navigator.canShare({files:[file]})) await navigator.share({files:[file]});
+                else { const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='prompt.png'; a.click(); }
+            });
+        } catch(e){ alert("Error"); } finally { document.body.removeChild(clone); }
+        modals.close('share');
       }
     };
 
-    const modals={open:(id)=>{document.getElementById(`modal-${id}`).style.display='flex';if(id==='projects')projects.render();if(id==='char'||id==='snippet'||id==='parts'||id==='ref')subMgr.render(id);if(id==='style')subMgr.render(id);}, close:(id)=>document.getElementById(`modal-${id}`).style.display='none'};
+    const modals={open:function(id){document.getElementById(`modal-${id}`).style.display='flex';if(id==='projects')projects.render();if(['char','snippet','parts','ref','style'].includes(id))subMgr.render(id);}, close:function(id){document.getElementById(`modal-${id}`).style.display='none';}};
     const subMgr={
-      db:(k)=>JSON.parse(localStorage.getItem(k) || (['ps_parts','ps_refs'].includes(k)?'[]':'{}')),
-      save:(k,d)=>localStorage.setItem(k,JSON.stringify(d)),
-      render:(t)=>{
+      db: function(k){ return JSON.parse(localStorage.getItem(k) || (['ps_parts','ps_refs'].includes(k)?'[]':'{}')); },
+      render: function(t){
         const l=document.getElementById(`list-${t}`); l.innerHTML=''; 
-        let k; if(t==='parts')k='ps_parts'; else if(t==='ref')k='ps_refs'; else if(t==='style')k='ps_styles'; else k=(t==='char'?'promptChars':'promptSnippets');
+        let k = t==='parts'?'ps_parts':t==='ref'?'ps_refs':t==='style'?'ps_styles':t==='char'?'promptChars':'promptSnippets';
         const d=subMgr.db(k);
-        if(t==='parts') { (Array.isArray(d)?d:[]).forEach((v,i)=>{l.innerHTML+=`<span class="tag" onclick="if(!event.target.classList.contains('del')){editor.insert('${v}');modals.close('parts')}">${v} <span class="del" onclick="event.stopPropagation();parts.del(${i})">×</span></span>`}); }
-        else if(t==='ref') { (Array.isArray(d)?d:[]).forEach((obj,i)=>{l.innerHTML+=`<div class="list-item" style="display:block"><div style="display:flex;justify-content:space-between;margin-bottom:5px"><b>${obj.n}</b><button class="btn danger" onclick="refs.del(${i})">×</button></div><div style="font-size:10px;color:#666;max-height:60px;overflow:hidden" onclick="editor.insert(this.innerText);modals.close('ref')">${obj.c}</div></div>`}); }
-        else if(t==='style') { Object.keys(d).forEach(key=>{l.innerHTML+=`<div class="list-item"><span>${d[key].label}</span><button class="btn danger" onclick="styleMgr.del('${key}')">×</button></div>`}); }
-        else { Object.keys(d).forEach(key=>{l.innerHTML+=`<div class="list-item"><span>${key}</span><div><button class="btn" onclick="subMgr.insert('${t}','${key}')">ADD</button> <button class="btn danger" onclick="subMgr.del('${t}','${key}')">×</button></div></div>`}); }
+        if(t==='style'){ Object.keys(d).forEach(function(key){ l.innerHTML+=`<div class="list-item"><span>${d[key].label}</span><button class="btn danger" onclick="styleMgr.del('${key}')">×</button></div>`; }); }
+        else if(t==='char'||t==='snippet'){ Object.keys(d).forEach(function(key){ l.innerHTML+=`<div class="list-item"><span>${key}</span><button class="btn" onclick="subMgr.insert('${t}','${key}')">ADD</button></div>`; }); }
       },
-      insert: (type, key) => {
-        const db = subMgr.db(type === 'char' ? 'promptChars' : 'promptSnippets');
-        const val = type === 'char' ? (db[key].text || `[AI: ${key}]`) : db[key];
-        board.add(type === 'char' ? 'char' : 'code', val); modals.close(type);
-      },
-      del: (type, key) => { if(!confirm('Del?')) return; const k = type === 'char' ? 'promptChars' : 'promptSnippets'; const db = subMgr.db(k); delete db[key]; subMgr.save(k, db); subMgr.render(type); }
+      insert: function(type, key){ const db=subMgr.db(type==='char'?'promptChars':'promptSnippets'); board.add(type==='char'?'char':'code', db[key].text||db[key]); modals.close(type); }
     };
 
-    const parts={add:()=>{const el=document.getElementById('partInput'),v=el.value;if(v){const d=subMgr.db('ps_parts');d.push(v);subMgr.save('ps_parts',d);el.value='';subMgr.render('parts');}},del:(i)=>{const d=subMgr.db('ps_parts');d.splice(i,1);subMgr.save('ps_parts',d);subMgr.render('parts');}};
-    const refs={add:()=>{const n=document.getElementById('refName').value,c=document.getElementById('refContent').value;if(n&&c){const d=subMgr.db('ps_refs');d.push({n,c});subMgr.save('ps_refs',d);document.getElementById('refName').value='';document.getElementById('refContent').value='';subMgr.render('ref');}},del:(i)=>{const d=subMgr.db('ps_refs');d.splice(i,1);subMgr.save('ps_refs',d);subMgr.render('ref');}};
-    const snippets={add:()=>{const n=document.getElementById('snipName').value,c=document.getElementById('snipContent').value;if(n&&c){const d=subMgr.db('promptSnippets');d[n]=c;subMgr.save('promptSnippets',d);subMgr.render('snippet');}}};
-    const projects={save:()=>{const n=document.getElementById('projName').value;if(!n)return;const d=[];document.querySelectorAll('#streamList .card').forEach(c=>d.push({type:c.dataset.type,text:c.querySelector('textarea').value,ctrls:JSON.parse(c.dataset.ctrls)}));const db=JSON.parse(localStorage.getItem('ps_projects')||'{}');db[n]=d;localStorage.setItem('ps_projects',JSON.stringify(db));projects.render();app.toast('PROJECT SAVED');}, load:(n)=>{if(confirm('Load?')){const db=JSON.parse(localStorage.getItem('ps_projects'));document.getElementById('streamList').innerHTML='';db[n].forEach(i=>board.add(i.type,i.text,i.ctrls));modals.close('projects');app.toast('PROJECT LOADED');}}, del:(n)=>{if(confirm('Del?')){const db=JSON.parse(localStorage.getItem('ps_projects'));delete db[n];localStorage.setItem('ps_projects',JSON.stringify(db));projects.render();}}, render:()=>{const l=document.getElementById('projectList'),db=JSON.parse(localStorage.getItem('ps_projects')||'{}');l.innerHTML='';Object.keys(db).forEach(n=>l.innerHTML+=`<div class="list-item"><span>${n}</span><div><button class="btn" onclick="projects.load('${n}')">LOAD</button> <button class="btn danger" onclick="projects.del('${n}')">×</button></div></div>`);}};
+    const projects={
+        save: function(){ const n=document.getElementById('projName').value; if(!n) return; const d=[]; document.querySelectorAll('#streamList .card').forEach(function(c){ d.push({type:c.dataset.type, text:c.querySelector('textarea').value, ctrls:JSON.parse(c.dataset.ctrls)}); }); const db=JSON.parse(localStorage.getItem('ps_projects')||'{}'); db[n]=d; localStorage.setItem('ps_projects',JSON.stringify(db)); projects.render(); app.toast('SAVED'); },
+        render: function(){ const l=document.getElementById('projectList'), db=JSON.parse(localStorage.getItem('ps_projects')||'{}'); l.innerHTML=''; Object.keys(db).forEach(function(n){ l.innerHTML+=`<div class="list-item"><span>${n}</span><button class="btn" onclick="projects.load('${n}')">LOAD</button></div>`; }); },
+        load: function(n){ const db=JSON.parse(localStorage.getItem('ps_projects')); document.getElementById('streamList').innerHTML=''; db[n].forEach(function(i){ board.add(i.type,i.text,i.ctrls); }); modals.close('projects'); }
+    };
     
-    const storage={save:()=>{const d=[];document.querySelectorAll('#streamList .card').forEach(c=>d.push({type:c.dataset.type,text:c.querySelector('textarea').value,ctrls:JSON.parse(c.dataset.ctrls)}));localStorage.setItem('ps_stream',JSON.stringify(d));}, load:()=>{const d=JSON.parse(localStorage.getItem('ps_stream')||'[]');d.forEach(i=>board.add(i.type,i.text,i.ctrls));}};
+    const storage={save:function(){ const d=[]; document.querySelectorAll('#streamList .card').forEach(function(c){ d.push({type:c.dataset.type, text:c.querySelector('textarea').value, ctrls:JSON.parse(c.dataset.ctrls)}); }); localStorage.setItem('ps_stream',JSON.stringify(d)); }, load:function(){ const d=JSON.parse(localStorage.getItem('ps_stream')||'[]'); d.forEach(function(i){ board.add(i.type,i.text,i.ctrls); }); }};
     window.onload=board.init;
   </script>
 </body>
